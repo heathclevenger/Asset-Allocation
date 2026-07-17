@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Paul Asset Allocation</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="masthead">
+        <div class="brand">
+          <div class="core-mark">CORE</div>
+          <div class="brand-sub">WEALTH<br />ADVISORS</div>
+        </div>
+        <div class="title-block">
+          <h1>Asset Allocation</h1>
+          <div class="model-actions">
+            <button id="resetModel" class="secondary">Reset</button>
+            <button id="runModel" class="primary">Run Optimization</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="nav-row">
+        <nav class="tabs" aria-label="Model pages">
+          <button class="tab active" data-tab="results">Dashboard</button>
+          <button class="tab" data-tab="assets">Asset Inputs</button>
+          <button class="tab" data-tab="profiles">Model Profiles</button>
+          <button class="tab" data-tab="dashboard">Model Summary</button>
+          <button class="tab" data-tab="explanation">Explanation</button>
+        </nav>
+      </div>
+
+      <main>
+        <section id="results" class="page active">
+          <div class="toolbar">
+            <div>
+              <h2>Dashboard</h2>
+              <p>Category allocation and sub-sleeve allocation by profile.</p>
+            </div>
+            <button id="downloadJson" class="secondary">Export JSON</button>
+          </div>
+          <div class="dashboard-tabs" aria-label="Dashboard tables">
+            <button class="dashboard-tab active" data-dashboard-tab="allocationWeights">Allocation Weights</button>
+            <button class="dashboard-tab" data-dashboard-tab="subSleeveWeights">Sub-Sleeve Weights</button>
+          </div>
+          <div class="panel">
+            <div id="allocationWeights" class="dashboard-panel active">
+              <div class="panel-title">Allocation Weights</div>
+              <div class="table-wrap">
+                <table id="allocationWeightsTable"></table>
+              </div>
+            </div>
+            <div id="subSleeveWeights" class="dashboard-panel">
+              <div class="panel-title">Sub-Sleeve Weights</div>
+              <div class="table-wrap">
+                <table id="weightsTable"></table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="profiles" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>Model Profiles</h2>
+              <p>Edit the Moderate volatility target and broad category bounds.</p>
+            </div>
+            <button class="secondary" data-reset="profiles">Reset Profiles</button>
+          </div>
+          <div id="volatilityControl" class="anchor-control"></div>
+          <div class="table-wrap">
+            <table id="profilesTable"></table>
+          </div>
+        </section>
+
+        <section id="assets" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>Asset Inputs</h2>
+              <p>Edit return, volatility, and sleeve range assumptions. Pro-rata mix is recalculated from range midpoints.</p>
+            </div>
+            <button class="secondary" data-reset="assets">Reset Assets</button>
+          </div>
+          <div class="table-wrap">
+            <table id="assetsTable"></table>
+          </div>
+        </section>
+
+        <section id="dashboard" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>Model Summary</h2>
+              <p>Compound returns, volatility, correlation matrix, fixed pro-rata sleeve mixes, and target-vol optimization.</p>
+            </div>
+          </div>
+          <div class="metrics" id="metrics"></div>
+          <div class="panel">
+            <div class="panel-title">Overall Allocation</div>
+            <div class="table-wrap">
+              <table id="summaryTable"></table>
+            </div>
+          </div>
+        </section>
+
+        <section id="explanation" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>Explanation</h2>
+              <p>A high-level summary of how the target-volatility allocation model works.</p>
+            </div>
+          </div>
+          <div class="explanation-page">
+            <div class="explanation-block">
+              <h3>What The Model Is Trying To Do</h3>
+              <p>The model builds five portfolios from Conservative through Aggressive Growth. Each portfolio is designed around a target volatility range, meaning the model first asks how much risk the portfolio should take, then searches for an allocation that fits that risk level while trying to improve expected return.</p>
+            </div>
+
+            <div class="explanation-block">
+              <h3>Inputs</h3>
+              <p>The model uses compound return, volatility, and correlation assumptions from the uploaded quarterly capital market assumptions file. Cash is fixed at 1% in every portfolio. Asset class minimums and maximums set the guardrails for how much the optimizer is allowed to use in each sleeve.</p>
+            </div>
+
+            <div class="explanation-block">
+              <h3>Portfolio Profiles</h3>
+              <p>The Moderate portfolio is the anchor for volatility. When the Moderate volatility target is changed, the other four portfolios move up or down with it using fixed relative adjustments. Category ranges for Equity, Fixed Income, Alternatives, and Cash still apply separately to each profile.</p>
+            </div>
+
+            <div class="explanation-block">
+              <h3>Optimization Process</h3>
+              <p>The app runs two allocation tests. The first is a target-volatility optimization that looks for the best return within the allowed risk and allocation constraints. The second is a Monte Carlo search that tests many possible portfolios and keeps the strongest fit. The main output averages those two results.</p>
+            </div>
+
+            <div class="explanation-block">
+              <h3>Sub-Sleeve Allocation</h3>
+              <p>After the model decides the broad category weights, each category is spread across its underlying sleeves using the current pro-rata mix. This keeps the sub-sleeve allocations aligned with the overall category totals, so the detailed weights add back to the main portfolio allocation.</p>
+            </div>
+
+            <div class="explanation-block">
+              <h3>How To Read The Output</h3>
+              <p>The Dashboard shows the final sleeve weights for each portfolio. Model Summary shows expected return, volatility, status versus the target range, and broad category weights. If a portfolio is below or above target, the constraints may be preventing the model from reaching the desired volatility range.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <span>For Internal Use Only</span>
+        <span>Do Not Distribute</span>
+      </footer>
+    </div>
+    <script src="./app.js"></script>
+  </body>
+</html>
