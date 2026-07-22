@@ -129,6 +129,10 @@ button {
   min-width: 240px;
 }
 
+.select-control.compact {
+  min-width: 185px;
+}
+
 .select-control label {
   display: block;
   font-weight: 800;
@@ -238,6 +242,14 @@ p {
 .profile-panel {
   display: block;
   margin-top: 18px;
+}
+
+.constraint-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 14px;
+  margin-bottom: 8px;
 }
 
 .panel-title {

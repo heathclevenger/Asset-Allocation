@@ -9,6 +9,8 @@ let mvoDirty = true;
 let mvoTimer = null;
 let liveUpdateTimer = null;
 let selectedMvoProfile = "Moderate";
+let selectedAllocationPreset = "CORE";
+let selectedSubAllocationPreset = "CORE";
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const defaultVolatilityPercentiles = {
@@ -128,6 +130,7 @@ function allocateWithinBounds(total, indexes, rand) {
 
 function randomAssetWeights(profile, rand) {
   const categoryWeights = randomCategoryWeights(profile, state.categories, rand);
+  if (!categoryWeights) return null;
   const weights = Array(state.assets.length).fill(0);
   const groups = categoryGroups(state.assets);
   for (const [category, indexes] of Object.entries(groups)) {
@@ -306,33 +309,52 @@ function globalFeasibleRegion(selected) {
 }
 
 function randomCategoryWeights(profile, categories, rand) {
+  const groups = categoryGroups(state.assets);
+  const effectiveBounds = {};
+  for (const category of categories) {
+    const indexes = groups[category] || [];
+    const assetMin = indexes.reduce((sum, index) => sum + state.assets[index].minWeight, 0);
+    const assetMax = indexes.reduce((sum, index) => sum + state.assets[index].maxWeight, 0);
+    effectiveBounds[category] = {
+      min: Math.max(profile.categoryBounds[category].min, assetMin),
+      max: Math.min(profile.categoryBounds[category].max, assetMax),
+    };
+    if (effectiveBounds[category].min > effectiveBounds[category].max + 1e-10) return null;
+  }
+
   const fixed = {};
   const variable = [];
   let remaining = 1;
-  categories.forEach((category) => {
-    const bounds = profile.categoryBounds[category];
+  for (const category of categories) {
+    const bounds = effectiveBounds[category];
     if (Math.abs(bounds.max - bounds.min) < 1e-10) {
       fixed[category] = bounds.min;
       remaining -= bounds.min;
     } else {
       variable.push(category);
     }
-  });
+  }
+  const variableMin = variable.reduce((sum, category) => sum + effectiveBounds[category].min, 0);
+  const variableMax = variable.reduce((sum, category) => sum + effectiveBounds[category].max, 0);
+  if (remaining < variableMin - 1e-10 || remaining > variableMax + 1e-10) return null;
 
   const out = { ...fixed };
-  variable.forEach((category, i) => {
+  for (let i = 0; i < variable.length; i += 1) {
+    const category = variable[i];
     if (i === variable.length - 1) {
       out[category] = remaining;
-      return;
+      break;
     }
     const next = variable.slice(i + 1);
-    const minLeft = next.reduce((sum, c) => sum + profile.categoryBounds[c].min, 0);
-    const maxLeft = next.reduce((sum, c) => sum + profile.categoryBounds[c].max, 0);
-    const lo = Math.max(profile.categoryBounds[category].min, remaining - maxLeft);
-    const hi = Math.min(profile.categoryBounds[category].max, remaining - minLeft);
+    const minLeft = next.reduce((sum, c) => sum + effectiveBounds[c].min, 0);
+    const maxLeft = next.reduce((sum, c) => sum + effectiveBounds[c].max, 0);
+    const lo = Math.max(effectiveBounds[category].min, remaining - maxLeft);
+    const hi = Math.min(effectiveBounds[category].max, remaining - minLeft);
+    if (lo > hi + 1e-10) return null;
     out[category] = lo + rand() * Math.max(hi - lo, 0);
     remaining -= out[category];
-  });
+  }
+  if (Math.abs(Object.values(out).reduce((sum, value) => sum + value, 0) - 1) > 0.0001) return null;
   return out;
 }
 
@@ -363,6 +385,9 @@ function optimizeProfile(profileName, seedOffset = 17, draws = 900) {
         : 0;
     const fallbackScore = -gap + stats.expectedReturn * 0.001;
     if (!fallback || fallbackScore > fallback.score) fallback = { ...candidate, score: fallbackScore };
+  }
+  if (!best && !fallback) {
+    throw new Error(`No feasible portfolios found for ${profileName}. Check the allocation and sub-allocation constraint presets.`);
   }
   return best || fallback;
 }
@@ -453,6 +478,11 @@ function renderProfiles() {
     </div>`).join("")}
   </div>
   <p>These percentiles set each portfolio's target volatility range from the portfolios that are feasible under the current allocation and sub-allocation constraints. Lower percentiles create lower-risk targets; higher percentiles create higher-risk targets. Starting defaults are 25%, 40%, 55%, 70%, and 85%.</p>`;
+
+  const allocationPreset = document.querySelector("#allocationPresetSelect");
+  if (allocationPreset) allocationPreset.value = selectedAllocationPreset;
+  const subAllocationPreset = document.querySelector("#subAllocationPresetSelect");
+  if (subAllocationPreset) subAllocationPreset.value = selectedSubAllocationPreset;
 
   const table = document.querySelector("#profilesTable");
   table.innerHTML = `<thead><tr><th>Portfolio</th><th>Target Vol Min</th><th>Target Vol Max</th><th>Volatility Percentile</th>
@@ -729,10 +759,38 @@ function setPath(path, value) {
 
 function resetModel() {
   state = clone(baseData);
+  selectedAllocationPreset = "CORE";
+  selectedSubAllocationPreset = "CORE";
   ensureVolatilityModel();
   applyVolatilityModel();
   renderEditableInputs();
   runOptimization();
+}
+
+function applyAllocationPreset(name) {
+  selectedAllocationPreset = name;
+  Object.entries(state.profiles).forEach(([profileName, profile]) => {
+    state.categories.forEach((category) => {
+      if (name === "Unconstrained") {
+        profile.categoryBounds[category] = { min: 0, max: 1 };
+      } else {
+        profile.categoryBounds[category] = clone(baseData.profiles[profileName].categoryBounds[category]);
+      }
+    });
+  });
+}
+
+function applySubAllocationPreset(name) {
+  selectedSubAllocationPreset = name;
+  state.assets.forEach((asset, index) => {
+    if (name === "Unconstrained") {
+      asset.minWeight = 0;
+      asset.maxWeight = 1;
+    } else {
+      asset.minWeight = baseData.assets[index].minWeight;
+      asset.maxWeight = baseData.assets[index].maxWeight;
+    }
+  });
 }
 
 function refreshMvo() {
@@ -803,6 +861,16 @@ document.addEventListener("change", (event) => {
   if (event.target.matches("#mvoProfileSelect")) {
     selectedMvoProfile = event.target.value;
     renderMvo();
+    return;
+  }
+  if (event.target.matches("#allocationPresetSelect")) {
+    applyAllocationPreset(event.target.value);
+    runOptimization();
+    return;
+  }
+  if (event.target.matches("#subAllocationPresetSelect")) {
+    applySubAllocationPreset(event.target.value);
+    runOptimization();
     return;
   }
   if (!event.target.matches("input[data-path]")) return;

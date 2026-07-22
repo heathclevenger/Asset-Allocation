@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Paul Asset Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260722-constraints-header-layout" />
+    <link rel="stylesheet" href="./styles.css?v=20260722-constraint-presets" />
   </head>
   <body>
     <div class="shell">
@@ -69,13 +69,31 @@
           <div id="volatilityControl" class="anchor-control"></div>
           <div class="panel">
             <div id="allocationConstraints" class="profile-panel active">
-              <div class="panel-title">Allocation Constraints</div>
+              <div class="constraint-panel-header">
+                <div class="panel-title">Allocation Constraints</div>
+                <div class="select-control compact">
+                  <label for="allocationPresetSelect">Allocation Set</label>
+                  <select id="allocationPresetSelect">
+                    <option value="CORE">CORE</option>
+                    <option value="Unconstrained">Unconstrained</option>
+                  </select>
+                </div>
+              </div>
               <div class="table-wrap">
                 <table id="profilesTable"></table>
               </div>
             </div>
             <div id="subAllocationConstraints" class="profile-panel active">
-              <div class="panel-title">Sub Allocation Constraints</div>
+              <div class="constraint-panel-header">
+                <div class="panel-title">Sub Allocation Constraints</div>
+                <div class="select-control compact">
+                  <label for="subAllocationPresetSelect">Sub Allocation Set</label>
+                  <select id="subAllocationPresetSelect">
+                    <option value="CORE">CORE</option>
+                    <option value="Unconstrained">Unconstrained</option>
+                  </select>
+                </div>
+              </div>
               <div class="table-wrap">
                 <table id="subConstraintsTable"></table>
               </div>
@@ -130,6 +148,6 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260722-mvo-no-sharpe-card"></script>
+    <script src="./app.js?v=20260722-constraint-presets"></script>
   </body>
 </html>
