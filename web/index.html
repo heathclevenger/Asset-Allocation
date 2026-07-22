@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Paul Asset Allocation</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=20260722-constraints-header-layout" />
   </head>
   <body>
     <div class="shell">
@@ -25,10 +25,9 @@
       <div class="nav-row">
         <nav class="tabs" aria-label="Model pages">
           <button class="tab active" data-tab="results">Dashboard</button>
-          <button class="tab" data-tab="assets">Asset Inputs</button>
-          <button class="tab" data-tab="profiles">Model Profiles</button>
-          <button class="tab" data-tab="dashboard">Model Summary</button>
-          <button class="tab" data-tab="explanation">Explanation</button>
+          <button class="tab" data-tab="assets">Asset Assumptions</button>
+          <button class="tab" data-tab="profiles">Model Constraints</button>
+          <button class="tab" data-tab="mvo">MVO</button>
         </nav>
       </div>
 
@@ -39,7 +38,6 @@
               <h2>Dashboard</h2>
               <p>Category allocation and sub-sleeve allocation by profile.</p>
             </div>
-            <button id="downloadJson" class="secondary">Export JSON</button>
           </div>
           <div class="dashboard-tabs" aria-label="Dashboard tables">
             <button class="dashboard-tab active" data-dashboard-tab="allocationWeights">Allocation Weights</button>
@@ -64,85 +62,67 @@
         <section id="profiles" class="page">
           <div class="toolbar">
             <div>
-              <h2>Model Profiles</h2>
-              <p>Edit the Moderate volatility target and broad category bounds.</p>
+              <h2>Model Constraints</h2>
+              <p>Edit volatility percentiles, allocation constraints, and sub-allocation constraints.</p>
             </div>
-            <button class="secondary" data-reset="profiles">Reset Profiles</button>
           </div>
           <div id="volatilityControl" class="anchor-control"></div>
-          <div class="table-wrap">
-            <table id="profilesTable"></table>
+          <div class="panel">
+            <div id="allocationConstraints" class="profile-panel active">
+              <div class="panel-title">Allocation Constraints</div>
+              <div class="table-wrap">
+                <table id="profilesTable"></table>
+              </div>
+            </div>
+            <div id="subAllocationConstraints" class="profile-panel active">
+              <div class="panel-title">Sub Allocation Constraints</div>
+              <div class="table-wrap">
+                <table id="subConstraintsTable"></table>
+              </div>
+            </div>
           </div>
         </section>
 
         <section id="assets" class="page">
           <div class="toolbar">
             <div>
-              <h2>Asset Inputs</h2>
-              <p>Edit return, volatility, and sleeve range assumptions. Pro-rata mix is recalculated from range midpoints.</p>
+              <h2>Asset Assumptions</h2>
+              <p>Edit return and volatility assumptions. Sleeve range constraints are managed on the Model Constraints page.</p>
             </div>
-            <button class="secondary" data-reset="assets">Reset Assets</button>
           </div>
           <div class="table-wrap">
             <table id="assetsTable"></table>
           </div>
         </section>
 
-        <section id="dashboard" class="page">
+        <section id="mvo" class="page">
           <div class="toolbar">
             <div>
-              <h2>Model Summary</h2>
-              <p>Compound returns, volatility, correlation matrix, fixed pro-rata sleeve mixes, and target-vol optimization.</p>
+              <h2>MVO</h2>
+              <p>Constrained mean-variance optimization by portfolio, shown against the no-shorting efficient frontier.</p>
+            </div>
+            <div class="select-control">
+              <label for="mvoProfileSelect">Portfolio</label>
+              <select id="mvoProfileSelect"></select>
             </div>
           </div>
-          <div class="metrics" id="metrics"></div>
-          <div class="panel">
-            <div class="panel-title">Overall Allocation</div>
-            <div class="table-wrap">
-              <table id="summaryTable"></table>
+          <div class="metrics" id="mvoMetrics">
+            <div class="metric"><div class="label">Status</div><div class="value">Loading</div></div>
+          </div>
+          <div class="frontier-layout">
+            <div class="panel">
+              <div class="panel-title">Efficient Frontier</div>
+              <div id="frontierChart" class="frontier-chart"><p class="frontier-note">Calculating efficient frontier...</p></div>
+            </div>
+            <div class="panel">
+              <div class="panel-title">Optimized Portfolio Weights</div>
+              <div class="table-wrap">
+                <table id="mvoWeightsTable"><tbody><tr><td>Calculating weights...</td></tr></tbody></table>
+              </div>
             </div>
           </div>
         </section>
 
-        <section id="explanation" class="page">
-          <div class="toolbar">
-            <div>
-              <h2>Explanation</h2>
-              <p>A high-level summary of how the target-volatility allocation model works.</p>
-            </div>
-          </div>
-          <div class="explanation-page">
-            <div class="explanation-block">
-              <h3>What The Model Is Trying To Do</h3>
-              <p>The model builds five portfolios from Conservative through Aggressive Growth. Each portfolio is designed around a target volatility range, meaning the model first asks how much risk the portfolio should take, then searches for an allocation that fits that risk level while trying to improve expected return.</p>
-            </div>
-
-            <div class="explanation-block">
-              <h3>Inputs</h3>
-              <p>The model uses compound return, volatility, and correlation assumptions from the uploaded quarterly capital market assumptions file. Cash is fixed at 1% in every portfolio. Asset class minimums and maximums set the guardrails for how much the optimizer is allowed to use in each sleeve.</p>
-            </div>
-
-            <div class="explanation-block">
-              <h3>Portfolio Profiles</h3>
-              <p>The Moderate portfolio is the anchor for volatility. When the Moderate volatility target is changed, the other four portfolios move up or down with it using fixed relative adjustments. Category ranges for Equity, Fixed Income, Alternatives, and Cash still apply separately to each profile.</p>
-            </div>
-
-            <div class="explanation-block">
-              <h3>Optimization Process</h3>
-              <p>The app runs two allocation tests. The first is a target-volatility optimization that looks for the best return within the allowed risk and allocation constraints. The second is a Monte Carlo search that tests many possible portfolios and keeps the strongest fit. The main output averages those two results.</p>
-            </div>
-
-            <div class="explanation-block">
-              <h3>Sub-Sleeve Allocation</h3>
-              <p>After the model decides the broad category weights, each category is spread across its underlying sleeves using the current pro-rata mix. This keeps the sub-sleeve allocations aligned with the overall category totals, so the detailed weights add back to the main portfolio allocation.</p>
-            </div>
-
-            <div class="explanation-block">
-              <h3>How To Read The Output</h3>
-              <p>The Dashboard shows the final sleeve weights for each portfolio. Model Summary shows expected return, volatility, status versus the target range, and broad category weights. If a portfolio is below or above target, the constraints may be preventing the model from reaching the desired volatility range.</p>
-            </div>
-          </div>
-        </section>
       </main>
 
       <footer>
@@ -150,6 +130,6 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js"></script>
+    <script src="./app.js?v=20260722-mvo-no-sharpe-card"></script>
   </body>
 </html>

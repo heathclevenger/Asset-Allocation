@@ -20,16 +20,13 @@ def main() -> None:
     corr = cov / np.outer(vols, vols)
     corr = np.nan_to_num(corr, nan=0.0)
     results = optimizer.calculate_results()
-    anchor_profile = "Moderate"
-    anchor_target = optimizer.MODERATE_VOL_TARGET
     volatility_model = {
-        "anchorProfile": anchor_profile,
-        "anchorTarget": anchor_target,
+        "mode": "feasiblePercentile",
         "profiles": {},
     }
     for profile, (offset, half_width) in optimizer.TARGET_VOLATILITY_RULES.items():
         volatility_model["profiles"][profile] = {
-            "offsetFromAnchor": offset,
+            "percentile": optimizer.VOLATILITY_PERCENTILES[profile],
             "halfWidth": half_width,
         }
 
@@ -70,7 +67,7 @@ def main() -> None:
                 "sharpe": data["stats"][2],
                 "weights": data["weights"].tolist(),
             }
-            for profile, data in results["average"].items()
+            for profile, data in results["mvo"].items()
         },
     }
 

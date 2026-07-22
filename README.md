@@ -18,19 +18,18 @@ Cash is hard constrained to exactly 1% in every portfolio and every optimization
 - `inputs/matrix-usd.xlsx` - quarterly assumption and correlation matrix. Replace this file each quarter.
 - `outputs/paul_asset_allocation_model.xlsx` - Excel workbook with assumptions, outputs, constraints, checks, and source/setup notes.
 
-## Optimization Tests
+## Current Optimization
 
-1. Target-volatility optimization
-   - Maximizes expected return while staying inside each portfolio's target volatility band.
-   - Uses category bands and single-asset caps to avoid unrealistic concentration.
+The active model is target-volatility MVO.
 
-2. Monte Carlo optimization and simulation
-   - Searches random feasible portfolios within the same policy bands.
-   - Simulates 10-year terminal wealth outcomes for each risk profile.
+- Maximizes expected return while staying inside each portfolio's target volatility band.
+- Uses category bands and single-asset caps to avoid unrealistic concentration.
+- Monte Carlo simulation is currently removed from all calculations while the methodology is redesigned.
 
-3. Scenario optimization
-   - Runs bad, median, and good economy cases.
-   - The bad/good cases currently adjust compound returns down/up by half of volatility.
+Scenario optimization is still included in the workbook refresh:
+
+- Runs bad, median, and good economy cases.
+- The bad/good cases currently adjust compound returns down/up by half of volatility.
 
 ## Refresh Command
 

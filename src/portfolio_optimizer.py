@@ -19,6 +19,13 @@ JPM_MATRIX_FILE = BASE_DIR / "inputs" / "matrix-usd.xlsx"
 CASH_TARGET = 0.01
 CATEGORIES = ["Equity", "Fixed Income", "Alternatives", "Cash"]
 MODERATE_VOL_TARGET = 0.130
+VOLATILITY_PERCENTILES: Dict[str, float] = {
+    "Conservative": 25.0,
+    "Balanced": 40.0,
+    "Moderate": 55.0,
+    "Growth": 70.0,
+    "Aggressive Growth": 85.0,
+}
 TARGET_VOLATILITY_RULES: Dict[str, Tuple[float, float]] = {
     "Conservative": (-0.053, 0.005),
     "Balanced": (-0.025, 0.005),
@@ -27,11 +34,11 @@ TARGET_VOLATILITY_RULES: Dict[str, Tuple[float, float]] = {
     "Aggressive Growth": (0.055, 0.005),
 }
 CATEGORY_BOUNDS: Dict[str, Dict[str, Tuple[float, float]]] = {
-    "Conservative": {"Equity": (0.30, 0.50), "Fixed Income": (0.55, 0.75), "Alternatives": (0.00, 0.08), "Cash": (CASH_TARGET, CASH_TARGET)},
-    "Balanced": {"Equity": (0.55, 0.65), "Fixed Income": (0.35, 0.55), "Alternatives": (0.00, 0.10), "Cash": (CASH_TARGET, CASH_TARGET)},
-    "Moderate": {"Equity": (0.65, 0.75), "Fixed Income": (0.25, 0.40), "Alternatives": (0.00, 0.10), "Cash": (CASH_TARGET, CASH_TARGET)},
-    "Growth": {"Equity": (0.75, 0.85), "Fixed Income": (0.10, 0.25), "Alternatives": (0.00, 0.10), "Cash": (CASH_TARGET, CASH_TARGET)},
-    "Aggressive Growth": {"Equity": (0.90, 1.00), "Fixed Income": (0.00, 0.12), "Alternatives": (0.00, 0.10), "Cash": (CASH_TARGET, CASH_TARGET)},
+    "Conservative": {"Equity": (0.30, 0.50), "Fixed Income": (0.55, 0.75), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
+    "Balanced": {"Equity": (0.55, 0.65), "Fixed Income": (0.35, 0.55), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
+    "Moderate": {"Equity": (0.65, 0.75), "Fixed Income": (0.25, 0.40), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
+    "Growth": {"Equity": (0.75, 0.85), "Fixed Income": (0.10, 0.25), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
+    "Aggressive Growth": {"Equity": (0.90, 1.00), "Fixed Income": (0.00, 0.12), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
 }
 
 
@@ -51,8 +58,8 @@ ASSETS: List[Asset] = [
     Asset("U.S. Small Cap", "Equity", ("U.S. Small Cap",), 0.00, 0.05, "U.S. Small Cap"),
     Asset("International Developed Equity", "Equity", ("EAFE Equity",), 0.10, 0.20, "EAFE Equity"),
     Asset("Emerging Markets Equity", "Equity", ("Emerging Markets Equity",), 0.00, 0.10, "Emerging Markets Equity"),
-    Asset("U.S. REITs", "Alternatives", ("U.S. REITs",), 0.00, 0.03, "U.S. REITs"),
-    Asset("Commodities", "Alternatives", ("Commodities",), 0.00, 0.03, "Commodities"),
+    Asset("U.S. REITs", "Alternatives", ("U.S. REITs",), 0.00, 0.00, "U.S. REITs"),
+    Asset("Commodities", "Alternatives", ("Commodities",), 0.00, 0.00, "Commodities"),
     Asset("Income U.S. - U.S. Treasury", "Fixed Income", ("U.S. Intermediate Treasuries", "U.S. Long Treasuries", "TIPS"), 0.00, 0.45, "Equal-weight U.S. Intermediate Treasuries, U.S. Long Treasuries, and TIPS"),
     Asset("Income U.S. Government Related", "Fixed Income", ("U.S. Aggregate Bonds", "U.S. Muni 1-15 Yr Blend"), 0.00, 0.35, "Equal-weight U.S. Aggregate Bonds and U.S. Muni 1-15 Yr Blend"),
     Asset("Income U.S. Corporate", "Fixed Income", ("U.S. Inv Grade Corporate Bonds", "U.S. High Yield Bonds"), 0.00, 0.40, "Equal-weight U.S. Investment Grade Corporate Bonds and U.S. High Yield Bonds"),
@@ -172,47 +179,6 @@ def category_indices(assets: List[Asset]) -> Dict[str, List[int]]:
     return out
 
 
-def sleeve_mixes(assets: List[Asset] = ASSETS) -> Dict[str, Dict[int, float]]:
-    cats = category_indices(assets)
-    mixes: Dict[str, Dict[int, float]] = {}
-    for category, indexes in cats.items():
-        if category == "Cash":
-            mixes[category] = {indexes[0]: 1.0}
-            continue
-        midpoint_weights = np.array([(assets[i].min_weight + assets[i].max_weight) / 2 for i in indexes])
-        if midpoint_weights.sum() <= 0:
-            midpoint_weights = np.repeat(1.0, len(indexes))
-        midpoint_weights = midpoint_weights / midpoint_weights.sum()
-        mixes[category] = {idx: float(weight) for idx, weight in zip(indexes, midpoint_weights)}
-    return mixes
-
-
-def sleeve_mixes_from_weights(weights: np.ndarray, assets: List[Asset] = ASSETS) -> Dict[str, Dict[int, float]]:
-    cats = category_indices(assets)
-    mixes: Dict[str, Dict[int, float]] = {}
-    for category, indexes in cats.items():
-        category_total = float(weights[indexes].sum())
-        if category_total <= 0:
-            mixes[category] = sleeve_mixes(assets)[category]
-        else:
-            mixes[category] = {idx: float(weights[idx] / category_total) for idx in indexes}
-    return mixes
-
-
-def expand_category_weights(
-    category_weights: Dict[str, float],
-    mixes: Dict[str, Dict[int, float]] | None = None,
-    assets: List[Asset] = ASSETS,
-) -> np.ndarray:
-    weights = np.zeros(len(assets))
-    active_mixes = mixes or sleeve_mixes(assets)
-    for category, mix in active_mixes.items():
-        category_total = category_weights.get(category, 0.0)
-        for idx, sleeve_share in mix.items():
-            weights[idx] = category_total * sleeve_share
-    return weights
-
-
 def random_feasible_asset_weights(profile_name: str, rng: np.random.Generator, draws: int) -> Iterable[np.ndarray]:
     cats = category_indices(ASSETS)
     min_w = np.array([a.min_weight for a in ASSETS])
@@ -282,27 +248,24 @@ def optimize_portfolio(
     expected_returns: np.ndarray,
     cov: np.ndarray,
     profile_name: str,
-    mixes: Dict[str, Dict[int, float]],
 ) -> np.ndarray:
     profile = PROFILES[profile_name]
-    bounds = [profile["category_bounds"][category] for category in CATEGORIES]  # type: ignore[index]
+    bounds = [(asset.min_weight, asset.max_weight) for asset in ASSETS]
+    cats = category_indices(ASSETS)
     vol_low, vol_high = profile["target_volatility"]  # type: ignore[index]
     constraints = [{"type": "eq", "fun": lambda w: np.sum(w) - 1.0}]
-
-    def asset_weights_from_category_array(w: np.ndarray) -> np.ndarray:
-        return expand_category_weights(dict(zip(CATEGORIES, w)), mixes)
-
-    constraints.append({"type": "ineq", "fun": lambda w, cov=cov, vol_low=vol_low: np.sqrt(float(asset_weights_from_category_array(w) @ cov @ asset_weights_from_category_array(w))) - vol_low})
-    constraints.append({"type": "ineq", "fun": lambda w, cov=cov, vol_high=vol_high: vol_high - np.sqrt(float(asset_weights_from_category_array(w) @ cov @ asset_weights_from_category_array(w)))})
+    for category, (low, high) in profile["category_bounds"].items():  # type: ignore[index]
+        idx = cats[category]
+        constraints.append({"type": "ineq", "fun": lambda w, idx=idx, low=low: np.sum(w[idx]) - low})
+        constraints.append({"type": "ineq", "fun": lambda w, idx=idx, high=high: high - np.sum(w[idx])})
+    constraints.append({"type": "ineq", "fun": lambda w, cov=cov, vol_low=vol_low: np.sqrt(float(w @ cov @ w)) - vol_low})
+    constraints.append({"type": "ineq", "fun": lambda w, cov=cov, vol_high=vol_high: vol_high - np.sqrt(float(w @ cov @ w))})
 
     def objective(w: np.ndarray) -> float:
-        asset_weights = asset_weights_from_category_array(w)
-        return -float(asset_weights @ expected_returns)
+        return -float(w @ expected_returns)
 
-    starts = []
     rng = np.random.default_rng(20260717 + list(PROFILES).index(profile_name))
-    starts.append(next(random_feasible_category_weights(profile_name, rng, 1), np.repeat(1 / len(CATEGORIES), len(CATEGORIES))))
-    starts.extend(random_feasible_category_weights(profile_name, rng, 8))
+    starts = list(random_feasible_asset_weights(profile_name, rng, 60))
 
     best_result = None
     for x0 in starts:
@@ -313,8 +276,7 @@ def optimize_portfolio(
         no_vol_constraints = constraints[:-2]
 
         def target_gap(w: np.ndarray) -> float:
-            asset_weights = asset_weights_from_category_array(w)
-            vol = float(np.sqrt(asset_weights @ cov @ asset_weights))
+            vol = float(np.sqrt(w @ cov @ w))
             if vol < vol_low:
                 return vol_low - vol
             if vol > vol_high:
@@ -322,8 +284,7 @@ def optimize_portfolio(
             return 0.0
 
         def fallback_objective(w: np.ndarray) -> float:
-            asset_weights = asset_weights_from_category_array(w)
-            return target_gap(w) ** 2 - 0.0001 * float(asset_weights @ expected_returns)
+            return target_gap(w) ** 2 - 0.0001 * float(w @ expected_returns)
 
         for x0 in starts:
             result = minimize(fallback_objective, x0, method="SLSQP", bounds=bounds, constraints=no_vol_constraints, options={"maxiter": 1500, "ftol": 1e-12})
@@ -331,7 +292,7 @@ def optimize_portfolio(
                 best_result = result
     if best_result is None:
         raise RuntimeError(f"Optimization failed for {profile_name}: no feasible allocation met the portfolio constraints")
-    weights = asset_weights_from_category_array(best_result.x)
+    weights = best_result.x
     weights = np.where(weights < 0.00005, 0.0, weights)
     return weights / weights.sum()
 
@@ -391,60 +352,17 @@ def random_feasible_category_weights(profile_name: str, rng: np.random.Generator
                 break
 
 
-def random_feasible_weights(
-    profile_name: str,
-    rng: np.random.Generator,
-    draws: int,
-    mixes: Dict[str, Dict[int, float]],
-) -> Iterable[np.ndarray]:
-    for category_weights in random_feasible_category_weights(profile_name, rng, draws):
-        yield expand_category_weights(dict(zip(CATEGORIES, category_weights)), mixes)
-
-
-def monte_carlo_result(profile_name: str, returns: np.ndarray, cov: np.ndarray, mixes: Dict[str, Dict[int, float]]) -> Dict[str, object]:
-    rng = np.random.default_rng(20260717 + list(PROFILES).index(profile_name))
-    best_score = -1e9
-    best_weights = None
-    best_stats = None
-    fallback_score = -1e9
-    fallback_weights = None
-    fallback_stats = None
-    vol_low, vol_high = PROFILES[profile_name]["target_volatility"]  # type: ignore[index]
-    for weights in random_feasible_weights(profile_name, rng, 1500, mixes):
-        ret, vol, sharpe = portfolio_stats(weights, returns, cov)
-        if not (vol_low <= vol <= vol_high):
-            gap = min(abs(vol - vol_low), abs(vol - vol_high))
-            score = -gap + 0.001 * ret
-            if score > fallback_score:
-                fallback_score = score
-                fallback_weights = weights
-                fallback_stats = (ret, vol, sharpe)
+def apply_percentile_target_volatility(returns: np.ndarray, cov: np.ndarray) -> None:
+    for profile_name in PROFILES:
+        rng = np.random.default_rng(8901 + list(PROFILES).index(profile_name))
+        vols = []
+        for weights in random_feasible_asset_weights(profile_name, rng, 2500):
+            vols.append(float(np.sqrt(weights @ cov @ weights)))
+        if not vols:
             continue
-        score = ret
-        if score > best_score:
-            best_score = score
-            best_weights = weights
-            best_stats = (ret, vol, sharpe)
-    if best_weights is None or best_stats is None:
-        if fallback_weights is None or fallback_stats is None:
-            raise RuntimeError(f"Could not generate feasible Monte Carlo weights for {profile_name}")
-        best_weights = fallback_weights
-        best_stats = fallback_stats
-
-    annual = rng.multivariate_normal(returns, cov, size=(1500, 10))
-    path_returns = annual @ best_weights
-    terminal = np.prod(1.0 + path_returns, axis=1)
-    return {
-        "weights": best_weights,
-        "return": best_stats[0],
-        "vol": best_stats[1],
-        "sharpe": best_stats[2],
-        "terminal_mean": float(np.mean(terminal)),
-        "terminal_p5": float(np.percentile(terminal, 5)),
-        "terminal_p50": float(np.percentile(terminal, 50)),
-        "terminal_p95": float(np.percentile(terminal, 95)),
-        "prob_loss": float(np.mean(terminal < 1.0)),
-    }
+        midpoint = float(np.percentile(vols, VOLATILITY_PERCENTILES[profile_name]))
+        half_width = TARGET_VOLATILITY_RULES[profile_name][1]
+        PROFILES[profile_name]["target_volatility"] = (max(0.0, midpoint - half_width), max(0.0, midpoint + half_width))
 
 
 def pct(x: float) -> float:
@@ -455,18 +373,11 @@ def calculate_results() -> Dict[str, object]:
     jpm_data = load_jpm_source_data()
     returns = np.array([asset_return(a, jpm_data) for a in ASSETS])
     cov = covariance_matrix(ASSETS, jpm_data)
-    anchor_mixes = sleeve_mixes()
+    apply_percentile_target_volatility(returns, cov)
     mvo = {}
     for profile in PROFILES:
-        weights = optimize_portfolio(returns, cov, profile, anchor_mixes)
+        weights = optimize_portfolio(returns, cov, profile)
         mvo[profile] = {"weights": weights, "stats": portfolio_stats(weights, returns, cov)}
-
-    mc = {profile: monte_carlo_result(profile, returns, cov, anchor_mixes) for profile in PROFILES}
-    average = {}
-    for profile in PROFILES:
-        weights = (mvo[profile]["weights"] + mc[profile]["weights"]) / 2
-        weights = weights / weights.sum()
-        average[profile] = {"weights": weights, "stats": portfolio_stats(weights, returns, cov)}
 
     scenarios = {}
     for scenario in ["Bad", "Median", "Good"]:
@@ -479,18 +390,15 @@ def calculate_results() -> Dict[str, object]:
             s_returns = returns
         scenarios[scenario] = {}
         for profile in PROFILES:
-            weights = optimize_portfolio(s_returns, cov, profile, anchor_mixes)
+            weights = optimize_portfolio(s_returns, cov, profile)
             scenarios[scenario][profile] = {"weights": weights, "stats": portfolio_stats(weights, s_returns, cov)}
 
     return {
-        "average": average,
         "mvo": mvo,
-        "mc": mc,
         "scenarios": scenarios,
         "returns": returns,
         "cov": cov,
         "jpm_data": jpm_data,
-        "anchor_mixes": anchor_mixes,
     }
 
 
@@ -566,7 +474,6 @@ def build_workbook(results: Dict[str, object]) -> None:
     ws = wb.active
     ws.title = "Summary"
 
-    title_fill = PatternFill("solid", fgColor="17324D")
     input_font = Font(color="0000FF")
     formula_font = Font(color="000000")
     link_font = Font(color="008000")
@@ -576,7 +483,7 @@ def build_workbook(results: Dict[str, object]) -> None:
     ws["A3"] = "Purpose"
     ws["B3"] = "Optimize five risk-level portfolios using compound return, volatility, and correlation assumptions with visible constraints."
     ws["A4"] = "Methods"
-    ws["B4"] = "Main allocation is the 50/50 average of target-volatility optimization and Monte Carlo target-volatility search."
+    ws["B4"] = "Main allocation is the target-volatility MVO result. Monte Carlo simulation is currently removed from all calculations."
     ws["A5"] = "Important"
     ws["B5"] = "This is a planning model, not investment advice. Correlations and constraints are starter assumptions that should be reviewed."
     ws["A7"] = "Model Status"
@@ -584,7 +491,7 @@ def build_workbook(results: Dict[str, object]) -> None:
     ws["B7"].font = formula_font
 
     row = 9
-    row = write_weights_table(ws, row, "Main Recommended Allocation: Average of MVO and Monte Carlo", results["average"])  # type: ignore[arg-type]
+    row = write_weights_table(ws, row, "Main Recommended Allocation: MVO", results["mvo"])  # type: ignore[arg-type]
 
     chart = BarChart()
     chart.type = "bar"
@@ -601,7 +508,6 @@ def build_workbook(results: Dict[str, object]) -> None:
     ws.add_chart(chart, "J9")
 
     row = write_weights_table(ws, row, "Target Volatility Optimized Overall Allocation", results["mvo"])  # type: ignore[arg-type]
-    row = write_weights_table(ws, row, "Monte Carlo Target Volatility Overall Allocation", results["mc"])  # type: ignore[arg-type]
 
     ws2 = wb.create_sheet("Asset Inputs")
     headers = [
@@ -632,15 +538,6 @@ def build_workbook(results: Dict[str, object]) -> None:
             cell.number_format = "0.0%"
             cell.font = input_font
 
-    ws_avg = wb.create_sheet("Average Detail")
-    ws_avg.append(["Asset", "Category"] + list(PROFILES))
-    for i, asset in enumerate(ASSETS):
-        ws_avg.append([asset.name, asset.category] + [pct(results["average"][p]["weights"][i]) for p in PROFILES])  # type: ignore[index]
-    ws_avg.append(["Total", "Check"] + [f"=SUM({get_column_letter(c)}2:{get_column_letter(c)}{len(ASSETS) + 1})" for c in range(3, 3 + len(PROFILES))])
-    for r in range(2, ws_avg.max_row + 1):
-        for c in range(3, ws_avg.max_column + 1):
-            ws_avg.cell(r, c).number_format = "0.0%"
-
     ws3 = wb.create_sheet("MVO Detail")
     ws3.append(["Asset", "Category"] + list(PROFILES))
     for i, asset in enumerate(ASSETS):
@@ -649,35 +546,6 @@ def build_workbook(results: Dict[str, object]) -> None:
     for r in range(2, ws3.max_row + 1):
         for c in range(3, ws3.max_column + 1):
             ws3.cell(r, c).number_format = "0.0%"
-
-    ws4 = wb.create_sheet("Monte Carlo")
-    ws4.append(["Portfolio", "Expected Return", "Volatility", "Sharpe", "$1 10Y Mean", "$1 10Y P5", "$1 10Y Median", "$1 10Y P95", "Probability of Loss"])
-    for profile, data in results["mc"].items():  # type: ignore[union-attr]
-        ws4.append([
-            profile,
-            pct(data["return"]),
-            pct(data["vol"]),
-            pct(data["sharpe"]),
-            round(data["terminal_mean"], 4),
-            round(data["terminal_p5"], 4),
-            round(data["terminal_p50"], 4),
-            round(data["terminal_p95"], 4),
-            pct(data["prob_loss"]),
-        ])
-    start = ws4.max_row + 3
-    ws4.cell(start, 1, "Monte Carlo Portfolio Weights")
-    ws4.cell(start, 1).fill = title_fill
-    ws4.cell(start, 1).font = Font(color="FFFFFF", bold=True)
-    ws4.append(["Asset", "Category"] + list(PROFILES))
-    for i, asset in enumerate(ASSETS):
-        ws4.append([asset.name, asset.category] + [pct(results["mc"][p]["weights"][i]) for p in PROFILES])  # type: ignore[index]
-    for r in range(2, ws4.max_row + 1):
-        for c in range(2, ws4.max_column + 1):
-            if isinstance(ws4.cell(r, c).value, (int, float)):
-                ws4.cell(r, c).number_format = "0.0%"
-    for r in range(2, 7):
-        for c in range(5, 9):
-            ws4.cell(r, c).number_format = "0.00x"
 
     ws5 = wb.create_sheet("Scenario Detail")
     scenario_row = 1
@@ -718,11 +586,9 @@ def build_workbook(results: Dict[str, object]) -> None:
             target_low, target_high = config["target_volatility"]  # type: ignore[index]
             ws6.append([profile, cat, low, high, target_low, target_high, "Editable policy band used by optimizer script"])
     ws6.append([])
-    ws6.append(["Asset", "Sleeve Range Min", "Sleeve Range Max", "Pro Rata Mix", "Notes"])
-    mixes = results["anchor_mixes"]  # type: ignore[assignment]
+    ws6.append(["Asset", "Sleeve Range Min", "Sleeve Range Max", "Notes"])
     for asset in ASSETS:
-        asset_idx = ASSETS.index(asset)
-        ws6.append([asset.name, asset.min_weight, asset.max_weight, mixes[asset.category][asset_idx], "Derived from sleeve range midpoints"])
+        ws6.append([asset.name, asset.min_weight, asset.max_weight, "Direct asset-level bounds used by optimizer"])
     for r in range(2, ws6.max_row + 1):
         for c in [2, 3, 4, 5, 6]:
             ws6.cell(r, c).number_format = "0.0%"
@@ -769,6 +635,7 @@ def build_workbook(results: Dict[str, object]) -> None:
         ("PDF attachments", "Scan_260717_102740.pdf and Scan_260717_102947.pdf are present but no longer used in the optimizer.", "Keep or remove from source archive."),
         ("Return source", "Compound return only.", "Confirm this remains the preferred expected return basis."),
         ("Risk model", "Uses annualized volatility and correlation matrix from matrix-usd.xlsx.", "Review asset mappings for grouped fixed income sleeves."),
+        ("Monte Carlo", "Removed from all calculations for now.", "Redesign simulation methodology before adding it back."),
         ("Five portfolios", "Category bands and target volatility ranges are explicit on Constraints tab; cash is hard-coded with both minimum and maximum at 1% in every model.", "Approve or revise the equity/fixed income/alternatives policy bands and target volatility bands."),
         ("Tax/location", "Not modeled.", "Decide taxable vs qualified account treatment, muni bond role, and tax-aware placement."),
         ("Liquidity/implementation", "No ETF/mutual fund tickers selected yet.", "Map each style sleeve to actual funds and expense ratios."),
@@ -784,7 +651,7 @@ def build_workbook(results: Dict[str, object]) -> None:
                 cell.font = Font(color="FFFFFF", bold=True)
         style_sheet(sheet, "A2" if sheet.max_row > 8 else None)
 
-    for sheet in ["Summary", "Asset Inputs", "MVO Detail", "Monte Carlo", "Scenario Detail", "Constraints"]:
+    for sheet in ["Summary", "Asset Inputs", "MVO Detail", "Scenario Detail", "Constraints"]:
         wsx = wb[sheet]
         for row_cells in wsx.iter_rows():
             for cell in row_cells:
