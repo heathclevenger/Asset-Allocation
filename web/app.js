@@ -276,28 +276,6 @@ function convexHull(points) {
   return lower.slice(0, -1).concat(upper.slice(0, -1));
 }
 
-function feasibleEnvelope(points, bucketCount = 34) {
-  if (points.length <= 2) return points;
-  const minX = Math.min(...points.map((point) => point.x));
-  const maxX = Math.max(...points.map((point) => point.x));
-  if (Math.abs(maxX - minX) < 1e-8) return convexHull(points);
-  const buckets = Array.from({ length: bucketCount }, () => []);
-  points.forEach((point) => {
-    const index = Math.min(bucketCount - 1, Math.max(0, Math.floor(((point.x - minX) / (maxX - minX)) * bucketCount)));
-    buckets[index].push(point);
-  });
-  const lower = [];
-  const upper = [];
-  buckets.forEach((bucket) => {
-    if (!bucket.length) return;
-    const sorted = [...bucket].sort((a, b) => a.y - b.y);
-    lower.push(sorted[0]);
-    upper.push(sorted.at(-1));
-  });
-  const polygon = lower.concat([...upper].reverse());
-  return polygon.length >= 3 ? polygon : convexHull(points);
-}
-
 function categoryWeightsFromWeights(weights) {
   const categoryWeights = {};
   state.categories.forEach((category) => {
@@ -306,21 +284,6 @@ function categoryWeightsFromWeights(weights) {
     ), 0);
   });
   return categoryWeights;
-}
-
-function weightsSatisfyProfile(weights, profile) {
-  const total = weights.reduce((sum, weight) => sum + weight, 0);
-  if (Math.abs(total - 1) > 0.0001) return false;
-  for (let i = 0; i < weights.length; i += 1) {
-    const asset = state.assets[i];
-    if (weights[i] < asset.minWeight - 0.0001 || weights[i] > asset.maxWeight + 0.0001) return false;
-  }
-  const categoryWeights = categoryWeightsFromWeights(weights);
-  return state.categories.every((category) => {
-    const bounds = profile.categoryBounds[category];
-    const actual = categoryWeights[category] || 0;
-    return actual >= bounds.min - 0.0001 && actual <= bounds.max + 0.0001;
-  });
 }
 
 function globalFeasibleRegion(selected) {
@@ -338,24 +301,7 @@ function globalFeasibleRegion(selected) {
 
   Object.entries(state.profiles).forEach(([profileName, profile]) => {
     const rand = seededRandom(4409 + profileName.length * 733);
-    state.assets.forEach((_, index) => {
-      const weights = Array(state.assets.length).fill(0);
-      weights[index] = 1;
-      if (weightsSatisfyProfile(weights, profile)) addPoint(weights);
-    });
-    for (let i = 0; i < state.assets.length; i += 1) {
-      for (let j = i + 1; j < state.assets.length; j += 1) {
-        [0.25, 0.5, 0.75].forEach((share) => {
-          const weights = Array(state.assets.length).fill(0);
-          weights[i] = share;
-          weights[j] = 1 - share;
-          if (weightsSatisfyProfile(weights, profile)) addPoint(weights);
-        });
-      }
-    }
-    const equal = Array(state.assets.length).fill(1 / state.assets.length);
-    if (weightsSatisfyProfile(equal, profile)) addPoint(equal);
-    for (let i = 0; i < 1800; i += 1) {
+    for (let i = 0; i < 850; i += 1) {
       try {
         addPoint(randomAssetWeights(profile, rand));
       } catch (_error) {
@@ -367,7 +313,7 @@ function globalFeasibleRegion(selected) {
   points.push({ x: selected.stats.volatility, y: selected.stats.expectedReturn, stats: selected.stats, weights: selected.weights });
   return {
     points,
-    hull: feasibleEnvelope(points),
+    hull: convexHull(points),
     mode: "global allowable weighting region",
   };
 }
@@ -786,7 +732,7 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
       </div>
     </div>
   </div>
-  <p class="frontier-note">The black curve is the no-shorting efficient frontier from the live Asset Assumptions. The light-blue area is the estimated global allowable weight region after Model Constraints are applied. The green vertical band is the selected portfolio's target-volatility range, and the green dot is the selected constrained MVO portfolio.</p>`;
+  `;
 }
 
 function renderAll() {
