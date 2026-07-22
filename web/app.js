@@ -190,6 +190,31 @@ function optimizeProjected(start, gradientFn, iterations = 120, step = 0.08) {
   return weights;
 }
 
+function upperFrontierEnvelope(portfolios, bucketCount = 44) {
+  const rows = portfolios
+    .filter((portfolio) => Number.isFinite(portfolio.stats.volatility) && Number.isFinite(portfolio.stats.expectedReturn))
+    .sort((a, b) => a.stats.volatility - b.stats.volatility);
+  if (rows.length <= 2) return rows;
+
+  const minVol = rows[0].stats.volatility;
+  const maxVol = rows.at(-1).stats.volatility;
+  const buckets = Array.from({ length: bucketCount }, () => null);
+  rows.forEach((portfolio) => {
+    const index = Math.min(bucketCount - 1, Math.max(0, Math.floor(((portfolio.stats.volatility - minVol) / Math.max(maxVol - minVol, 1e-8)) * bucketCount)));
+    const current = buckets[index];
+    if (!current || portfolio.stats.expectedReturn > current.stats.expectedReturn) buckets[index] = portfolio;
+  });
+
+  const bestByBucket = buckets.filter(Boolean).sort((a, b) => a.stats.volatility - b.stats.volatility);
+  const frontier = [];
+  bestByBucket.forEach((portfolio) => {
+    if (!frontier.length || portfolio.stats.expectedReturn >= frontier.at(-1).stats.expectedReturn - 0.00005) {
+      frontier.push(portfolio);
+    }
+  });
+  return frontier.length >= 2 ? frontier : rows;
+}
+
 function calculateEfficientFrontier() {
   const assets = state.assets;
   const returns = assets.map((asset) => asset.return);
@@ -231,14 +256,23 @@ function calculateEfficientFrontier() {
   let best = candidates.reduce((winner, candidate) => (candidate.stats.sharpe > winner.stats.sharpe ? candidate : winner), candidates[0]);
 
   const frontier = [];
-  for (let i = 0; i < 56; i += 1) {
-    const riskPenalty = Math.pow(10, -3 + (i / 55) * 5.2);
+  for (let i = 0; i < 96; i += 1) {
+    const riskPenalty = Math.pow(10, -3.6 + (i / 95) * 6.2);
     const gradientFn = (weights) => {
       const covW = matVec(cov, weights);
       return returns.map((value, index) => value - 2 * riskPenalty * covW[index]);
     };
-    const start = starts[i % starts.length];
-    const weights = optimizeProjected(start, gradientFn, 120, 0.18);
+    [starts[i % starts.length], equal, best.weights].forEach((start, startIndex) => {
+      const weights = optimizeProjected(start, gradientFn, 110, startIndex === 0 ? 0.18 : 0.12);
+      frontier.push({ weights, stats: portfolioStats(weights, assets, state.correlation) });
+    });
+  }
+
+  const rand = seededRandom(11887);
+  for (let i = 0; i < 2200; i += 1) {
+    const raw = Array.from({ length: count }, () => Math.pow(rand(), 2.6));
+    const rawTotal = raw.reduce((sum, value) => sum + value, 0) || 1;
+    const weights = raw.map((value) => value / rawTotal);
     frontier.push({ weights, stats: portfolioStats(weights, assets, state.correlation) });
   }
 
@@ -248,13 +282,7 @@ function calculateEfficientFrontier() {
     return { asset, weights, stats: portfolioStats(weights, assets, state.correlation) };
   });
 
-  const frontierCandidates = [...frontier, ...assetPoints, best]
-    .sort((a, b) => a.stats.volatility - b.stats.volatility)
-    .filter((portfolio, index, rows) => index === 0 || portfolio.stats.expectedReturn >= Math.max(...rows.slice(0, index).map((row) => row.stats.expectedReturn)) - 1e-6);
-
-  const cleanFrontier = frontierCandidates.filter((portfolio, index, rows) => (
-    index === 0 || Math.abs(portfolio.stats.volatility - rows[index - 1].stats.volatility) > 0.00035
-  ));
+  const cleanFrontier = upperFrontierEnvelope([...frontier, ...assetPoints, best], 48);
 
   return { best, frontier: cleanFrontier, assetPoints };
 }
