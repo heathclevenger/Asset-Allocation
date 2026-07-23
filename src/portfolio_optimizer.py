@@ -64,12 +64,12 @@ ASSETS: List[Asset] = [
     Asset("Emerging Markets Equity", "Equity", ("Emerging Markets Equity",), 0.00, 0.03, "Emerging Markets Equity"),
     Asset("U.S. REITs", "Alternatives", ("U.S. REITs",), 0.00, 0.00, "U.S. REITs"),
     Asset("Commodities", "Alternatives", ("Commodities",), 0.00, 0.00, "Commodities"),
-    Asset("Income U.S. - U.S. Treasury", "Fixed Income", ("U.S. Intermediate Treasuries", "U.S. Long Treasuries", "TIPS"), 0.00, 0.45, "Equal-weight U.S. Intermediate Treasuries, U.S. Long Treasuries, and TIPS"),
-    Asset("Income U.S. Government Related", "Fixed Income", ("U.S. Aggregate Bonds", "U.S. Muni 1-15 Yr Blend"), 0.00, 0.35, "Equal-weight U.S. Aggregate Bonds and U.S. Muni 1-15 Yr Blend"),
-    Asset("Income U.S. Corporate", "Fixed Income", ("U.S. Inv Grade Corporate Bonds", "U.S. High Yield Bonds"), 0.00, 0.40, "Equal-weight U.S. Investment Grade Corporate Bonds and U.S. High Yield Bonds"),
-    Asset("Income U.S. Securitized", "Fixed Income", ("U.S. Securitized",), 0.00, 0.03, "U.S. Securitized"),
-    Asset("Fixed Income International", "Fixed Income", ("World ex-U.S. Government Bonds hedged", "Emerging Markets Sovereign Debt", "Emerging Markets Corporate Bonds"), 0.00, 0.10, "Equal-weight World ex-U.S. Government Bonds hedged, Emerging Markets Sovereign Debt, and Emerging Markets Corporate Bonds"),
-    Asset("Other Fixed Income", "Fixed Income", ("U.S. Leveraged Loans", "Emerging Markets Local Currency Debt", "U.S. Muni High Yield"), 0.00, 0.01, "Equal-weight U.S. Leveraged Loans, Emerging Markets Local Currency Debt, and U.S. Muni High Yield"),
+    Asset("US Short Treasuries", "Fixed Income", ("U.S. Short Duration Government/Credit",), 0.00, 0.40, "Proxy: U.S. Short Duration Government/Credit"),
+    Asset("US Intermediate Treasuries", "Fixed Income", ("U.S. Intermediate Treasuries",), 0.00, 0.80, "U.S. Intermediate Treasuries"),
+    Asset("US Long Treasuries", "Fixed Income", ("U.S. Long Treasuries",), 0.00, 0.00, "U.S. Long Treasuries"),
+    Asset("Investment Grade Corporate", "Fixed Income", ("U.S. Inv Grade Corporate Bonds",), 0.00, 0.15, "U.S. Inv Grade Corporate Bonds"),
+    Asset("High Yield", "Fixed Income", ("U.S. High Yield Bonds",), 0.00, 0.05, "U.S. High Yield Bonds"),
+    Asset("International Fixed Income (H)", "Fixed Income", ("World Government Bonds hedged",), 0.00, 0.00, "World Government Bonds hedged"),
     Asset("Cash", "Cash", ("U.S. Cash",), CASH_TARGET, CASH_TARGET, "U.S. Cash"),
 ]
 

@@ -41,12 +41,12 @@ const assetColor = (asset, index) => ({
   "U.S. Quality": "#2f6f4e",
   "U.S. REITs": "#bc6c25",
   "Commodities": "#7f4f24",
-  "Income U.S. - U.S. Treasury": "#1d3557",
-  "Income U.S. Government Related": "#457b9d",
-  "Income U.S. Corporate": "#2d6a4f",
-  "Income U.S. Securitized": "#e76f51",
-  "Fixed Income International": "#3a86ff",
-  "Other Fixed Income": "#7209b7",
+  "US Short Treasuries": "#1d3557",
+  "US Intermediate Treasuries": "#457b9d",
+  "US Long Treasuries": "#3a86ff",
+  "Investment Grade Corporate": "#2d6a4f",
+  "High Yield": "#e76f51",
+  "International Fixed Income (H)": "#7209b7",
   "Cash": "#6c757d",
 }[asset.name] || [
   "#005f73",
@@ -803,6 +803,7 @@ function renderMvo() {
     document.querySelector("#mvoMetrics").innerHTML = `<div class="metric"><div class="label">Status</div><div class="value warn">Error</div><div class="status warn">${frontierResult.error}</div></div>`;
     document.querySelector("#frontierChart").innerHTML = `<p class="frontier-note">The MVO chart could not run. Check that Asset Assumptions have valid return and volatility numbers.</p>`;
     document.querySelector("#mvoWeightCharts").innerHTML = "";
+    document.querySelector("#mvoConstraints").innerHTML = "";
     return;
   }
   const selected = results[selectedMvoProfile];
@@ -923,12 +924,12 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
   const chartLabel = (name) => ({
     "International Developed Equity": "Intl Developed",
     "Emerging Markets Equity": "EM Equity",
-    "Income U.S. - U.S. Treasury": "U.S. Treasury",
-    "Income U.S. Government Related": "Govt Related",
-    "Income U.S. Corporate": "U.S. Corporate",
-    "Income U.S. Securitized": "Securitized",
-    "Fixed Income International": "Intl Fixed Income",
-    "Other Fixed Income": "Other FI",
+    "US Short Treasuries": "Short Treasuries",
+    "US Intermediate Treasuries": "Interm Treasuries",
+    "US Long Treasuries": "Long Treasuries",
+    "Investment Grade Corporate": "IG Corporate",
+    "High Yield": "High Yield",
+    "International Fixed Income (H)": "Intl Fixed Income (H)",
   }[name] || name);
   const trianglePoints = (x, y, size = 6) => `${x.toFixed(1)},${(y - size).toFixed(1)} ${(x - size).toFixed(1)},${(y + size).toFixed(1)} ${(x + size).toFixed(1)},${(y + size).toFixed(1)}`;
 
@@ -956,7 +957,18 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
     ${assetPoints.map((p, index) => {
       const x = xScale(p.stats.volatility);
       const y = yScale(p.stats.expectedReturn);
-      return `<polygon points="${trianglePoints(x, y, 6)}" fill="${assetColor(p.asset, index)}" stroke="#101820" stroke-width="1.1"></polygon>`;
+      const tooltipW = 190;
+      const tooltipH = 48;
+      const tooltipX = x + tooltipW + 16 > width - pad.right ? x - tooltipW - 14 : x + 12;
+      const tooltipY = Math.max(pad.top + 8, Math.min(y - 34, height - pad.bottom - tooltipH - 8));
+      return `<g class="asset-point" tabindex="0" role="button" aria-label="${p.asset.name}: return ${pct(p.stats.expectedReturn)}, volatility ${pct(p.stats.volatility)}">
+        <polygon points="${trianglePoints(x, y, 6)}" fill="${assetColor(p.asset, index)}" stroke="#101820" stroke-width="1.1"></polygon>
+        <g class="asset-tooltip" transform="translate(${tooltipX.toFixed(1)}, ${tooltipY.toFixed(1)})">
+          <rect x="0" y="0" width="${tooltipW}" height="${tooltipH}" rx="3"></rect>
+          <text x="10" y="18">${p.asset.name}</text>
+          <text x="10" y="36">Return ${pct(p.stats.expectedReturn)} | Vol ${pct(p.stats.volatility)}</text>
+        </g>
+      </g>`;
     }).join("")}
     <path d="${frontierPath}" fill="none" stroke="#101820" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
     <circle cx="${selectedX.toFixed(1)}" cy="${selectedY.toFixed(1)}" r="8" fill="#00a95a" stroke="#101820" stroke-width="2"></circle>
@@ -973,7 +985,11 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
     <strong>Global Allowable Weight Region</strong>
     <span>Uses live Asset Assumptions plus all Model Constraints to estimate the full risk/return area possible from the allowable weighting ranges. It will usually sit inside the no-shorting frontier because it adds allocation and sub-allocation constraints.</span>
   </div>
-  <div class="chart-constraints">
+  `;
+
+  const constraintsBox = document.querySelector("#mvoConstraints");
+  if (constraintsBox) {
+    constraintsBox.innerHTML = `<div class="chart-constraints">
     <div class="constraint-grid">
       <div>
         <div class="constraint-title">Allocation Constraints</div>
@@ -990,8 +1006,8 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
         </table>
       </div>
     </div>
-  </div>
-  `;
+  </div>`;
+  }
 }
 
 function renderAll() {
@@ -1063,6 +1079,7 @@ function refreshMvo() {
   document.querySelector("#mvoMetrics").innerHTML = `<div class="metric"><div class="label">Status</div><div class="value">Calculating</div></div>`;
   document.querySelector("#frontierChart").innerHTML = `<p class="frontier-note">Calculating efficient frontier...</p>`;
   document.querySelector("#mvoWeightCharts").innerHTML = `<p class="frontier-note">Calculating weights...</p>`;
+  document.querySelector("#mvoConstraints").innerHTML = "";
   setTimeout(() => {
     try {
       frontierResult = calculateEfficientFrontier();
@@ -1171,7 +1188,7 @@ document.addEventListener("click", (event) => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260723-allocation-context-split", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260723-weights-before-constraints", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });

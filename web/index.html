@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Paul Asset Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260723-allocation-context-split" />
+    <link rel="stylesheet" href="./styles.css?v=20260723-asset-point-tooltips" />
   </head>
   <body>
     <div class="shell">
@@ -24,15 +24,15 @@
 
       <div class="nav-row">
         <nav class="tabs" aria-label="Model pages">
-          <button class="tab active" data-tab="results">Overview</button>
+          <button class="tab active" data-tab="mvo">Portfolio Optimization</button>
           <button class="tab" data-tab="assets">Asset Assumptions</button>
           <button class="tab" data-tab="profiles">Model Constraints</button>
-          <button class="tab" data-tab="mvo">Portfolio Optimization</button>
+          <button class="tab" data-tab="results">Overview</button>
         </nav>
       </div>
 
       <main>
-        <section id="results" class="page active">
+        <section id="results" class="page">
           <div class="toolbar">
             <div>
               <h2>Overview</h2>
@@ -121,7 +121,7 @@
           </div>
         </section>
 
-        <section id="mvo" class="page">
+        <section id="mvo" class="page active">
           <div class="toolbar">
             <div>
               <h2>Portfolio Optimization</h2>
@@ -146,6 +146,7 @@
                 <p class="frontier-note">Calculating weights...</p>
               </div>
             </div>
+            <div id="mvoConstraints"></div>
           </div>
         </section>
 
@@ -156,6 +157,6 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260723-allocation-context-split"></script>
+    <script src="./app.js?v=20260723-weights-before-constraints"></script>
   </body>
 </html>

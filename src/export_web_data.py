@@ -58,35 +58,35 @@ VANGUARD_ASSUMPTIONS = {
         "volatility": 0.167,
         "sourceMapping": "Vanguard Commodities",
     },
-    "Income U.S. - U.S. Treasury": {
-        "return": (0.042 + 0.057 + 0.038) / 3,
-        "volatility": (0.051 + 0.104 + 0.049) / 3,
-        "sourceMapping": "Equal-weight Vanguard U.S. intermediate-term Treasury bonds, U.S. long-term Treasury bonds, and U.S. TIPS",
+    "US Short Treasuries": {
+        "return": 0.040,
+        "volatility": 0.017,
+        "sourceMapping": "Vanguard U.S. short-term Treasury bonds",
     },
-    "Income U.S. Government Related": {
-        "return": (0.048 + 0.040) / 2,
-        "volatility": (0.062 + 0.047) / 2,
-        "sourceMapping": "Equal-weight Vanguard U.S. aggregate bonds and U.S. municipal bonds",
+    "US Intermediate Treasuries": {
+        "return": 0.042,
+        "volatility": 0.051,
+        "sourceMapping": "Vanguard U.S. intermediate-term Treasury bonds",
     },
-    "Income U.S. Corporate": {
-        "return": (0.048 + 0.052) / 2,
-        "volatility": (0.064 + 0.096) / 2,
-        "sourceMapping": "Equal-weight Vanguard U.S. credit and U.S. high-yield corporate bonds",
+    "US Long Treasuries": {
+        "return": 0.057,
+        "volatility": 0.104,
+        "sourceMapping": "Vanguard U.S. long-term Treasury bonds",
     },
-    "Income U.S. Securitized": {
+    "Investment Grade Corporate": {
+        "return": 0.048,
+        "volatility": 0.064,
+        "sourceMapping": "Vanguard U.S. credit",
+    },
+    "High Yield": {
         "return": 0.052,
-        "volatility": 0.039,
-        "sourceMapping": "Vanguard U.S. mortgage-backed securities",
+        "volatility": 0.096,
+        "sourceMapping": "Vanguard U.S. high-yield corporate bonds",
     },
-    "Fixed Income International": {
-        "return": (0.050 + 0.060) / 2,
-        "volatility": (0.050 + 0.111) / 2,
-        "sourceMapping": "Equal-weight Vanguard global ex-U.S. aggregate bonds hedged and emerging markets sovereign bonds hedged",
-    },
-    "Other Fixed Income": {
-        "return": (0.060 + 0.045) / 2,
-        "volatility": (0.111 + 0.081) / 2,
-        "sourceMapping": "Equal-weight Vanguard emerging markets sovereign bonds hedged and U.S. high-yield municipal bonds",
+    "International Fixed Income (H)": {
+        "return": 0.050,
+        "volatility": 0.050,
+        "sourceMapping": "Vanguard global ex-U.S. aggregate bonds hedged",
     },
     "Cash": {
         "return": 0.035,

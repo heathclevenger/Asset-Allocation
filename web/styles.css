@@ -631,6 +631,50 @@ p {
   height: auto;
 }
 
+.asset-point {
+  cursor: pointer;
+  outline: none;
+}
+
+.asset-point polygon {
+  transition: stroke-width 120ms ease, filter 120ms ease;
+}
+
+.asset-point:hover polygon,
+.asset-point:focus polygon {
+  stroke-width: 2;
+  filter: drop-shadow(0 2px 3px rgba(16, 24, 32, 0.22));
+}
+
+.asset-tooltip {
+  display: none;
+  pointer-events: none;
+}
+
+.asset-point:hover .asset-tooltip,
+.asset-point:focus .asset-tooltip {
+  display: block;
+}
+
+.asset-tooltip rect {
+  fill: #ffffff;
+  stroke: #101820;
+  stroke-width: 1;
+  filter: drop-shadow(0 2px 4px rgba(16, 24, 32, 0.2));
+}
+
+.asset-tooltip text {
+  fill: #101820;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.asset-tooltip text + text {
+  fill: #263746;
+  font-size: 10px;
+  font-weight: 700;
+}
+
 .frontier-chart-grid {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
