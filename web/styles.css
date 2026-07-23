@@ -619,6 +619,13 @@ p {
   padding: 10px;
 }
 
+.percentile-shift-field {
+  width: min(260px, 100%);
+  background: #fff;
+  border: 1px solid #c7d1da;
+  padding: 10px;
+}
+
 .unit-input {
   display: grid;
   grid-template-columns: minmax(64px, 1fr) auto;

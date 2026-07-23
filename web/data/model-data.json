@@ -2048,25 +2048,26 @@
   },
   "volatilityModel": {
     "mode": "feasiblePercentile",
+    "halfWidth": 0.005,
     "profiles": {
       "Conservative": {
-        "percentile": 25.0,
+        "percentile": 5.0,
         "halfWidth": 0.005
       },
       "Balanced": {
-        "percentile": 40.0,
+        "percentile": 35.0,
         "halfWidth": 0.005
       },
       "Moderate": {
         "percentile": 55.0,
-        "halfWidth": 0.003
+        "halfWidth": 0.005
       },
       "Growth": {
-        "percentile": 70.0,
+        "percentile": 75.0,
         "halfWidth": 0.005
       },
       "Aggressive Growth": {
-        "percentile": 85.0,
+        "percentile": 95.0,
         "halfWidth": 0.005
       }
     }

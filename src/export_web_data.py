@@ -492,12 +492,13 @@ def main() -> None:
     corr = np.nan_to_num(corr, nan=0.0)
     volatility_model = {
         "mode": "feasiblePercentile",
+        "halfWidth": max(half_width for _offset, half_width in optimizer.TARGET_VOLATILITY_RULES.values()),
         "profiles": {},
     }
     for profile, (offset, half_width) in optimizer.TARGET_VOLATILITY_RULES.items():
         volatility_model["profiles"][profile] = {
             "percentile": optimizer.VOLATILITY_PERCENTILES[profile],
-            "halfWidth": half_width,
+            "halfWidth": volatility_model["halfWidth"],
         }
 
     jpm_assets = [

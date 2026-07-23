@@ -20,11 +20,11 @@ const escapeHtml = (value) => String(value)
   .replace(/>/g, "&gt;")
   .replace(/"/g, "&quot;");
 const defaultVolatilityPercentiles = {
-  "Conservative": 25,
-  "Balanced": 40,
+  "Conservative": 5,
+  "Balanced": 35,
   "Moderate": 55,
-  "Growth": 70,
-  "Aggressive Growth": 85,
+  "Growth": 75,
+  "Aggressive Growth": 95,
 };
 
 const categoryColor = (category) => ({
@@ -75,11 +75,14 @@ const assetColor = (asset, index) => ({
 ][index % 14]);
 
 function buildVolatilityModel(profiles) {
-  const model = { mode: "feasiblePercentile", profiles: {} };
+  const halfWidth = Math.max(...Object.values(profiles).map((profile) => (
+    (profile.targetVolMax - profile.targetVolMin) / 2
+  )));
+  const model = { mode: "feasiblePercentile", halfWidth, profiles: {} };
   Object.entries(profiles).forEach(([name, profile]) => {
     model.profiles[name] = {
       percentile: defaultVolatilityPercentiles[name] ?? 50,
-      halfWidth: (profile.targetVolMax - profile.targetVolMin) / 2,
+      halfWidth,
     };
   });
   return model;
@@ -88,11 +91,17 @@ function buildVolatilityModel(profiles) {
 function ensureVolatilityModel() {
   state.volatilityModel ||= buildVolatilityModel(state.profiles);
   state.volatilityModel.mode = "feasiblePercentile";
+  const existingHalfWidths = Object.values(state.volatilityModel.profiles || {})
+    .map((rule) => rule.halfWidth)
+    .filter((value) => Number.isFinite(value));
+  state.volatilityModel.halfWidth ??= existingHalfWidths.length
+    ? Math.max(...existingHalfWidths)
+    : Math.max(...Object.values(state.profiles).map((profile) => (profile.targetVolMax - profile.targetVolMin) / 2));
   Object.entries(state.profiles).forEach(([name, profile]) => {
     state.volatilityModel.profiles ||= {};
     state.volatilityModel.profiles[name] ||= {};
     state.volatilityModel.profiles[name].percentile ??= defaultVolatilityPercentiles[name] ?? 50;
-    state.volatilityModel.profiles[name].halfWidth ??= (profile.targetVolMax - profile.targetVolMin) / 2;
+    state.volatilityModel.profiles[name].halfWidth = state.volatilityModel.halfWidth;
   });
 }
 
@@ -120,10 +129,47 @@ function percentileValue(values, percentile) {
   return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
 
+function seedFromString(value, base = 0) {
+  let hash = base >>> 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = Math.imul(hash ^ value.charCodeAt(i), 16777619) >>> 0;
+  }
+  return hash || 1;
+}
+
+function constraintSignature(profile) {
+  const categoryPart = state.categories.map((category) => {
+    const bounds = profile.categoryBounds[category] || { min: 0, max: 1 };
+    return `${category}:${bounds.min.toFixed(5)}-${bounds.max.toFixed(5)}`;
+  }).join("|");
+  const assetPart = state.assets.map((asset) => (
+    `${asset.name}:${asset.category}:${asset.minWeight.toFixed(5)}-${asset.maxWeight.toFixed(5)}`
+  )).join("|");
+  return `${categoryPart}::${assetPart}`;
+}
+
+function sharedConstraintProfile(profileName) {
+  const baseProfile = state.profiles[profileName] || Object.values(state.profiles)[0];
+  const categoryBounds = {};
+  state.categories.forEach((category) => {
+    const rows = Object.values(state.profiles)
+      .map((profile) => profile.categoryBounds?.[category])
+      .filter(Boolean);
+    categoryBounds[category] = {
+      min: rows.length ? Math.min(...rows.map((bounds) => bounds.min)) : 0,
+      max: rows.length ? Math.max(...rows.map((bounds) => bounds.max)) : 1,
+    };
+  });
+  return {
+    ...baseProfile,
+    categoryBounds,
+  };
+}
+
 function feasibleVolatilities(profileName) {
-  const profile = state.profiles[profileName];
+  const profile = sharedConstraintProfile(profileName);
   const vols = [];
-  const rand = seededRandom(7051 + profileName.length * 509);
+  const rand = seededRandom(seedFromString(constraintSignature(profile), 7051));
   for (let i = 0; i < 2200; i += 1) {
     const weights = randomAssetWeights(profile, rand);
     if (!weights) continue;
@@ -526,16 +572,17 @@ function globalFeasibleRegion(selected, frontier = []) {
     points.push(point);
   };
 
-  Object.entries(state.profiles).forEach(([profileName, profile]) => {
-    const rand = seededRandom(4409 + profileName.length * 733);
-    for (let i = 0; i < 850; i += 1) {
+  const profile = sharedConstraintProfile(selected.profileName || selectedMvoProfile);
+  if (profile) {
+    const rand = seededRandom(seedFromString(constraintSignature(profile), 4409));
+    for (let i = 0; i < 12500; i += 1) {
       try {
         addPoint(randomAssetWeights(profile, rand));
       } catch (_error) {
         break;
       }
     }
-  });
+  }
 
   points.push({ x: selected.stats.volatility, y: selected.stats.expectedReturn, stats: selected.stats, weights: selected.weights });
   return {
@@ -596,8 +643,8 @@ function randomCategoryWeights(profile, categories, rand) {
 }
 
 function optimizeProfile(profileName, seedOffset = 17, draws = 900) {
-  const profile = state.profiles[profileName];
-  const rand = seededRandom(profileName.length * 1009 + seedOffset);
+  const profile = sharedConstraintProfile(profileName);
+  const rand = seededRandom(seedFromString(constraintSignature(profile), seedOffset));
   let best = null;
   let fallback = null;
   const categories = state.categories;
@@ -704,7 +751,14 @@ function renderProfiles() {
       </div>
     </div>`).join("")}
   </div>
-  <p>These percentiles set each portfolio's target volatility range from the portfolios that are feasible under the current allocation and sub-allocation constraints. Lower percentiles create lower-risk targets; higher percentiles create higher-risk targets. Starting defaults are 25%, 40%, 55%, 70%, and 85%.</p>`;
+  <div class="percentile-shift-field">
+    <label for="percentileShiftInput">Shift All Percentiles</label>
+    <div class="unit-input">
+      <input id="percentileShiftInput" type="number" step="1" placeholder="0" />
+      <span>%</span>
+    </div>
+  </div>
+  <p>These percentiles set each portfolio's target volatility range from the portfolios that are feasible under the current allocation and sub-allocation constraints. Lower percentiles create lower-risk targets; higher percentiles create higher-risk targets. Starting defaults are 5%, 35%, 55%, 75%, and 95%.</p>`;
 
   const allocationPreset = document.querySelector("#allocationPresetSelect");
   if (allocationPreset) allocationPreset.value = selectedAllocationPreset;
@@ -1031,7 +1085,7 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
     },
   }));
   const all = [...frontier, ...assetPoints, ...benchmarkPoints, selected, ...region.points.map((point) => ({ stats: point.stats })), ...region.hull.map((point) => ({ stats: point.stats }))];
-  const regionDotStep = Math.max(1, Math.ceil(region.points.length / 260));
+  const regionDotStep = Math.max(1, Math.ceil(region.points.length / 950));
   const visibleRegionPoints = region.points.filter((_, index) => index % regionDotStep === 0);
   const minVol = Math.min(...all.map((p) => p.stats.volatility));
   const maxVol = Math.max(...all.map((p) => p.stats.volatility));
@@ -1088,8 +1142,9 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
         <line x1="${xScale(region.hull[0].x).toFixed(1)}" y1="${yScale(region.hull[0].y).toFixed(1)}" x2="${xScale(region.hull[1].x).toFixed(1)}" y2="${yScale(region.hull[1].y).toFixed(1)}" stroke="#2f80b7" stroke-width="2.2" stroke-linecap="round"></line>`
       : "";
   const constraintStatus = (actual, min, max) => (actual >= min - 0.0001 && actual <= max + 0.0001 ? "In range" : "Out of range");
+  const constraintProfile = sharedConstraintProfile(selected.profileName || selectedMvoProfile);
   const categoryRows = state.categories.map((category) => {
-    const bounds = profile.categoryBounds[category];
+    const bounds = constraintProfile.categoryBounds[category];
     const actual = selected.categoryWeights?.[category] || 0;
     return `<tr>
       <td>${category}</td>
@@ -1147,7 +1202,7 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
     <line x1="${bandX.toFixed(1)}" y1="${pad.top}" x2="${bandX.toFixed(1)}" y2="${height - pad.bottom}" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="5 5"></line>
     <line x1="${(bandX + bandWidth).toFixed(1)}" y1="${pad.top}" x2="${(bandX + bandWidth).toFixed(1)}" y2="${height - pad.bottom}" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="5 5"></line>
     ${regionShape}
-    ${visibleRegionPoints.map((point) => `<circle cx="${xScale(point.x).toFixed(1)}" cy="${yScale(point.y).toFixed(1)}" r="1.8" fill="#2f80b7" opacity="0.22"></circle>`).join("")}
+    ${visibleRegionPoints.map((point) => `<circle cx="${xScale(point.x).toFixed(1)}" cy="${yScale(point.y).toFixed(1)}" r="1.45" fill="#2f80b7" opacity="0.18"></circle>`).join("")}
     ${assetPoints.map((p, index) => {
       const x = xScale(p.stats.volatility);
       const y = yScale(p.stats.expectedReturn);
@@ -1346,6 +1401,20 @@ function commitInputUpdate(input) {
   runOptimization();
 }
 
+function applyPercentileShift(input) {
+  const shift = Number.parseFloat(input.value);
+  if (!Number.isFinite(shift) || Math.abs(shift) < 1e-9) {
+    input.value = "";
+    return;
+  }
+  ensureVolatilityModel();
+  Object.values(state.volatilityModel.profiles).forEach((rule) => {
+    rule.percentile = Math.max(0, Math.min(100, (rule.percentile || 0) + shift));
+  });
+  input.value = "";
+  runOptimization();
+}
+
 function showHoverTooltip(target, event = null) {
   const title = target.dataset.tooltipTitle;
   const body = target.dataset.tooltipBody;
@@ -1419,6 +1488,10 @@ document.addEventListener("input", (event) => {
 });
 
 document.addEventListener("change", (event) => {
+  if (event.target.matches("#percentileShiftInput")) {
+    applyPercentileShift(event.target);
+    return;
+  }
   if (event.target.matches("#assumptionSetSelect")) {
     applyAssumptionSet(event.target.value);
     runOptimization();
@@ -1441,6 +1514,13 @@ document.addEventListener("change", (event) => {
   }
   if (!event.target.matches("input[data-path]")) return;
   commitInputUpdate(event.target);
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.target.matches("#percentileShiftInput") && event.key === "Enter") {
+    event.preventDefault();
+    applyPercentileShift(event.target);
+  }
 });
 
 document.addEventListener("click", (event) => {
@@ -1467,7 +1547,7 @@ document.addEventListener("click", (event) => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260723-original-constrained-region", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260723-allowable-12500", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
