@@ -631,17 +631,25 @@ p {
   height: auto;
 }
 
-.asset-point {
+.asset-point,
+.benchmark-point,
+.selected-point {
   cursor: pointer;
   outline: none;
 }
 
-.asset-point polygon {
+.asset-point polygon,
+.benchmark-point > rect,
+.selected-point > circle {
   transition: stroke-width 120ms ease, filter 120ms ease;
 }
 
 .asset-point:hover polygon,
-.asset-point:focus polygon {
+.asset-point:focus polygon,
+.benchmark-point:hover > rect,
+.benchmark-point:focus > rect,
+.selected-point:hover > circle,
+.selected-point:focus > circle {
   stroke-width: 2;
   filter: drop-shadow(0 2px 3px rgba(16, 24, 32, 0.22));
 }
@@ -652,7 +660,11 @@ p {
 }
 
 .asset-point:hover .asset-tooltip,
-.asset-point:focus .asset-tooltip {
+.asset-point:focus .asset-tooltip,
+.benchmark-point:hover .asset-tooltip,
+.benchmark-point:focus .asset-tooltip,
+.selected-point:hover .asset-tooltip,
+.selected-point:focus .asset-tooltip {
   display: block;
 }
 

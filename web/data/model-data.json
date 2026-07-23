@@ -907,6 +907,20 @@
       }
     }
   },
+  "benchmarks": [
+    {
+      "name": "S&P 500",
+      "return": 0.059,
+      "volatility": 0.1573507124217548,
+      "sourceMapping": "CORE U.S. Large Cap assumption"
+    },
+    {
+      "name": "AGG",
+      "return": 0.046,
+      "volatility": 0.047564851534030825,
+      "sourceMapping": "JPM U.S. Aggregate Bonds assumption"
+    }
+  ],
   "profiles": {
     "Conservative": {
       "targetVolMin": 0.07200000000000001,

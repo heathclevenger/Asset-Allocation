@@ -838,10 +838,14 @@ function renderMvo() {
 
 function renderFrontierChart(selected, frontier, assetPoints, profile) {
   const box = document.querySelector("#frontierChart");
-  const region = globalFeasibleRegion(selected);
-  const all = [...frontier, ...assetPoints, selected, ...region.points.map((point) => ({ stats: point.stats }))];
-  const regionDotStep = Math.max(1, Math.ceil(region.points.length / 260));
-  const visibleRegionPoints = region.points.filter((_, index) => index % regionDotStep === 0);
+  const benchmarkPoints = (state.benchmarks || []).map((benchmark) => ({
+    benchmark,
+    stats: {
+      expectedReturn: benchmark.return,
+      volatility: benchmark.volatility,
+    },
+  }));
+  const all = [...frontier, ...assetPoints, ...benchmarkPoints, selected];
   const minVol = Math.min(...all.map((p) => p.stats.volatility));
   const maxVol = Math.max(...all.map((p) => p.stats.volatility));
   const minReturn = Math.min(...all.map((p) => p.stats.expectedReturn));
@@ -883,21 +887,12 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
     return path;
   };
   const frontierPath = smoothPath(frontier);
-  const regionPolygon = region.hull.map((point) => `${xScale(point.x).toFixed(1)},${yScale(point.y).toFixed(1)}`).join(" ");
   const xTicks = Array.from({ length: 6 }, (_, i) => xMin + ((xMax - xMin) * i) / 5);
   const yTicks = Array.from({ length: 6 }, (_, i) => yMin + ((yMax - yMin) * i) / 5);
   const bandX = xScale(profile.targetVolMin);
   const bandWidth = Math.max(2, xScale(profile.targetVolMax) - bandX);
-  const bandMid = bandX + bandWidth / 2;
-  const bandLabelX = Math.min(Math.max(bandMid, pad.left + 92), width - pad.right - 92);
   const selectedX = xScale(selected.stats.volatility);
   const selectedY = yScale(selected.stats.expectedReturn);
-  const regionShape = region.hull.length >= 3
-    ? `<polygon points="${regionPolygon}" fill="#8ecae6" opacity="0.32" stroke="#2f80b7" stroke-width="2" stroke-linejoin="round"></polygon>`
-    : region.hull.length === 2
-      ? `<line x1="${xScale(region.hull[0].x).toFixed(1)}" y1="${yScale(region.hull[0].y).toFixed(1)}" x2="${xScale(region.hull[1].x).toFixed(1)}" y2="${yScale(region.hull[1].y).toFixed(1)}" stroke="#8ecae6" stroke-width="14" stroke-linecap="round" opacity="0.42"></line>
-        <line x1="${xScale(region.hull[0].x).toFixed(1)}" y1="${yScale(region.hull[0].y).toFixed(1)}" x2="${xScale(region.hull[1].x).toFixed(1)}" y2="${yScale(region.hull[1].y).toFixed(1)}" stroke="#2f80b7" stroke-width="2.2" stroke-linecap="round"></line>`
-      : "";
   const constraintStatus = (actual, min, max) => (actual >= min - 0.0001 && actual <= max + 0.0001 ? "In range" : "Out of range");
   const categoryRows = state.categories.map((category) => {
     const bounds = profile.categoryBounds[category];
@@ -932,6 +927,15 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
     "International Fixed Income (H)": "Intl Fixed Income (H)",
   }[name] || name);
   const trianglePoints = (x, y, size = 6) => `${x.toFixed(1)},${(y - size).toFixed(1)} ${(x - size).toFixed(1)},${(y + size).toFixed(1)} ${(x + size).toFixed(1)},${(y + size).toFixed(1)}`;
+  const benchmarkColor = (name) => ({
+    "S&P 500": "#101820",
+    "AGG": "#8a8f98",
+  }[name] || "#101820");
+  const tooltipPosition = (x, y, tooltipW = 190, tooltipH = 48) => ({
+    x: x + tooltipW + 16 > width - pad.right ? x - tooltipW - 14 : x + 12,
+    y: Math.max(pad.top + 8, Math.min(y - 34, height - pad.bottom - tooltipH - 8)),
+  });
+  const selectedTooltip = tooltipPosition(selectedX, selectedY, 190, 48);
 
   box.innerHTML = `<div class="frontier-chart-grid">
   <div class="asset-color-legend side-legend">
@@ -948,42 +952,58 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
     <rect x="${bandX.toFixed(1)}" y="${pad.top}" width="${bandWidth.toFixed(1)}" height="${plotH}" fill="#00a95a" opacity="0.11"></rect>
     <line x1="${bandX.toFixed(1)}" y1="${pad.top}" x2="${bandX.toFixed(1)}" y2="${height - pad.bottom}" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="5 5"></line>
     <line x1="${(bandX + bandWidth).toFixed(1)}" y1="${pad.top}" x2="${(bandX + bandWidth).toFixed(1)}" y2="${height - pad.bottom}" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="5 5"></line>
-    <g transform="translate(${bandLabelX.toFixed(1)}, ${pad.top + 18})">
-      <rect x="-88" y="-13" width="176" height="24" rx="3" fill="#ffffff" opacity="0.92" stroke="#00a95a"></rect>
-      <text x="0" y="4" text-anchor="middle" class="frontier-axis">Target Vol ${pct(profile.targetVolMin)} - ${pct(profile.targetVolMax)}</text>
-    </g>
-    ${regionShape}
-    ${visibleRegionPoints.map((point) => `<circle cx="${xScale(point.x).toFixed(1)}" cy="${yScale(point.y).toFixed(1)}" r="1.8" fill="#2f80b7" opacity="0.22"></circle>`).join("")}
     ${assetPoints.map((p, index) => {
       const x = xScale(p.stats.volatility);
       const y = yScale(p.stats.expectedReturn);
       const tooltipW = 190;
       const tooltipH = 48;
-      const tooltipX = x + tooltipW + 16 > width - pad.right ? x - tooltipW - 14 : x + 12;
-      const tooltipY = Math.max(pad.top + 8, Math.min(y - 34, height - pad.bottom - tooltipH - 8));
+      const tooltip = tooltipPosition(x, y, tooltipW, tooltipH);
       return `<g class="asset-point" tabindex="0" role="button" aria-label="${p.asset.name}: return ${pct(p.stats.expectedReturn)}, volatility ${pct(p.stats.volatility)}">
         <polygon points="${trianglePoints(x, y, 6)}" fill="${assetColor(p.asset, index)}" stroke="#101820" stroke-width="1.1"></polygon>
-        <g class="asset-tooltip" transform="translate(${tooltipX.toFixed(1)}, ${tooltipY.toFixed(1)})">
+        <g class="asset-tooltip" transform="translate(${tooltip.x.toFixed(1)}, ${tooltip.y.toFixed(1)})">
           <rect x="0" y="0" width="${tooltipW}" height="${tooltipH}" rx="3"></rect>
           <text x="10" y="18">${p.asset.name}</text>
           <text x="10" y="36">Return ${pct(p.stats.expectedReturn)} | Vol ${pct(p.stats.volatility)}</text>
         </g>
       </g>`;
     }).join("")}
+    ${benchmarkPoints.map((p) => {
+      const x = xScale(p.stats.volatility);
+      const y = yScale(p.stats.expectedReturn);
+      const tooltipW = 190;
+      const tooltipH = 48;
+      const tooltip = tooltipPosition(x, y, tooltipW, tooltipH);
+      return `<g class="benchmark-point" tabindex="0" role="button" aria-label="${p.benchmark.name} benchmark">
+        <rect x="${(x - 6).toFixed(1)}" y="${(y - 6).toFixed(1)}" width="12" height="12" fill="${benchmarkColor(p.benchmark.name)}" stroke="#101820" stroke-width="1.2"></rect>
+        <g class="asset-tooltip" transform="translate(${tooltip.x.toFixed(1)}, ${tooltip.y.toFixed(1)})">
+          <rect x="0" y="0" width="${tooltipW}" height="${tooltipH}" rx="3"></rect>
+          <text x="10" y="18">${p.benchmark.name}</text>
+          <text x="10" y="36">Reference benchmark</text>
+        </g>
+      </g>`;
+    }).join("")}
     <path d="${frontierPath}" fill="none" stroke="#101820" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
-    <circle cx="${selectedX.toFixed(1)}" cy="${selectedY.toFixed(1)}" r="8" fill="#00a95a" stroke="#101820" stroke-width="2"></circle>
+    <g class="selected-point" tabindex="0" role="button" aria-label="${selected.profileName}: return ${pct(selected.stats.expectedReturn)}, volatility ${pct(selected.stats.volatility)}">
+      <circle cx="${selectedX.toFixed(1)}" cy="${selectedY.toFixed(1)}" r="8" fill="#00a95a" stroke="#101820" stroke-width="2"></circle>
+      <g class="asset-tooltip" transform="translate(${selectedTooltip.x.toFixed(1)}, ${selectedTooltip.y.toFixed(1)})">
+        <rect x="0" y="0" width="190" height="48" rx="3"></rect>
+        <text x="10" y="18">${selected.profileName}</text>
+        <text x="10" y="36">Return ${pct(selected.stats.expectedReturn)} | Vol ${pct(selected.stats.volatility)}</text>
+      </g>
+    </g>
     <g transform="translate(${pad.left}, 14)">
       <line x1="0" y1="0" x2="36" y2="0" stroke="#101820" stroke-width="2.2"></line><text x="44" y="4" class="frontier-axis">Efficient frontier</text>
       <circle cx="178" cy="0" r="6" fill="#00a95a" stroke="#101820" stroke-width="1.5"></circle><text x="190" y="4" class="frontier-axis">Selected portfolio</text>
-      <rect x="330" y="-7" width="16" height="14" fill="#8ecae6" opacity="0.45" stroke="#2f80b7"></rect><text x="354" y="4" class="frontier-axis">Allowable region</text>
+      <rect x="330" y="-7" width="16" height="14" fill="#00a95a" opacity="0.11" stroke="#00a95a"></rect>
+      <line x1="330" y1="-8" x2="330" y2="8" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="4 3"></line>
+      <line x1="346" y1="-8" x2="346" y2="8" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="4 3"></line>
+      <text x="354" y="4" class="frontier-axis">Target Volatility</text>
+      <rect x="500" y="-6" width="12" height="12" fill="#101820" stroke="#101820" stroke-width="1.2"></rect><text x="518" y="4" class="frontier-axis">S&amp;P 500</text>
+      <rect x="580" y="-6" width="12" height="12" fill="#8a8f98" stroke="#101820" stroke-width="1.2"></rect><text x="598" y="4" class="frontier-axis">AGG</text>
     </g>
     <text x="${width / 2}" y="${height - 6}" text-anchor="middle" class="frontier-axis">Annualized volatility</text>
     <text x="16" y="${height / 2}" text-anchor="middle" transform="rotate(-90 16 ${height / 2})" class="frontier-axis">Compound return</text>
   </svg>
-  </div>
-  <div class="chart-region-note">
-    <strong>Global Allowable Weight Region</strong>
-    <span>Uses live Asset Assumptions plus all Model Constraints to estimate the full risk/return area possible from the allowable weighting ranges. It will usually sit inside the no-shorting frontier because it adds allocation and sub-allocation constraints.</span>
   </div>
   `;
 
@@ -1180,15 +1200,12 @@ document.addEventListener("click", (event) => {
   }
 
   const button = event.target.closest("button");
-  if (button?.id === "runModel") {
-    scheduleMvoRefresh(true);
-  }
   if (button?.id === "resetModel") resetModel();
 });
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260723-weights-before-constraints", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260723-remove-allowable-region", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });

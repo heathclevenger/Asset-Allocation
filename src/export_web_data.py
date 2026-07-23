@@ -174,6 +174,23 @@ def main() -> None:
     average_assets = average_assumption_sets(jpm_assets, raw_vanguard_assets)
     jpm_assets = apply_average_fallback(jpm_assets, average_assets, "JPM 2026", JPM_FALLBACK_TO_AVERAGE)
     vanguard_assets = apply_average_fallback(raw_vanguard_assets, average_assets, "Vanguard 2026")
+    large_cap = next(asset for asset in average_assets if asset["name"] == "U.S. Large Cap")
+    jpm_returns: dict[str, float] = jpm_data["returns"]  # type: ignore[assignment]
+    jpm_vols: dict[str, float] = jpm_data["vols"]  # type: ignore[assignment]
+    benchmarks = [
+        {
+            "name": "S&P 500",
+            "return": large_cap["return"],
+            "volatility": large_cap["volatility"],
+            "sourceMapping": "CORE U.S. Large Cap assumption",
+        },
+        {
+            "name": "AGG",
+            "return": jpm_returns[optimizer.normalize_name("U.S. Aggregate Bonds")],
+            "volatility": jpm_vols[optimizer.normalize_name("U.S. Aggregate Bonds")],
+            "sourceMapping": "JPM U.S. Aggregate Bonds assumption",
+        },
+    ]
 
     payload = {
         "generatedFrom": str(optimizer.jpm_matrix_path()),
@@ -187,6 +204,7 @@ def main() -> None:
             "Vanguard 2026": vanguard_assets,
         },
         "volatilityModel": volatility_model,
+        "benchmarks": benchmarks,
         "profiles": {
             profile: {
                 "targetVolMin": config["target_volatility"][0],
