@@ -406,7 +406,114 @@ function categoryWeightsFromWeights(weights) {
   return categoryWeights;
 }
 
-function globalFeasibleRegion(selected) {
+function isFullyUnconstrainedPreset() {
+  return selectedAllocationPreset === "Unconstrained" && selectedSubAllocationPreset === "Unconstrained";
+}
+
+function frontierAllowableRegion(frontier, selected) {
+  const sorted = frontier
+    .filter((point) => point?.stats && Number.isFinite(point.stats.volatility) && Number.isFinite(point.stats.expectedReturn))
+    .sort((a, b) => a.stats.volatility - b.stats.volatility);
+  if (sorted.length < 2) {
+    return {
+      points: [{ x: selected.stats.volatility, y: selected.stats.expectedReturn, stats: selected.stats, weights: selected.weights }],
+      hull: [],
+      mode: "efficient frontier allowable region",
+    };
+  }
+
+  const returns = sorted.map((point) => point.stats.expectedReturn);
+  const returnRange = Math.max(...returns) - Math.min(...returns);
+  const ribbon = Math.max(returnRange * 0.018, 0.00045);
+  const points = sorted.map((point) => ({
+    x: point.stats.volatility,
+    y: point.stats.expectedReturn,
+    stats: point.stats,
+    weights: point.weights,
+  }));
+  const upper = sorted.map((point) => ({
+    x: point.stats.volatility,
+    y: point.stats.expectedReturn + ribbon,
+    stats: {
+      volatility: point.stats.volatility,
+      expectedReturn: point.stats.expectedReturn + ribbon,
+    },
+  }));
+  const lower = [...sorted].reverse().map((point) => ({
+    x: point.stats.volatility,
+    y: Math.max(0, point.stats.expectedReturn - ribbon),
+    stats: {
+      volatility: point.stats.volatility,
+      expectedReturn: Math.max(0, point.stats.expectedReturn - ribbon),
+    },
+  }));
+
+  return {
+    points,
+    hull: upper.concat(lower),
+    mode: "efficient frontier allowable region",
+  };
+}
+
+function envelopeAllowableRegion(points, bucketCount = 56) {
+  const sorted = points
+    .filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y))
+    .sort((a, b) => a.x - b.x);
+  if (sorted.length < 8) return convexHull(sorted);
+
+  const minVol = sorted[0].x;
+  const maxVol = sorted.at(-1).x;
+  const buckets = Array.from({ length: bucketCount }, () => ({
+    count: 0,
+    xSum: 0,
+    min: null,
+    max: null,
+  }));
+
+  sorted.forEach((point) => {
+    const bucketIndex = Math.min(
+      bucketCount - 1,
+      Math.max(0, Math.floor(((point.x - minVol) / Math.max(maxVol - minVol, 1e-8)) * bucketCount))
+    );
+    const bucket = buckets[bucketIndex];
+    bucket.count += 1;
+    bucket.xSum += point.x;
+    if (!bucket.min || point.y < bucket.min.y) bucket.min = point;
+    if (!bucket.max || point.y > bucket.max.y) bucket.max = point;
+  });
+
+  const envelope = buckets
+    .filter((bucket) => bucket.count > 0 && bucket.min && bucket.max)
+    .map((bucket) => ({
+      x: bucket.xSum / bucket.count,
+      min: bucket.min,
+      max: bucket.max,
+    }));
+  if (envelope.length < 3) return convexHull(sorted);
+
+  const upper = envelope.map((bucket) => ({
+    ...bucket.max,
+    x: bucket.x,
+    stats: {
+      volatility: bucket.x,
+      expectedReturn: bucket.max.y,
+    },
+  }));
+  const lower = [...envelope].reverse().map((bucket) => ({
+    ...bucket.min,
+    x: bucket.x,
+    stats: {
+      volatility: bucket.x,
+      expectedReturn: bucket.min.y,
+    },
+  }));
+
+  return upper.concat(lower);
+}
+
+function globalFeasibleRegion(selected, frontier = []) {
+  if (isFullyUnconstrainedPreset()) return frontierAllowableRegion(frontier, selected);
+
   const points = [];
   const seen = new Set();
   const addPoint = (weights) => {
@@ -821,6 +928,57 @@ function renderMvoControls() {
   };
 }
 
+function selectedMvoDisplayResult(profileName, baseResult, frontier) {
+  if (!isFullyUnconstrainedPreset()) return baseResult;
+  const profile = state.profiles[profileName];
+  const rows = frontier
+    .filter((point) => point?.weights && point?.stats)
+    .sort((a, b) => a.stats.volatility - b.stats.volatility);
+  if (!rows.length) return baseResult;
+
+  const candidates = [...rows];
+  for (let i = 0; i < rows.length - 1; i += 1) {
+    const left = rows[i];
+    const right = rows[i + 1];
+    const lo = Math.min(left.stats.volatility, right.stats.volatility);
+    const hi = Math.max(left.stats.volatility, right.stats.volatility);
+    if (hi < profile.targetVolMin || lo > profile.targetVolMax) continue;
+    for (let step = 1; step < 12; step += 1) {
+      const mix = step / 12;
+      const weights = left.weights.map((weight, index) => weight * (1 - mix) + right.weights[index] * mix);
+      const total = weights.reduce((sum, weight) => sum + weight, 0) || 1;
+      const normalized = weights.map((weight) => weight / total);
+      candidates.push({
+        weights: normalized,
+        stats: portfolioStats(normalized, state.assets, state.correlation),
+      });
+    }
+  }
+
+  const inTarget = candidates.filter((point) => (
+    point.stats.volatility >= profile.targetVolMin - 1e-8
+    && point.stats.volatility <= profile.targetVolMax + 1e-8
+  ));
+  const targetMid = (profile.targetVolMin + profile.targetVolMax) / 2;
+  const chosen = (inTarget.length ? inTarget : candidates).reduce((best, point) => {
+    if (!best) return point;
+    if (inTarget.length) return point.stats.expectedReturn > best.stats.expectedReturn ? point : best;
+    const bestGap = Math.abs(best.stats.volatility - targetMid);
+    const pointGap = Math.abs(point.stats.volatility - targetMid);
+    if (pointGap < bestGap - 1e-8) return point;
+    if (Math.abs(pointGap - bestGap) <= 1e-8 && point.stats.expectedReturn > best.stats.expectedReturn) return point;
+    return best;
+  }, null);
+
+  return {
+    ...baseResult,
+    profileName,
+    weights: chosen.weights,
+    categoryWeights: categoryWeightsFromWeights(chosen.weights),
+    stats: chosen.stats,
+  };
+}
+
 function renderMvo() {
   renderMvoControls();
   if (!frontierResult) return;
@@ -831,9 +989,10 @@ function renderMvo() {
     document.querySelector("#mvoConstraints").innerHTML = "";
     return;
   }
-  const selected = results[selectedMvoProfile];
-  if (!selected) return;
+  const baseSelected = results[selectedMvoProfile];
+  if (!baseSelected) return;
   const profile = state.profiles[selectedMvoProfile];
+  const selected = selectedMvoDisplayResult(selectedMvoProfile, baseSelected, frontierResult.frontier);
   const metrics = document.querySelector("#mvoMetrics");
   const status = statusFor(selectedMvoProfile, selected.stats.volatility);
   metrics.innerHTML = [
@@ -863,7 +1022,7 @@ function renderMvo() {
 
 function renderFrontierChart(selected, frontier, assetPoints, profile) {
   const box = document.querySelector("#frontierChart");
-  const region = globalFeasibleRegion(selected);
+  const region = globalFeasibleRegion(selected, frontier);
   const benchmarkPoints = (state.benchmarks || []).map((benchmark) => ({
     benchmark,
     stats: {
@@ -871,7 +1030,7 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
       volatility: benchmark.volatility,
     },
   }));
-  const all = [...frontier, ...assetPoints, ...benchmarkPoints, selected, ...region.points.map((point) => ({ stats: point.stats }))];
+  const all = [...frontier, ...assetPoints, ...benchmarkPoints, selected, ...region.points.map((point) => ({ stats: point.stats })), ...region.hull.map((point) => ({ stats: point.stats }))];
   const regionDotStep = Math.max(1, Math.ceil(region.points.length / 260));
   const visibleRegionPoints = region.points.filter((_, index) => index % regionDotStep === 0);
   const minVol = Math.min(...all.map((p) => p.stats.volatility));
@@ -1308,7 +1467,7 @@ document.addEventListener("click", (event) => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260723-legend-polish", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260723-original-constrained-region", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
