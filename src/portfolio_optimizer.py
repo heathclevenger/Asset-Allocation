@@ -53,7 +53,7 @@ class Asset:
 
 
 ASSETS: List[Asset] = [
-    Asset("U.S. Large Cap", "Equity", ("U.S. Large Cap",), 0.20, 0.45, "U.S. Large Cap"),
+    Asset("U.S. Large Cap", "Equity", ("U.S. Large Cap",), 0.00, 0.45, "U.S. Large Cap"),
     Asset("U.S. Mid Cap", "Equity", ("U.S. Mid Cap",), 0.00, 0.10, "U.S. Mid Cap"),
     Asset("U.S. Small Cap", "Equity", ("U.S. Small Cap",), 0.00, 0.03, "U.S. Small Cap"),
     Asset("U.S. Value", "Equity", ("U.S. Equity Value Factor",), 0.00, 0.07, "U.S. Equity Value Factor"),

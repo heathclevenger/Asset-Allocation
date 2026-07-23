@@ -250,7 +250,7 @@ function optimizeProjected(start, gradientFn, iterations = 120, step = 0.08) {
   return weights;
 }
 
-function upperFrontierEnvelope(portfolios, bucketCount = 44) {
+function upperFrontierEnvelope(portfolios, bucketCount = 80) {
   const rows = portfolios
     .filter((portfolio) => Number.isFinite(portfolio.stats.volatility) && Number.isFinite(portfolio.stats.expectedReturn))
     .sort((a, b) => a.stats.volatility - b.stats.volatility);
@@ -273,6 +273,33 @@ function upperFrontierEnvelope(portfolios, bucketCount = 44) {
     }
   });
   return frontier.length >= 2 ? frontier : rows;
+}
+
+function concaveUpperFrontier(portfolios) {
+  const rows = upperFrontierEnvelope(portfolios, 110)
+    .sort((a, b) => a.stats.volatility - b.stats.volatility)
+    .filter((portfolio, index, all) => index === 0 || portfolio.stats.volatility - all[index - 1].stats.volatility > 0.00008);
+  const increasing = [];
+  rows.forEach((portfolio) => {
+    if (!increasing.length || portfolio.stats.expectedReturn >= increasing.at(-1).stats.expectedReturn - 0.00002) {
+      increasing.push(portfolio);
+    }
+  });
+
+  const hull = [];
+  const slope = (a, b) => (
+    (b.stats.expectedReturn - a.stats.expectedReturn) / Math.max(b.stats.volatility - a.stats.volatility, 1e-8)
+  );
+  increasing.forEach((portfolio) => {
+    while (hull.length >= 2) {
+      const previousSlope = slope(hull.at(-2), hull.at(-1));
+      const nextSlope = slope(hull.at(-1), portfolio);
+      if (nextSlope <= previousSlope + 0.03) break;
+      hull.pop();
+    }
+    hull.push(portfolio);
+  });
+  return hull.length >= 4 ? hull : increasing;
 }
 
 function calculateEfficientFrontier() {
@@ -316,24 +343,24 @@ function calculateEfficientFrontier() {
   let best = candidates.reduce((winner, candidate) => (candidate.stats.sharpe > winner.stats.sharpe ? candidate : winner), candidates[0]);
 
   const frontier = [];
-  for (let i = 0; i < 96; i += 1) {
-    const riskPenalty = Math.pow(10, -3.6 + (i / 95) * 6.2);
+  const minVarianceGradient = (weights) => {
+    const covW = matVec(cov, weights);
+    return covW.map((value) => -2 * value);
+  };
+  let warmStart = optimizeProjected(equal, minVarianceGradient, 180, 0.35);
+  frontier.push({ weights: warmStart, stats: portfolioStats(warmStart, assets, state.correlation) });
+
+  for (let i = 0; i < 140; i += 1) {
+    const riskPenalty = Math.pow(10, 4.4 - (i / 139) * 7.0);
     const gradientFn = (weights) => {
       const covW = matVec(cov, weights);
       return returns.map((value, index) => value - 2 * riskPenalty * covW[index]);
     };
-    [starts[i % starts.length], equal, best.weights].forEach((start, startIndex) => {
-      const weights = optimizeProjected(start, gradientFn, 110, startIndex === 0 ? 0.18 : 0.12);
-      frontier.push({ weights, stats: portfolioStats(weights, assets, state.correlation) });
-    });
-  }
-
-  const rand = seededRandom(11887);
-  for (let i = 0; i < 2200; i += 1) {
-    const raw = Array.from({ length: count }, () => Math.pow(rand(), 2.6));
-    const rawTotal = raw.reduce((sum, value) => sum + value, 0) || 1;
-    const weights = raw.map((value) => value / rawTotal);
-    frontier.push({ weights, stats: portfolioStats(weights, assets, state.correlation) });
+    const primary = optimizeProjected(warmStart, gradientFn, 85, 0.16);
+    const secondary = optimizeProjected(i % 4 === 0 ? starts[(i / 4) % starts.length] : best.weights, gradientFn, 65, 0.12);
+    warmStart = primary;
+    frontier.push({ weights: primary, stats: portfolioStats(primary, assets, state.correlation) });
+    if (i % 3 === 0) frontier.push({ weights: secondary, stats: portfolioStats(secondary, assets, state.correlation) });
   }
 
   const assetPoints = assets.map((asset, index) => {
@@ -342,7 +369,7 @@ function calculateEfficientFrontier() {
     return { asset, weights, stats: portfolioStats(weights, assets, state.correlation) };
   });
 
-  const cleanFrontier = upperFrontierEnvelope([...frontier, ...assetPoints, best], 48);
+  const cleanFrontier = concaveUpperFrontier([...frontier, ...assetPoints, best]);
 
   return { best, frontier: cleanFrontier, assetPoints };
 }
@@ -705,6 +732,57 @@ function renderPieCard(title, items, options = {}) {
   </div>`;
 }
 
+function renderAllocationSummaryCard(profileName, result, profile) {
+  const percentile = state.volatilityModel?.profiles?.[profileName]?.percentile ?? "";
+  const items = state.categories
+    .map((category) => ({
+      label: category,
+      value: result.categoryWeights[category] || 0,
+      color: categoryColor(category),
+    }))
+    .filter((item) => item.value > 0.0005);
+  const total = items.reduce((sum, item) => sum + item.value, 0) || 1;
+  let angle = -Math.PI / 2;
+  const slices = items.map((item) => {
+    const nextAngle = angle + (item.value / total) * Math.PI * 2;
+    const path = item.value / total > 0.999
+      ? `<circle cx="62" cy="62" r="48" fill="${item.color}"></circle>`
+      : `<path d="${pieSlicePath(62, 62, 48, angle, nextAngle)}" fill="${item.color}"></path>`;
+    angle = nextAngle;
+    return path;
+  }).join("");
+
+  return `<div class="pie-card allocation-summary-card">
+    <div class="pie-title">Allocation Weights</div>
+    <div class="allocation-summary-layout">
+      <div class="allocation-context">
+        <div class="allocation-context-box">
+          <span>Portfolio</span>
+          <strong class="allocation-profile">${profileName}</strong>
+        </div>
+        <div class="allocation-context-box">
+          <span>Volatility Percentile</span>
+          <strong>${Number(percentile).toFixed(0)}th</strong>
+          <span class="allocation-target-label">Target Volatility</span>
+          <strong>${pct(profile.targetVolMin)} - ${pct(profile.targetVolMax)}</strong>
+        </div>
+      </div>
+      <div class="allocation-pie-block">
+        <svg viewBox="0 0 124 124" role="img" aria-label="${profileName} allocation pie chart">
+          ${slices}
+          <circle cx="62" cy="62" r="48" fill="none" stroke="#ffffff" stroke-width="1.5"></circle>
+        </svg>
+        <div class="allocation-summary-list">
+          ${items.map((item) => `<div style="--pie-color:${item.color}">
+            <span><i style="--pie-color:${item.color}"></i>${item.label}</span>
+            <strong>${pct(item.value)}</strong>
+          </div>`).join("")}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
 function renderMvoControls() {
   const select = document.querySelector("#mvoProfileSelect");
   if (!select) return;
@@ -724,7 +802,7 @@ function renderMvo() {
   if (frontierResult.error) {
     document.querySelector("#mvoMetrics").innerHTML = `<div class="metric"><div class="label">Status</div><div class="value warn">Error</div><div class="status warn">${frontierResult.error}</div></div>`;
     document.querySelector("#frontierChart").innerHTML = `<p class="frontier-note">The MVO chart could not run. Check that Asset Assumptions have valid return and volatility numbers.</p>`;
-    document.querySelector("#mvoWeightsTable").innerHTML = "";
+    document.querySelector("#mvoWeightCharts").innerHTML = "";
     return;
   }
   const selected = results[selectedMvoProfile];
@@ -740,10 +818,19 @@ function renderMvo() {
     ["Status", status],
   ].map(([label, value]) => `<div class="metric"><div class="label">${label}</div><div class="value">${value}</div></div>`).join("");
 
-  const table = document.querySelector("#mvoWeightsTable");
-  table.innerHTML = `<thead><tr><th>Asset</th><th>Category</th><th>Weight</th></tr></thead>
-    <tbody>${state.assets.map((asset, index) => `<tr><td>${asset.name}</td><td>${asset.category}</td><td>${pct(selected.weights[index])}</td></tr>`).join("")}
-    <tr><td>Total</td><td>Check</td><td>${pct(selected.weights.reduce((sum, weight) => sum + weight, 0))}</td></tr></tbody>`;
+  const charts = document.querySelector("#mvoWeightCharts");
+  charts.innerHTML = [
+    renderAllocationSummaryCard(selectedMvoProfile, selected, profile),
+    renderPieCard(
+      "Sub-Sleeve Weights",
+      state.assets.map((asset, index) => ({
+        label: asset.name,
+        value: selected.weights[index] || 0,
+        color: assetColor(asset, index),
+      })),
+      { variant: "sleeve" }
+    ),
+  ].join("");
 
   renderFrontierChart(selected, frontierResult.frontier, frontierResult.assetPoints, profile);
 }
@@ -769,7 +856,32 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
   const plotH = height - pad.top - pad.bottom;
   const xScale = (value) => pad.left + ((value - xMin) / Math.max(xMax - xMin, 1e-8)) * plotW;
   const yScale = (value) => pad.top + (1 - ((value - yMin) / Math.max(yMax - yMin, 1e-8))) * plotH;
-  const frontierPath = frontier.map((p, i) => `${i === 0 ? "M" : "L"} ${xScale(p.stats.volatility).toFixed(1)} ${yScale(p.stats.expectedReturn).toFixed(1)}`).join(" ");
+  const smoothPath = (points) => {
+    if (points.length < 2) return "";
+    const coords = points.map((point) => ({
+      x: xScale(point.stats.volatility),
+      y: yScale(point.stats.expectedReturn),
+    }));
+    if (coords.length === 2) return `M ${coords[0].x.toFixed(1)} ${coords[0].y.toFixed(1)} L ${coords[1].x.toFixed(1)} ${coords[1].y.toFixed(1)}`;
+    let path = `M ${coords[0].x.toFixed(1)} ${coords[0].y.toFixed(1)}`;
+    for (let i = 0; i < coords.length - 1; i += 1) {
+      const p0 = coords[Math.max(0, i - 1)];
+      const p1 = coords[i];
+      const p2 = coords[i + 1];
+      const p3 = coords[Math.min(coords.length - 1, i + 2)];
+      const cp1 = {
+        x: p1.x + (p2.x - p0.x) / 6,
+        y: p1.y + (p2.y - p0.y) / 6,
+      };
+      const cp2 = {
+        x: p2.x - (p3.x - p1.x) / 6,
+        y: p2.y - (p3.y - p1.y) / 6,
+      };
+      path += ` C ${cp1.x.toFixed(1)} ${cp1.y.toFixed(1)}, ${cp2.x.toFixed(1)} ${cp2.y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+    }
+    return path;
+  };
+  const frontierPath = smoothPath(frontier);
   const regionPolygon = region.hull.map((point) => `${xScale(point.x).toFixed(1)},${yScale(point.y).toFixed(1)}`).join(" ");
   const xTicks = Array.from({ length: 6 }, (_, i) => xMin + ((xMax - xMin) * i) / 5);
   const yTicks = Array.from({ length: 6 }, (_, i) => yMin + ((yMax - yMin) * i) / 5);
@@ -950,7 +1062,7 @@ function refreshMvo() {
   }
   document.querySelector("#mvoMetrics").innerHTML = `<div class="metric"><div class="label">Status</div><div class="value">Calculating</div></div>`;
   document.querySelector("#frontierChart").innerHTML = `<p class="frontier-note">Calculating efficient frontier...</p>`;
-  document.querySelector("#mvoWeightsTable").innerHTML = `<tbody><tr><td>Calculating weights...</td></tr></tbody>`;
+  document.querySelector("#mvoWeightCharts").innerHTML = `<p class="frontier-note">Calculating weights...</p>`;
   setTimeout(() => {
     try {
       frontierResult = calculateEfficientFrontier();
@@ -1059,7 +1171,7 @@ document.addEventListener("click", (event) => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260722-source-display-cleanup", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260723-allocation-context-split", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });

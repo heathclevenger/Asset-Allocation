@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Paul Asset Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260722-dashboard-tabs-restored" />
+    <link rel="stylesheet" href="./styles.css?v=20260723-allocation-context-split" />
   </head>
   <body>
     <div class="shell">
@@ -24,10 +24,10 @@
 
       <div class="nav-row">
         <nav class="tabs" aria-label="Model pages">
-          <button class="tab active" data-tab="results">Dashboard</button>
+          <button class="tab active" data-tab="results">Overview</button>
           <button class="tab" data-tab="assets">Asset Assumptions</button>
           <button class="tab" data-tab="profiles">Model Constraints</button>
-          <button class="tab" data-tab="mvo">MVO</button>
+          <button class="tab" data-tab="mvo">Portfolio Optimization</button>
         </nav>
       </div>
 
@@ -35,7 +35,7 @@
         <section id="results" class="page active">
           <div class="toolbar">
             <div>
-              <h2>Dashboard</h2>
+              <h2>Overview</h2>
               <p>Category allocation and sub-sleeve allocation by profile.</p>
             </div>
           </div>
@@ -124,7 +124,7 @@
         <section id="mvo" class="page">
           <div class="toolbar">
             <div>
-              <h2>MVO</h2>
+              <h2>Portfolio Optimization</h2>
               <p>Constrained mean-variance optimization by portfolio, shown against the no-shorting efficient frontier.</p>
             </div>
             <div class="select-control">
@@ -141,9 +141,9 @@
               <div id="frontierChart" class="frontier-chart"><p class="frontier-note">Calculating efficient frontier...</p></div>
             </div>
             <div class="panel">
-              <div class="panel-title">Optimized Portfolio Weights</div>
-              <div class="table-wrap">
-                <table id="mvoWeightsTable"><tbody><tr><td>Calculating weights...</td></tr></tbody></table>
+              <div class="panel-title">Portfolio Weights</div>
+              <div id="mvoWeightCharts" class="mvo-weight-charts">
+                <p class="frontier-note">Calculating weights...</p>
               </div>
             </div>
           </div>
@@ -156,6 +156,6 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260722-source-display-cleanup"></script>
+    <script src="./app.js?v=20260723-allocation-context-split"></script>
   </body>
 </html>
