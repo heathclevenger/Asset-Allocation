@@ -233,10 +233,132 @@ p {
 
 .dashboard-panel {
   display: none;
+  margin-top: 18px;
 }
 
 .dashboard-panel.active {
   display: block;
+}
+
+.pie-grid {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 14px;
+}
+
+.allocation-pie-grid {
+  grid-template-columns: repeat(5, minmax(180px, 1fr));
+}
+
+.sleeve-pie-grid {
+  grid-template-columns: repeat(2, minmax(360px, 1fr));
+}
+
+.pie-card {
+  background: var(--row-alt);
+  border-top: 5px solid #000;
+  padding: 10px;
+  min-width: 0;
+}
+
+.pie-title {
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.pie-content {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 8px;
+  align-items: start;
+}
+
+.sleeve-pie-grid .pie-content {
+  grid-template-columns: 112px 1fr;
+  gap: 14px;
+}
+
+.pie-content svg {
+  width: 92px;
+  height: 92px;
+}
+
+.sleeve-pie-grid .pie-content svg {
+  width: 112px;
+  height: 112px;
+}
+
+.pie-legend {
+  display: grid;
+  gap: 4px;
+  font-size: 10px;
+  line-height: 1.15;
+}
+
+.pie-legend > span {
+  display: grid;
+  grid-template-columns: 8px 1fr;
+  gap: 5px;
+  align-items: start;
+}
+
+.pie-legend i {
+  width: 8px;
+  height: 8px;
+  background: var(--pie-color);
+  margin-top: 2px;
+}
+
+.pie-legend strong {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.sleeve-pie-grid .pie-legend {
+  gap: 6px;
+  font-size: 10px;
+}
+
+.sleeve-row {
+  display: grid;
+  gap: 3px;
+}
+
+.sleeve-row-label {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  gap: 5px;
+  align-items: center;
+}
+
+.sleeve-row-label i {
+  width: 8px;
+  height: 8px;
+  background: var(--pie-color);
+}
+
+.sleeve-row-label span {
+  min-width: 0;
+}
+
+.sleeve-row-label strong {
+  font-weight: 800;
+}
+
+.sleeve-bar {
+  height: 4px;
+  background: #d8dee4;
+}
+
+.sleeve-bar span {
+  display: block;
+  height: 100%;
+  background: var(--pie-color);
+}
+
+.pie-empty {
+  color: #536575;
+  font-weight: 700;
 }
 
 .profile-panel {
@@ -631,6 +753,10 @@ footer {
   }
 
   .anchor-control {
+    grid-template-columns: 1fr;
+  }
+
+  .pie-grid {
     grid-template-columns: 1fr;
   }
 

@@ -11,6 +11,7 @@ let liveUpdateTimer = null;
 let selectedMvoProfile = "Moderate";
 let selectedAllocationPreset = "CORE";
 let selectedSubAllocationPreset = "CORE";
+let selectedAssumptionSet = "CORE";
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const defaultVolatilityPercentiles = {
@@ -20,6 +21,53 @@ const defaultVolatilityPercentiles = {
   "Growth": 70,
   "Aggressive Growth": 85,
 };
+
+const categoryColor = (category) => ({
+  "Equity": "#007481",
+  "Fixed Income": "#c99700",
+  "Alternatives": "#8f3f71",
+  "Cash": "#6c757d",
+}[category] || "#6c757d");
+
+const assetColor = (asset, index) => ({
+  "U.S. Large Cap": "#005f73",
+  "U.S. Value": "#d00000",
+  "U.S. Growth": "#ffba08",
+  "U.S. Mid Cap": "#9b2226",
+  "U.S. Small Cap": "#ee9b00",
+  "International Developed Equity": "#6a4c93",
+  "Emerging Markets Equity": "#2a9d8f",
+  "U.S. Income": "#4361ee",
+  "U.S. Quality": "#2f6f4e",
+  "U.S. REITs": "#bc6c25",
+  "Commodities": "#7f4f24",
+  "Income U.S. - U.S. Treasury": "#1d3557",
+  "Income U.S. Government Related": "#457b9d",
+  "Income U.S. Corporate": "#2d6a4f",
+  "Income U.S. Securitized": "#e76f51",
+  "Fixed Income International": "#3a86ff",
+  "Other Fixed Income": "#7209b7",
+  "Cash": "#6c757d",
+}[asset.name] || [
+  "#005f73",
+  "#d00000",
+  "#ffba08",
+  "#9b2226",
+  "#ee9b00",
+  "#6a4c93",
+  "#2a9d8f",
+  "#4361ee",
+  "#2f6f4e",
+  "#bc6c25",
+  "#7f4f24",
+  "#1d3557",
+  "#457b9d",
+  "#2d6a4f",
+  "#e76f51",
+  "#3a86ff",
+  "#7209b7",
+  "#6c757d",
+][index % 14]);
 
 function buildVolatilityModel(profiles) {
   const model = { mode: "feasiblePercentile", profiles: {} };
@@ -40,6 +88,18 @@ function ensureVolatilityModel() {
     state.volatilityModel.profiles[name] ||= {};
     state.volatilityModel.profiles[name].percentile ??= defaultVolatilityPercentiles[name] ?? 50;
     state.volatilityModel.profiles[name].halfWidth ??= (profile.targetVolMax - profile.targetVolMin) / 2;
+  });
+}
+
+function applyAssumptionSet(name) {
+  if (!state.assumptionSets?.[name]) return;
+  selectedAssumptionSet = name;
+  const assumptions = state.assumptionSets[name];
+  state.assets.forEach((asset, index) => {
+    const source = assumptions[index];
+    asset.return = source.return;
+    asset.volatility = source.volatility;
+    asset.sourceMapping = source.sourceMapping;
   });
 }
 
@@ -533,11 +593,27 @@ function renderProfiles() {
     </tr>`).join("")}</tbody>`;
 }
 
+function assetSourceDisplay(asset) {
+  const mapping = asset.sourceMapping || "";
+  const usesAverage = /average/i.test(mapping);
+  if (usesAverage) return mapping;
+  if ((asset.sourceNames || []).length > 1) return asset.sourceNames.join(", ");
+  return "";
+}
+
 function renderAssets() {
+  const select = document.querySelector("#assumptionSetSelect");
+  if (select && state.assumptionSets) {
+    const names = Object.keys(state.assumptionSets);
+    if (!names.includes(selectedAssumptionSet)) selectedAssumptionSet = names[0];
+    select.innerHTML = names.map((name) => `<option value="${name}" ${name === selectedAssumptionSet ? "selected" : ""}>${name}</option>`).join("");
+    select.value = selectedAssumptionSet;
+  }
+
   const table = document.querySelector("#assetsTable");
   table.innerHTML = `<thead><tr><th>Asset</th><th>Category</th><th>Source</th><th>Return</th><th>Volatility</th></tr></thead>
   <tbody>${state.assets.map((asset, i) => `<tr>
-      <td class="text">${asset.name}</td><td>${asset.category}</td><td class="text">${asset.sourceNames.join(", ")}</td>
+      <td class="text">${asset.name}</td><td>${asset.category}</td><td class="text">${assetSourceDisplay(asset)}</td>
       <td>${editableCell(asset.return, `assets.${i}.return`)}</td>
       <td>${editableCell(asset.volatility, `assets.${i}.volatility`)}</td>
     </tr>`).join("")}</tbody>`;
@@ -547,12 +623,86 @@ function renderAllocationWeights() {
   const table = document.querySelector("#allocationWeightsTable");
   table.innerHTML = `<thead><tr><th>Allocation</th>${Object.keys(results).map((p) => `<th>${p}</th>`).join("")}</tr></thead>
   <tbody>${state.categories.map((category) => `<tr><td>${category}</td>${Object.values(results).map((result) => `<td>${pct(result.categoryWeights[category] || 0)}</td>`).join("")}</tr>`).join("")}</tbody>`;
+
+  const charts = document.querySelector("#allocationPieCharts");
+  if (charts) {
+    charts.innerHTML = Object.entries(results).map(([profile, result]) => renderPieCard(
+      profile,
+      state.categories.map((category) => ({
+        label: category,
+        value: result.categoryWeights[category] || 0,
+        color: categoryColor(category),
+      }))
+    )).join("");
+  }
 }
 
 function renderWeights() {
   const table = document.querySelector("#weightsTable");
   table.innerHTML = `<thead><tr><th>Asset</th>${Object.keys(results).map((p) => `<th>${p}</th>`).join("")}</tr></thead>
   <tbody>${state.assets.map((asset, i) => `<tr><td>${asset.name}</td>${Object.values(results).map((result) => `<td>${pct(result.weights[i])}</td>`).join("")}</tr>`).join("")}</tbody>`;
+
+  const charts = document.querySelector("#sleevePieCharts");
+  if (charts) {
+    charts.innerHTML = Object.entries(results).map(([profile, result]) => renderPieCard(
+      profile,
+      state.assets.map((asset, index) => ({
+        label: asset.name,
+        value: result.weights[index] || 0,
+        color: assetColor(asset, index),
+      })),
+      { variant: "sleeve" }
+    )).join("");
+  }
+}
+
+function pieSlicePath(cx, cy, radius, startAngle, endAngle) {
+  const start = {
+    x: cx + radius * Math.cos(startAngle),
+    y: cy + radius * Math.sin(startAngle),
+  };
+  const end = {
+    x: cx + radius * Math.cos(endAngle),
+    y: cy + radius * Math.sin(endAngle),
+  };
+  const largeArc = endAngle - startAngle > Math.PI ? 1 : 0;
+  return `M ${cx} ${cy} L ${start.x.toFixed(3)} ${start.y.toFixed(3)} A ${radius} ${radius} 0 ${largeArc} 1 ${end.x.toFixed(3)} ${end.y.toFixed(3)} Z`;
+}
+
+function renderPieCard(title, items, options = {}) {
+  const visible = items.filter((item) => item.value > 0.0005);
+  const total = visible.reduce((sum, item) => sum + item.value, 0);
+  if (!visible.length || total <= 0) {
+    return `<div class="pie-card"><div class="pie-title">${title}</div><div class="pie-empty">No allocation</div></div>`;
+  }
+  let angle = -Math.PI / 2;
+  const slices = visible.map((item) => {
+    const nextAngle = angle + (item.value / total) * Math.PI * 2;
+    const path = item.value / total > 0.999
+      ? `<circle cx="62" cy="62" r="48" fill="${item.color}"></circle>`
+      : `<path d="${pieSlicePath(62, 62, 48, angle, nextAngle)}" fill="${item.color}"></path>`;
+    angle = nextAngle;
+    return path;
+  }).join("");
+  return `<div class="pie-card">
+    <div class="pie-title">${title}</div>
+    <div class="pie-content">
+      <svg viewBox="0 0 124 124" role="img" aria-label="${title} allocation pie chart">
+        ${slices}
+        <circle cx="62" cy="62" r="48" fill="none" stroke="#ffffff" stroke-width="1.5"></circle>
+      </svg>
+      <div class="pie-legend">
+        ${options.variant === "sleeve"
+          ? visible
+            .sort((a, b) => b.value - a.value)
+            .map((item) => `<div class="sleeve-row">
+              <div class="sleeve-row-label"><i style="--pie-color:${item.color}"></i><span>${item.label}</span><strong>${pct(item.value)}</strong></div>
+              <div class="sleeve-bar"><span style="--pie-color:${item.color}; width:${Math.max(item.value * 100, 1).toFixed(2)}%"></span></div>
+            </div>`).join("")
+          : visible.map((item) => `<span><i style="--pie-color:${item.color}"></i>${item.label} <strong>${pct(item.value)}</strong></span>`).join("")}
+      </div>
+    </div>
+  </div>`;
 }
 
 function renderMvoControls() {
@@ -668,37 +818,6 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
     "Fixed Income International": "Intl Fixed Income",
     "Other Fixed Income": "Other FI",
   }[name] || name);
-  const assetColor = (asset, index) => ({
-    "U.S. Large Cap": "#005f73",
-    "U.S. Mid Cap": "#9b2226",
-    "U.S. Small Cap": "#ee9b00",
-    "International Developed Equity": "#6a4c93",
-    "Emerging Markets Equity": "#2a9d8f",
-    "U.S. REITs": "#bc6c25",
-    "Commodities": "#7f4f24",
-    "Income U.S. - U.S. Treasury": "#1d3557",
-    "Income U.S. Government Related": "#457b9d",
-    "Income U.S. Corporate": "#2d6a4f",
-    "Income U.S. Securitized": "#e76f51",
-    "Fixed Income International": "#3a86ff",
-    "Other Fixed Income": "#7209b7",
-    "Cash": "#6c757d",
-  }[asset.name] || [
-    "#005f73",
-    "#9b2226",
-    "#ee9b00",
-    "#6a4c93",
-    "#2a9d8f",
-    "#bc6c25",
-    "#7f4f24",
-    "#1d3557",
-    "#457b9d",
-    "#2d6a4f",
-    "#e76f51",
-    "#3a86ff",
-    "#7209b7",
-    "#6c757d",
-  ][index % 14]);
   const trianglePoints = (x, y, size = 6) => `${x.toFixed(1)},${(y - size).toFixed(1)} ${(x - size).toFixed(1)},${(y + size).toFixed(1)} ${(x + size).toFixed(1)},${(y + size).toFixed(1)}`;
 
   box.innerHTML = `<div class="frontier-chart-grid">
@@ -787,8 +906,11 @@ function setPath(path, value) {
 
 function resetModel() {
   state = clone(baseData);
+  selectedAssumptionSet = state.selectedAssumptionSet || "CORE";
+  applyAssumptionSet(selectedAssumptionSet);
   selectedAllocationPreset = "CORE";
   selectedSubAllocationPreset = "CORE";
+  applySubAllocationPreset(selectedSubAllocationPreset);
   ensureVolatilityModel();
   applyVolatilityModel();
   renderEditableInputs();
@@ -886,6 +1008,11 @@ document.addEventListener("input", (event) => {
 });
 
 document.addEventListener("change", (event) => {
+  if (event.target.matches("#assumptionSetSelect")) {
+    applyAssumptionSet(event.target.value);
+    runOptimization();
+    return;
+  }
   if (event.target.matches("#mvoProfileSelect")) {
     selectedMvoProfile = event.target.value;
     renderMvo();
@@ -932,11 +1059,14 @@ document.addEventListener("click", (event) => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json").then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260722-source-display-cleanup", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
     state = clone(baseData);
+    selectedAssumptionSet = state.selectedAssumptionSet || "CORE";
+    applyAssumptionSet(selectedAssumptionSet);
+    applySubAllocationPreset(selectedSubAllocationPreset);
     ensureVolatilityModel();
     applyVolatilityModel();
     runOptimization();

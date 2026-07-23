@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Paul Asset Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260722-constraint-presets" />
+    <link rel="stylesheet" href="./styles.css?v=20260722-dashboard-tabs-restored" />
   </head>
   <body>
     <div class="shell">
@@ -46,12 +46,14 @@
           <div class="panel">
             <div id="allocationWeights" class="dashboard-panel active">
               <div class="panel-title">Allocation Weights</div>
+              <div id="allocationPieCharts" class="pie-grid allocation-pie-grid"></div>
               <div class="table-wrap">
                 <table id="allocationWeightsTable"></table>
               </div>
             </div>
             <div id="subSleeveWeights" class="dashboard-panel">
               <div class="panel-title">Sub-Sleeve Weights</div>
+              <div id="sleevePieCharts" class="pie-grid sleeve-pie-grid"></div>
               <div class="table-wrap">
                 <table id="weightsTable"></table>
               </div>
@@ -107,6 +109,12 @@
               <h2>Asset Assumptions</h2>
               <p>Edit return and volatility assumptions. Sleeve range constraints are managed on the Model Constraints page.</p>
             </div>
+            <div class="select-control">
+              <label for="assumptionSetSelect">Assumption Set</label>
+              <select id="assumptionSetSelect">
+                <option value="CORE" selected>CORE</option>
+              </select>
+            </div>
           </div>
           <div class="table-wrap">
             <table id="assetsTable"></table>
@@ -148,6 +156,6 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260722-cleaner-frontier"></script>
+    <script src="./app.js?v=20260722-source-display-cleanup"></script>
   </body>
 </html>
