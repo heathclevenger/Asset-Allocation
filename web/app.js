@@ -14,6 +14,11 @@ let selectedSubAllocationPreset = "CORE";
 let selectedAssumptionSet = "CORE";
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
+const escapeHtml = (value) => String(value)
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;");
 const defaultVolatilityPercentiles = {
   "Conservative": 25,
   "Balanced": 40,
@@ -696,6 +701,30 @@ function pieSlicePath(cx, cy, radius, startAngle, endAngle) {
   return `M ${cx} ${cy} L ${start.x.toFixed(3)} ${start.y.toFixed(3)} A ${radius} ${radius} 0 ${largeArc} 1 ${end.x.toFixed(3)} ${end.y.toFixed(3)} Z`;
 }
 
+function pieSliceMarkup(item, total, startAngle, endAngle) {
+  const isFull = item.value / total > 0.999;
+  const shape = isFull
+    ? `<circle cx="62" cy="62" r="48" fill="${item.color}"></circle>`
+    : `<path d="${pieSlicePath(62, 62, 48, startAngle, endAngle)}" fill="${item.color}"></path>`;
+  const midAngle = isFull ? -Math.PI / 2 : (startAngle + endAngle) / 2;
+  const anchorX = 62 + 34 * Math.cos(midAngle);
+  const anchorY = 62 + 34 * Math.sin(midAngle);
+  const tooltipW = 112;
+  const tooltipH = 34;
+  const tooltipX = Math.max(2, Math.min(124 - tooltipW - 2, anchorX - tooltipW / 2));
+  const tooltipY = Math.max(2, Math.min(124 - tooltipH - 2, anchorY < 62 ? anchorY + 10 : anchorY - tooltipH - 10));
+  const label = escapeHtml(item.label);
+  const shortLabel = label.length > 28 ? `${label.slice(0, 25)}...` : label;
+  return `<g class="pie-slice" tabindex="0" role="button" aria-label="${label}: ${pct(item.value)}" data-tooltip-title="${label}" data-tooltip-body="${pct(item.value)}">
+    ${shape}
+    <g class="pie-tooltip" transform="translate(${tooltipX.toFixed(1)}, ${tooltipY.toFixed(1)})">
+      <rect x="0" y="0" width="${tooltipW}" height="${tooltipH}" rx="3"></rect>
+      <text x="7" y="14">${shortLabel}</text>
+      <text x="7" y="27">${pct(item.value)}</text>
+    </g>
+  </g>`;
+}
+
 function renderPieCard(title, items, options = {}) {
   const visible = items.filter((item) => item.value > 0.0005);
   const total = visible.reduce((sum, item) => sum + item.value, 0);
@@ -705,9 +734,7 @@ function renderPieCard(title, items, options = {}) {
   let angle = -Math.PI / 2;
   const slices = visible.map((item) => {
     const nextAngle = angle + (item.value / total) * Math.PI * 2;
-    const path = item.value / total > 0.999
-      ? `<circle cx="62" cy="62" r="48" fill="${item.color}"></circle>`
-      : `<path d="${pieSlicePath(62, 62, 48, angle, nextAngle)}" fill="${item.color}"></path>`;
+    const path = pieSliceMarkup(item, total, angle, nextAngle);
     angle = nextAngle;
     return path;
   }).join("");
@@ -745,9 +772,7 @@ function renderAllocationSummaryCard(profileName, result, profile) {
   let angle = -Math.PI / 2;
   const slices = items.map((item) => {
     const nextAngle = angle + (item.value / total) * Math.PI * 2;
-    const path = item.value / total > 0.999
-      ? `<circle cx="62" cy="62" r="48" fill="${item.color}"></circle>`
-      : `<path d="${pieSlicePath(62, 62, 48, angle, nextAngle)}" fill="${item.color}"></path>`;
+    const path = pieSliceMarkup(item, total, angle, nextAngle);
     angle = nextAngle;
     return path;
   }).join("");
@@ -838,6 +863,7 @@ function renderMvo() {
 
 function renderFrontierChart(selected, frontier, assetPoints, profile) {
   const box = document.querySelector("#frontierChart");
+  const region = globalFeasibleRegion(selected);
   const benchmarkPoints = (state.benchmarks || []).map((benchmark) => ({
     benchmark,
     stats: {
@@ -845,7 +871,9 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
       volatility: benchmark.volatility,
     },
   }));
-  const all = [...frontier, ...assetPoints, ...benchmarkPoints, selected];
+  const all = [...frontier, ...assetPoints, ...benchmarkPoints, selected, ...region.points.map((point) => ({ stats: point.stats }))];
+  const regionDotStep = Math.max(1, Math.ceil(region.points.length / 260));
+  const visibleRegionPoints = region.points.filter((_, index) => index % regionDotStep === 0);
   const minVol = Math.min(...all.map((p) => p.stats.volatility));
   const maxVol = Math.max(...all.map((p) => p.stats.volatility));
   const minReturn = Math.min(...all.map((p) => p.stats.expectedReturn));
@@ -887,12 +915,19 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
     return path;
   };
   const frontierPath = smoothPath(frontier);
+  const regionPolygon = region.hull.map((point) => `${xScale(point.x).toFixed(1)},${yScale(point.y).toFixed(1)}`).join(" ");
   const xTicks = Array.from({ length: 6 }, (_, i) => xMin + ((xMax - xMin) * i) / 5);
   const yTicks = Array.from({ length: 6 }, (_, i) => yMin + ((yMax - yMin) * i) / 5);
   const bandX = xScale(profile.targetVolMin);
   const bandWidth = Math.max(2, xScale(profile.targetVolMax) - bandX);
   const selectedX = xScale(selected.stats.volatility);
   const selectedY = yScale(selected.stats.expectedReturn);
+  const regionShape = region.hull.length >= 3
+    ? `<polygon points="${regionPolygon}" fill="#8ecae6" opacity="0.32" stroke="#2f80b7" stroke-width="2" stroke-linejoin="round"></polygon>`
+    : region.hull.length === 2
+      ? `<line x1="${xScale(region.hull[0].x).toFixed(1)}" y1="${yScale(region.hull[0].y).toFixed(1)}" x2="${xScale(region.hull[1].x).toFixed(1)}" y2="${yScale(region.hull[1].y).toFixed(1)}" stroke="#8ecae6" stroke-width="14" stroke-linecap="round" opacity="0.42"></line>
+        <line x1="${xScale(region.hull[0].x).toFixed(1)}" y1="${yScale(region.hull[0].y).toFixed(1)}" x2="${xScale(region.hull[1].x).toFixed(1)}" y2="${yScale(region.hull[1].y).toFixed(1)}" stroke="#2f80b7" stroke-width="2.2" stroke-linecap="round"></line>`
+      : "";
   const constraintStatus = (actual, min, max) => (actual >= min - 0.0001 && actual <= max + 0.0001 ? "In range" : "Out of range");
   const categoryRows = state.categories.map((category) => {
     const bounds = profile.categoryBounds[category];
@@ -952,13 +987,15 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
     <rect x="${bandX.toFixed(1)}" y="${pad.top}" width="${bandWidth.toFixed(1)}" height="${plotH}" fill="#00a95a" opacity="0.11"></rect>
     <line x1="${bandX.toFixed(1)}" y1="${pad.top}" x2="${bandX.toFixed(1)}" y2="${height - pad.bottom}" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="5 5"></line>
     <line x1="${(bandX + bandWidth).toFixed(1)}" y1="${pad.top}" x2="${(bandX + bandWidth).toFixed(1)}" y2="${height - pad.bottom}" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="5 5"></line>
+    ${regionShape}
+    ${visibleRegionPoints.map((point) => `<circle cx="${xScale(point.x).toFixed(1)}" cy="${yScale(point.y).toFixed(1)}" r="1.8" fill="#2f80b7" opacity="0.22"></circle>`).join("")}
     ${assetPoints.map((p, index) => {
       const x = xScale(p.stats.volatility);
       const y = yScale(p.stats.expectedReturn);
       const tooltipW = 190;
       const tooltipH = 48;
       const tooltip = tooltipPosition(x, y, tooltipW, tooltipH);
-      return `<g class="asset-point" tabindex="0" role="button" aria-label="${p.asset.name}: return ${pct(p.stats.expectedReturn)}, volatility ${pct(p.stats.volatility)}">
+      return `<g class="asset-point" tabindex="0" role="button" aria-label="${p.asset.name}: return ${pct(p.stats.expectedReturn)}, volatility ${pct(p.stats.volatility)}" data-tooltip-title="${escapeHtml(p.asset.name)}" data-tooltip-body="Return ${pct(p.stats.expectedReturn)} | Vol ${pct(p.stats.volatility)}">
         <polygon points="${trianglePoints(x, y, 6)}" fill="${assetColor(p.asset, index)}" stroke="#101820" stroke-width="1.1"></polygon>
         <g class="asset-tooltip" transform="translate(${tooltip.x.toFixed(1)}, ${tooltip.y.toFixed(1)})">
           <rect x="0" y="0" width="${tooltipW}" height="${tooltipH}" rx="3"></rect>
@@ -973,7 +1010,7 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
       const tooltipW = 190;
       const tooltipH = 48;
       const tooltip = tooltipPosition(x, y, tooltipW, tooltipH);
-      return `<g class="benchmark-point" tabindex="0" role="button" aria-label="${p.benchmark.name} benchmark">
+      return `<g class="benchmark-point" tabindex="0" role="button" aria-label="${p.benchmark.name} benchmark" data-tooltip-title="${escapeHtml(p.benchmark.name)}" data-tooltip-body="Reference benchmark">
         <rect x="${(x - 6).toFixed(1)}" y="${(y - 6).toFixed(1)}" width="12" height="12" fill="${benchmarkColor(p.benchmark.name)}" stroke="#101820" stroke-width="1.2"></rect>
         <g class="asset-tooltip" transform="translate(${tooltip.x.toFixed(1)}, ${tooltip.y.toFixed(1)})">
           <rect x="0" y="0" width="${tooltipW}" height="${tooltipH}" rx="3"></rect>
@@ -983,7 +1020,7 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
       </g>`;
     }).join("")}
     <path d="${frontierPath}" fill="none" stroke="#101820" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
-    <g class="selected-point" tabindex="0" role="button" aria-label="${selected.profileName}: return ${pct(selected.stats.expectedReturn)}, volatility ${pct(selected.stats.volatility)}">
+    <g class="selected-point" tabindex="0" role="button" aria-label="${selected.profileName}: return ${pct(selected.stats.expectedReturn)}, volatility ${pct(selected.stats.volatility)}" data-tooltip-title="${escapeHtml(selected.profileName)}" data-tooltip-body="Return ${pct(selected.stats.expectedReturn)} | Vol ${pct(selected.stats.volatility)}">
       <circle cx="${selectedX.toFixed(1)}" cy="${selectedY.toFixed(1)}" r="8" fill="#00a95a" stroke="#101820" stroke-width="2"></circle>
       <g class="asset-tooltip" transform="translate(${selectedTooltip.x.toFixed(1)}, ${selectedTooltip.y.toFixed(1)})">
         <rect x="0" y="0" width="190" height="48" rx="3"></rect>
@@ -992,14 +1029,14 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
       </g>
     </g>
     <g transform="translate(${pad.left}, 14)">
-      <line x1="0" y1="0" x2="36" y2="0" stroke="#101820" stroke-width="2.2"></line><text x="44" y="4" class="frontier-axis">Efficient frontier</text>
-      <circle cx="178" cy="0" r="6" fill="#00a95a" stroke="#101820" stroke-width="1.5"></circle><text x="190" y="4" class="frontier-axis">Selected portfolio</text>
-      <rect x="330" y="-7" width="16" height="14" fill="#00a95a" opacity="0.11" stroke="#00a95a"></rect>
-      <line x1="330" y1="-8" x2="330" y2="8" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="4 3"></line>
-      <line x1="346" y1="-8" x2="346" y2="8" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="4 3"></line>
-      <text x="354" y="4" class="frontier-axis">Target Volatility</text>
-      <rect x="500" y="-6" width="12" height="12" fill="#101820" stroke="#101820" stroke-width="1.2"></rect><text x="518" y="4" class="frontier-axis">S&amp;P 500</text>
-      <rect x="580" y="-6" width="12" height="12" fill="#8a8f98" stroke="#101820" stroke-width="1.2"></rect><text x="598" y="4" class="frontier-axis">AGG</text>
+      <circle cx="6" cy="0" r="6" fill="#00a95a" stroke="#101820" stroke-width="1.5"></circle><text x="18" y="4" class="frontier-axis">Selected portfolio</text>
+      <rect x="158" y="-7" width="16" height="14" fill="#8ecae6" opacity="0.45" stroke="#2f80b7"></rect><text x="182" y="4" class="frontier-axis">Allowable region</text>
+      <rect x="320" y="-7" width="16" height="14" fill="#00a95a" opacity="0.11" stroke="#00a95a"></rect>
+      <line x1="320" y1="-8" x2="320" y2="8" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="4 3"></line>
+      <line x1="336" y1="-8" x2="336" y2="8" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="4 3"></line>
+      <text x="344" y="4" class="frontier-axis">Target Volatility</text>
+      <rect x="490" y="-6" width="12" height="12" fill="#101820" stroke="#101820" stroke-width="1.2"></rect><text x="508" y="4" class="frontier-axis">S&amp;P 500</text>
+      <rect x="570" y="-6" width="12" height="12" fill="#8a8f98" stroke="#101820" stroke-width="1.2"></rect><text x="588" y="4" class="frontier-axis">AGG</text>
     </g>
     <text x="${width / 2}" y="${height - 6}" text-anchor="middle" class="frontier-axis">Annualized volatility</text>
     <text x="16" y="${height / 2}" text-anchor="middle" transform="rotate(-90 16 ${height / 2})" class="frontier-axis">Compound return</text>
@@ -1150,6 +1187,72 @@ function commitInputUpdate(input) {
   runOptimization();
 }
 
+function showHoverTooltip(target, event = null) {
+  const title = target.dataset.tooltipTitle;
+  const body = target.dataset.tooltipBody;
+  if (!title) return;
+  let tooltip = document.querySelector("#hoverTooltip");
+  if (!tooltip) {
+    tooltip = document.createElement("div");
+    tooltip.id = "hoverTooltip";
+    tooltip.className = "hover-tooltip";
+    document.body.appendChild(tooltip);
+  }
+  tooltip.replaceChildren();
+  const titleNode = document.createElement("strong");
+  titleNode.textContent = title;
+  tooltip.appendChild(titleNode);
+  if (body) {
+    const bodyNode = document.createElement("span");
+    bodyNode.textContent = body;
+    tooltip.appendChild(bodyNode);
+  }
+  tooltip.classList.add("visible");
+  moveHoverTooltip(event, target);
+}
+
+function moveHoverTooltip(event, fallbackTarget = null) {
+  const tooltip = document.querySelector("#hoverTooltip");
+  if (!tooltip?.classList.contains("visible")) return;
+  const rect = tooltip.getBoundingClientRect();
+  const sourceRect = fallbackTarget?.getBoundingClientRect?.();
+  const sourceX = event?.clientX ?? (sourceRect ? sourceRect.left + sourceRect.width / 2 : 24);
+  const sourceY = event?.clientY ?? (sourceRect ? sourceRect.top + sourceRect.height / 2 : 24);
+  let left = sourceX + 14;
+  let top = sourceY + 14;
+  if (left + rect.width > window.innerWidth - 10) left = sourceX - rect.width - 14;
+  if (top + rect.height > window.innerHeight - 10) top = sourceY - rect.height - 14;
+  tooltip.style.left = `${Math.max(10, left)}px`;
+  tooltip.style.top = `${Math.max(10, top)}px`;
+}
+
+function hideHoverTooltip() {
+  document.querySelector("#hoverTooltip")?.classList.remove("visible");
+}
+
+document.addEventListener("mouseover", (event) => {
+  const target = event.target.closest("[data-tooltip-title]");
+  if (target) showHoverTooltip(target, event);
+});
+
+document.addEventListener("mousemove", (event) => {
+  if (event.target.closest("[data-tooltip-title]")) moveHoverTooltip(event);
+});
+
+document.addEventListener("mouseout", (event) => {
+  const target = event.target.closest("[data-tooltip-title]");
+  if (target && !target.contains(event.relatedTarget)) hideHoverTooltip();
+});
+
+document.addEventListener("focusin", (event) => {
+  const target = event.target.closest("[data-tooltip-title]");
+  if (target) showHoverTooltip(target);
+});
+
+document.addEventListener("focusout", (event) => {
+  if (event.target.closest("[data-tooltip-title]")) hideHoverTooltip();
+});
+
 document.addEventListener("input", (event) => {
   if (!event.target.matches("input[data-path]")) return;
   updateInputState(event.target);
@@ -1205,7 +1308,7 @@ document.addEventListener("click", (event) => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260723-remove-allowable-region", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260723-global-tooltips", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });

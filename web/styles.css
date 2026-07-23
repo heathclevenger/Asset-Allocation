@@ -433,6 +433,7 @@ p {
 .pie-content svg {
   width: 92px;
   height: 92px;
+  overflow: visible;
 }
 
 .sleeve-pie-grid .pie-content svg {
@@ -511,6 +512,53 @@ p {
 .pie-empty {
   color: #536575;
   font-weight: 700;
+}
+
+.pie-slice {
+  cursor: pointer;
+  outline: none;
+}
+
+.pie-slice > path,
+.pie-slice > circle {
+  transition: filter 120ms ease, stroke-width 120ms ease;
+}
+
+.pie-slice:hover > path,
+.pie-slice:focus > path,
+.pie-slice:hover > circle,
+.pie-slice:focus > circle {
+  filter: drop-shadow(0 2px 3px rgba(16, 24, 32, 0.22));
+  stroke: #ffffff;
+  stroke-width: 1.5;
+}
+
+.pie-tooltip {
+  display: none !important;
+  pointer-events: none;
+}
+
+.pie-slice:hover .pie-tooltip,
+.pie-slice:focus .pie-tooltip {
+  display: block;
+}
+
+.pie-tooltip rect {
+  fill: #ffffff;
+  stroke: #101820;
+  stroke-width: 1;
+  filter: drop-shadow(0 2px 4px rgba(16, 24, 32, 0.2));
+}
+
+.pie-tooltip text {
+  fill: #101820;
+  font-size: 7px;
+  font-weight: 800;
+}
+
+.pie-tooltip text + text {
+  fill: #263746;
+  font-size: 8px;
 }
 
 .profile-panel {
@@ -655,7 +703,7 @@ p {
 }
 
 .asset-tooltip {
-  display: none;
+  display: none !important;
   pointer-events: none;
 }
 
@@ -685,6 +733,41 @@ p {
   fill: #263746;
   font-size: 10px;
   font-weight: 700;
+}
+
+.hover-tooltip {
+  position: fixed;
+  z-index: 9999;
+  display: none;
+  min-width: 132px;
+  max-width: 240px;
+  padding: 8px 10px;
+  background: #ffffff;
+  border: 1px solid #101820;
+  box-shadow: 0 3px 10px rgba(16, 24, 32, 0.22);
+  color: #101820;
+  font-size: 11px;
+  line-height: 1.25;
+  pointer-events: none;
+}
+
+.hover-tooltip.visible {
+  display: block;
+}
+
+.hover-tooltip strong,
+.hover-tooltip span {
+  display: block;
+}
+
+.hover-tooltip strong {
+  font-weight: 900;
+}
+
+.hover-tooltip span {
+  margin-top: 3px;
+  color: #263746;
+  font-weight: 800;
 }
 
 .frontier-chart-grid {
