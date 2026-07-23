@@ -1028,15 +1028,15 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
         <text x="10" y="36">Return ${pct(selected.stats.expectedReturn)} | Vol ${pct(selected.stats.volatility)}</text>
       </g>
     </g>
-    <g transform="translate(${pad.left}, 14)">
-      <circle cx="6" cy="0" r="6" fill="#00a95a" stroke="#101820" stroke-width="1.5"></circle><text x="18" y="4" class="frontier-axis">Selected portfolio</text>
-      <rect x="158" y="-7" width="16" height="14" fill="#8ecae6" opacity="0.45" stroke="#2f80b7"></rect><text x="182" y="4" class="frontier-axis">Allowable region</text>
-      <rect x="320" y="-7" width="16" height="14" fill="#00a95a" opacity="0.11" stroke="#00a95a"></rect>
-      <line x1="320" y1="-8" x2="320" y2="8" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="4 3"></line>
-      <line x1="336" y1="-8" x2="336" y2="8" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="4 3"></line>
-      <text x="344" y="4" class="frontier-axis">Target Volatility</text>
-      <rect x="490" y="-6" width="12" height="12" fill="#101820" stroke="#101820" stroke-width="1.2"></rect><text x="508" y="4" class="frontier-axis">S&amp;P 500</text>
-      <rect x="570" y="-6" width="12" height="12" fill="#8a8f98" stroke="#101820" stroke-width="1.2"></rect><text x="588" y="4" class="frontier-axis">AGG</text>
+    <g transform="translate(${pad.left + 8}, 14)">
+      <circle cx="0" cy="0" r="6" fill="#00a95a" stroke="#101820" stroke-width="1.5"></circle><text x="14" y="4" class="frontier-axis">Selected portfolio</text>
+      <rect x="168" y="-7" width="16" height="14" fill="#8ecae6" opacity="0.45" stroke="#2f80b7"></rect><text x="192" y="4" class="frontier-axis">Allowable region</text>
+      <rect x="350" y="-7" width="16" height="14" fill="#00a95a" opacity="0.11" stroke="#00a95a"></rect>
+      <line x1="350" y1="-8" x2="350" y2="8" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="4 3"></line>
+      <line x1="366" y1="-8" x2="366" y2="8" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="4 3"></line>
+      <text x="374" y="4" class="frontier-axis">Target Volatility</text>
+      <rect x="550" y="-6" width="12" height="12" fill="#101820" stroke="#101820" stroke-width="1.2"></rect><text x="568" y="4" class="frontier-axis">S&amp;P 500</text>
+      <rect x="635" y="-6" width="12" height="12" fill="#8a8f98" stroke="#101820" stroke-width="1.2"></rect><text x="653" y="4" class="frontier-axis">AGG</text>
     </g>
     <text x="${width / 2}" y="${height - 6}" text-anchor="middle" class="frontier-axis">Annualized volatility</text>
     <text x="16" y="${height / 2}" text-anchor="middle" transform="rotate(-90 16 ${height / 2})" class="frontier-axis">Compound return</text>
@@ -1308,7 +1308,7 @@ document.addEventListener("click", (event) => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260723-global-tooltips", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260723-legend-polish", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });

@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 
 $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $VenvPython = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
-$JpmMatrix = Join-Path $ProjectRoot "inputs\matrix-usd.xlsx"
+$JpmMatrix = Join-Path $ProjectRoot "inputs\jpm_matrix.xlsx"
 
 if (-not (Test-Path $VenvPython)) {
     Write-Host "Virtual environment not found. Create it first with:"
@@ -15,7 +15,7 @@ if (-not (Test-Path $VenvPython)) {
 
 if (-not (Test-Path $JpmMatrix)) {
     Write-Host "JPM matrix file not found. Save the quarterly JPM file here before refreshing:"
-    Write-Host "  inputs\matrix-usd.xlsx"
+    Write-Host "  inputs\jpm_matrix.xlsx"
     exit 1
 }
 

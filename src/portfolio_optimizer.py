@@ -15,7 +15,7 @@ from scipy.optimize import minimize
 BASE_DIR = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = BASE_DIR / "outputs"
 OUTPUT_FILE = OUTPUT_DIR / "paul_asset_allocation_model.xlsx"
-JPM_MATRIX_FILE = BASE_DIR / "inputs" / "matrix-usd.xlsx"
+JPM_MATRIX_FILE = BASE_DIR / "inputs" / "jpm_matrix.xlsx"
 CASH_TARGET = 0.01
 CATEGORIES = ["Equity", "Fixed Income", "Alternatives", "Cash"]
 MODERATE_VOL_TARGET = 0.130
@@ -53,13 +53,13 @@ class Asset:
 
 
 ASSETS: List[Asset] = [
-    Asset("U.S. Large Cap", "Equity", ("U.S. Large Cap",), 0.00, 0.45, "U.S. Large Cap"),
-    Asset("U.S. Mid Cap", "Equity", ("U.S. Mid Cap",), 0.00, 0.10, "U.S. Mid Cap"),
+    Asset("U.S. Large Cap", "Equity", ("U.S. Large Cap",), 0.00, 0.55, "U.S. Large Cap"),
+    Asset("U.S. Mid Cap", "Equity", ("U.S. Mid Cap",), 0.00, 0.08, "U.S. Mid Cap"),
     Asset("U.S. Small Cap", "Equity", ("U.S. Small Cap",), 0.00, 0.03, "U.S. Small Cap"),
-    Asset("U.S. Value", "Equity", ("U.S. Equity Value Factor",), 0.00, 0.07, "U.S. Equity Value Factor"),
-    Asset("U.S. Growth", "Equity", ("U.S. Large Cap",), 0.00, 0.07, "Correlation proxy: U.S. Large Cap"),
-    Asset("U.S. Income", "Equity", ("U.S. Equity Dividend Yield Factor",), 0.00, 0.07, "U.S. Equity Dividend Yield Factor"),
-    Asset("U.S. Quality", "Equity", ("U.S. Equity Quality Factor",), 0.00, 0.07, "U.S. Equity Quality Factor"),
+    Asset("U.S. Value", "Equity", ("U.S. Equity Value Factor",), 0.00, 0.05, "U.S. Equity Value Factor"),
+    Asset("U.S. Growth", "Equity", ("U.S. Large Cap",), 0.00, 0.05, "Correlation proxy: U.S. Large Cap"),
+    Asset("U.S. Income", "Equity", ("U.S. Equity Dividend Yield Factor",), 0.00, 0.05, "U.S. Equity Dividend Yield Factor"),
+    Asset("U.S. Quality", "Equity", ("U.S. Equity Quality Factor",), 0.00, 0.05, "U.S. Equity Quality Factor"),
     Asset("International Developed Equity", "Equity", ("EAFE Equity",), 0.00, 0.15, "EAFE Equity"),
     Asset("Emerging Markets Equity", "Equity", ("Emerging Markets Equity",), 0.00, 0.03, "Emerging Markets Equity"),
     Asset("U.S. REITs", "Alternatives", ("U.S. REITs",), 0.00, 0.00, "U.S. REITs"),
@@ -638,7 +638,7 @@ def build_workbook(results: Dict[str, object]) -> None:
         ("Source file", f"Matrix file read from {jpm_matrix_path()}; compound return, annualized volatility, and correlations are used.", "Confirm source file version each quarter."),
         ("PDF attachments", "Scan_260717_102740.pdf and Scan_260717_102947.pdf are present but no longer used in the optimizer.", "Keep or remove from source archive."),
         ("Return source", "Compound return only.", "Confirm this remains the preferred expected return basis."),
-        ("Risk model", "Uses annualized volatility and correlation matrix from matrix-usd.xlsx.", "Review asset mappings for grouped fixed income sleeves."),
+        ("Risk model", "Uses annualized volatility and correlation matrix from jpm_matrix.xlsx.", "Review asset mappings for grouped fixed income sleeves."),
         ("Monte Carlo", "Removed from all calculations for now.", "Redesign simulation methodology before adding it back."),
         ("Five portfolios", "Category bands and target volatility ranges are explicit on Constraints tab; cash is hard-coded with both minimum and maximum at 1% in every model.", "Approve or revise the equity/fixed income/alternatives policy bands and target volatility bands."),
         ("Tax/location", "Not modeled.", "Decide taxable vs qualified account treatment, muni bond role, and tax-aware placement."),
