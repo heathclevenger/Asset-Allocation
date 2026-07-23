@@ -626,6 +626,17 @@ p {
   padding: 10px;
 }
 
+.percentile-shift-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.percentile-shift-buttons button {
+  min-height: 34px;
+  padding: 8px 10px;
+}
+
 .unit-input {
   display: grid;
   grid-template-columns: minmax(64px, 1fr) auto;

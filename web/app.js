@@ -752,10 +752,10 @@ function renderProfiles() {
     </div>`).join("")}
   </div>
   <div class="percentile-shift-field">
-    <label for="percentileShiftInput">Shift All Percentiles</label>
-    <div class="unit-input">
-      <input id="percentileShiftInput" type="number" step="1" placeholder="0" />
-      <span>%</span>
+    <label>Shift All Percentiles</label>
+    <div class="percentile-shift-buttons">
+      <button type="button" class="secondary" data-percentile-shift="-5">Down 5%</button>
+      <button type="button" class="secondary" data-percentile-shift="5">Up 5%</button>
     </div>
   </div>
   <p>These percentiles set each portfolio's target volatility range from the portfolios that are feasible under the current allocation and sub-allocation constraints. Lower percentiles create lower-risk targets; higher percentiles create higher-risk targets. Starting defaults are 5%, 35%, 55%, 75%, and 95%.</p>`;
@@ -1401,17 +1401,14 @@ function commitInputUpdate(input) {
   runOptimization();
 }
 
-function applyPercentileShift(input) {
-  const shift = Number.parseFloat(input.value);
+function applyPercentileShift(shift) {
   if (!Number.isFinite(shift) || Math.abs(shift) < 1e-9) {
-    input.value = "";
     return;
   }
   ensureVolatilityModel();
   Object.values(state.volatilityModel.profiles).forEach((rule) => {
     rule.percentile = Math.max(0, Math.min(100, (rule.percentile || 0) + shift));
   });
-  input.value = "";
   runOptimization();
 }
 
@@ -1488,10 +1485,6 @@ document.addEventListener("input", (event) => {
 });
 
 document.addEventListener("change", (event) => {
-  if (event.target.matches("#percentileShiftInput")) {
-    applyPercentileShift(event.target);
-    return;
-  }
   if (event.target.matches("#assumptionSetSelect")) {
     applyAssumptionSet(event.target.value);
     runOptimization();
@@ -1516,13 +1509,6 @@ document.addEventListener("change", (event) => {
   commitInputUpdate(event.target);
 });
 
-document.addEventListener("keydown", (event) => {
-  if (event.target.matches("#percentileShiftInput") && event.key === "Enter") {
-    event.preventDefault();
-    applyPercentileShift(event.target);
-  }
-});
-
 document.addEventListener("click", (event) => {
   const tab = event.target.closest(".tab");
   if (tab) {
@@ -1542,12 +1528,15 @@ document.addEventListener("click", (event) => {
   }
 
   const button = event.target.closest("button");
+  if (button?.dataset.percentileShift) {
+    applyPercentileShift(Number.parseFloat(button.dataset.percentileShift));
+  }
   if (button?.id === "resetModel") resetModel();
 });
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260723-allowable-12500", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260723-percentile-shift-buttons", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
