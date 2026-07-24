@@ -220,13 +220,15 @@ p {
   margin-bottom: 0;
 }
 
-.dashboard-tab {
+.dashboard-tab,
+.fund-tab {
   border-radius: 4px 4px 0 0;
   background: #d9dee3;
   color: #111;
 }
 
-.dashboard-tab.active {
+.dashboard-tab.active,
+.fund-tab.active {
   background: #000;
   color: #fff;
 }
@@ -238,6 +240,44 @@ p {
 
 .dashboard-panel.active {
   display: block;
+}
+
+.fund-model-table th,
+.fund-model-table td {
+  text-align: center;
+}
+
+.fund-model-table .fund-ticker {
+  font-weight: 800;
+}
+
+.fund-section-row td {
+  background: #c6dfb6;
+  font-weight: 900;
+  text-align: center;
+}
+
+.fund-section-row:nth-of-type(2n) td {
+  background: #bdd7ee;
+}
+
+.fund-check {
+  margin-top: 18px;
+}
+
+.fund-warning {
+  display: grid;
+  gap: 4px;
+  margin-top: 14px;
+  border-left: 4px solid #c99700;
+  background: #fff8df;
+  padding: 10px 12px;
+  color: #263746;
+  font-size: 12px;
+}
+
+.fund-warning strong {
+  font-size: 13px;
 }
 
 .pie-grid {

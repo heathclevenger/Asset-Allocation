@@ -161,7 +161,7 @@
       "return": 0.038635009898400005,
       "volatility": 0.014780531045622988,
       "minWeight": 0.0,
-      "maxWeight": 0.4,
+      "maxWeight": 0.5,
       "sourceMapping": "Average of available source assumptions",
       "_distinctSourceCount": 5
     },
@@ -174,7 +174,7 @@
       "return": 0.04194449137133333,
       "volatility": 0.039317852367530874,
       "minWeight": 0.0,
-      "maxWeight": 0.8,
+      "maxWeight": 0.5,
       "sourceMapping": "Average of available source assumptions",
       "_distinctSourceCount": 6
     },
@@ -200,7 +200,7 @@
       "return": 0.0516179765925,
       "volatility": 0.060255405979988165,
       "minWeight": 0.0,
-      "maxWeight": 0.15,
+      "maxWeight": 0.4,
       "sourceMapping": "Average of available source assumptions",
       "_distinctSourceCount": 6
     },
@@ -213,7 +213,7 @@
       "return": 0.057138708312166664,
       "volatility": 0.07469913969925997,
       "minWeight": 0.0,
-      "maxWeight": 0.05,
+      "maxWeight": 0.1,
       "sourceMapping": "Average of available source assumptions",
       "_distinctSourceCount": 6
     },
@@ -398,7 +398,7 @@
         "return": 0.038635009898400005,
         "volatility": 0.014780531045622988,
         "minWeight": 0.0,
-        "maxWeight": 0.4,
+        "maxWeight": 0.5,
         "sourceMapping": "Average of available source assumptions",
         "_distinctSourceCount": 5
       },
@@ -411,7 +411,7 @@
         "return": 0.04194449137133333,
         "volatility": 0.039317852367530874,
         "minWeight": 0.0,
-        "maxWeight": 0.8,
+        "maxWeight": 0.5,
         "sourceMapping": "Average of available source assumptions",
         "_distinctSourceCount": 6
       },
@@ -437,7 +437,7 @@
         "return": 0.0516179765925,
         "volatility": 0.060255405979988165,
         "minWeight": 0.0,
-        "maxWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "Average of available source assumptions",
         "_distinctSourceCount": 6
       },
@@ -450,7 +450,7 @@
         "return": 0.057138708312166664,
         "volatility": 0.07469913969925997,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.1,
         "sourceMapping": "Average of available source assumptions",
         "_distinctSourceCount": 6
       },
@@ -624,7 +624,7 @@
         "return": 0.039,
         "volatility": 0.01632258108311494,
         "minWeight": 0.0,
-        "maxWeight": 0.4,
+        "maxWeight": 0.5,
         "sourceMapping": "Proxy: U.S. Short Duration Government/Credit"
       },
       {
@@ -636,7 +636,7 @@
         "return": 0.038,
         "volatility": 0.03481191874818525,
         "minWeight": 0.0,
-        "maxWeight": 0.8,
+        "maxWeight": 0.5,
         "sourceMapping": "U.S. Intermediate Treasuries"
       },
       {
@@ -660,7 +660,7 @@
         "return": 0.05,
         "volatility": 0.07388216566592899,
         "minWeight": 0.0,
-        "maxWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "U.S. Inv Grade Corporate Bonds"
       },
       {
@@ -672,7 +672,7 @@
         "return": 0.061,
         "volatility": 0.08738054572155979,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.1,
         "sourceMapping": "U.S. High Yield Bonds"
       },
       {
@@ -844,7 +844,7 @@
         "return": 0.04,
         "volatility": 0.017,
         "minWeight": 0.0,
-        "maxWeight": 0.4,
+        "maxWeight": 0.5,
         "sourceMapping": "Vanguard U.S. short-term Treasury bonds"
       },
       {
@@ -856,7 +856,7 @@
         "return": 0.042,
         "volatility": 0.051,
         "minWeight": 0.0,
-        "maxWeight": 0.8,
+        "maxWeight": 0.5,
         "sourceMapping": "Vanguard U.S. intermediate-term Treasury bonds"
       },
       {
@@ -880,7 +880,7 @@
         "return": 0.048,
         "volatility": 0.064,
         "minWeight": 0.0,
-        "maxWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "Vanguard U.S. credit"
       },
       {
@@ -892,7 +892,7 @@
         "return": 0.052000000000000005,
         "volatility": 0.096,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.1,
         "sourceMapping": "Vanguard U.S. high-yield corporate bonds"
       },
       {
@@ -1067,7 +1067,7 @@
         "return": 0.038635009898400005,
         "volatility": 0.014780531045622988,
         "minWeight": 0.0,
-        "maxWeight": 0.4,
+        "maxWeight": 0.5,
         "sourceMapping": "BlackRock 2026 was not given for this sleeve; AVERAGE assumptions are used.",
         "_distinctSourceCount": 5
       },
@@ -1080,7 +1080,7 @@
         "return": 0.044505202,
         "volatility": 0.0318852,
         "minWeight": 0.0,
-        "maxWeight": 0.8,
+        "maxWeight": 0.5,
         "sourceMapping": "BlackRock US government (10- years)"
       },
       {
@@ -1104,7 +1104,7 @@
         "return": 0.054139111,
         "volatility": 0.057610591,
         "minWeight": 0.0,
-        "maxWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "BlackRock US credit (all maturities)"
       },
       {
@@ -1116,7 +1116,7 @@
         "return": 0.064636553,
         "volatility": 0.063561138,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.1,
         "sourceMapping": "BlackRock US high yield"
       },
       {
@@ -1292,7 +1292,7 @@
         "return": 0.032,
         "volatility": 0.002,
         "minWeight": 0.0,
-        "maxWeight": 0.4,
+        "maxWeight": 0.5,
         "sourceMapping": "US tsy short"
       },
       {
@@ -1304,7 +1304,7 @@
         "return": 0.04,
         "volatility": 0.03,
         "minWeight": 0.0,
-        "maxWeight": 0.8,
+        "maxWeight": 0.5,
         "sourceMapping": "US tsy IM"
       },
       {
@@ -1328,7 +1328,7 @@
         "return": 0.053,
         "volatility": 0.055999999999999994,
         "minWeight": 0.0,
-        "maxWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "US IG corp"
       },
       {
@@ -1340,7 +1340,7 @@
         "return": 0.055,
         "volatility": 0.040999999999999995,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.1,
         "sourceMapping": "US HY corps"
       },
       {
@@ -1518,7 +1518,7 @@
         "return": 0.038635009898400005,
         "volatility": 0.014780531045622988,
         "minWeight": 0.0,
-        "maxWeight": 0.4,
+        "maxWeight": 0.5,
         "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
         "_distinctSourceCount": 5
       },
@@ -1531,7 +1531,7 @@
         "return": 0.04194449137133333,
         "volatility": 0.039317852367530874,
         "minWeight": 0.0,
-        "maxWeight": 0.8,
+        "maxWeight": 0.5,
         "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
         "_distinctSourceCount": 6
       },
@@ -1557,7 +1557,7 @@
         "return": 0.0516179765925,
         "volatility": 0.060255405979988165,
         "minWeight": 0.0,
-        "maxWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
         "_distinctSourceCount": 6
       },
@@ -1570,7 +1570,7 @@
         "return": 0.057138708312166664,
         "volatility": 0.07469913969925997,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.1,
         "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
         "_distinctSourceCount": 6
       },
@@ -1749,7 +1749,7 @@
         "return": 0.03700000000000001,
         "volatility": 0.022,
         "minWeight": 0.0,
-        "maxWeight": 0.4,
+        "maxWeight": 0.5,
         "sourceMapping": "U.S. Treasury short term"
       },
       {
@@ -1761,7 +1761,7 @@
         "return": 0.04,
         "volatility": 0.05599999999999999,
         "minWeight": 0.0,
-        "maxWeight": 0.8,
+        "maxWeight": 0.5,
         "sourceMapping": "U.S. Treasury intermediate term"
       },
       {
@@ -1785,7 +1785,7 @@
         "return": 0.052,
         "volatility": 0.065,
         "minWeight": 0.0,
-        "maxWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "U.S. corporate"
       },
       {
@@ -1797,7 +1797,7 @@
         "return": 0.059,
         "volatility": 0.08,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.1,
         "sourceMapping": "U.S. high yield"
       },
       {
@@ -1969,7 +1969,7 @@
         "return": 0.045175049492,
         "volatility": 0.016580074145,
         "minWeight": 0.0,
-        "maxWeight": 0.4,
+        "maxWeight": 0.5,
         "sourceMapping": "US Treasury Short"
       },
       {
@@ -1981,7 +1981,7 @@
         "return": 0.047161746228,
         "volatility": 0.032209995457,
         "minWeight": 0.0,
-        "maxWeight": 0.8,
+        "maxWeight": 0.5,
         "sourceMapping": "US Treasury Intermediate"
       },
       {
@@ -2005,7 +2005,7 @@
         "return": 0.052568748555,
         "volatility": 0.045039679214,
         "minWeight": 0.0,
-        "maxWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "US Corporate Intermediate"
       },
       {
@@ -2017,7 +2017,7 @@
         "return": 0.051195696873,
         "volatility": 0.080253154474,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.1,
         "sourceMapping": "US High Yield"
       },
       {
@@ -2051,7 +2051,7 @@
     "halfWidth": 0.005,
     "profiles": {
       "Conservative": {
-        "percentile": 5.0,
+        "percentile": 15.0,
         "halfWidth": 0.005
       },
       "Balanced": {
@@ -2067,7 +2067,7 @@
         "halfWidth": 0.005
       },
       "Aggressive Growth": {
-        "percentile": 95.0,
+        "percentile": 90.0,
         "halfWidth": 0.005
       }
     }
@@ -2086,6 +2086,295 @@
       "sourceMapping": "JPM U.S. Aggregate Bonds assumption"
     }
   ],
+  "fundModels": {
+    "providers": {
+      "Fidelity": [
+        {
+          "ticker": "IVV",
+          "section": "Equities - Index (Passive)",
+          "exposures": {
+            "U.S. Large Cap": 0.8,
+            "U.S. Mid Cap": 0.19,
+            "U.S. Small Cap": 0.01
+          }
+        },
+        {
+          "ticker": "VOO",
+          "section": "Equities - Index (Passive)",
+          "exposures": {
+            "U.S. Large Cap": 0.8,
+            "U.S. Mid Cap": 0.19,
+            "U.S. Small Cap": 0.01
+          }
+        },
+        {
+          "ticker": "SPYM",
+          "section": "Equities - Index (Passive)",
+          "exposures": {
+            "U.S. Large Cap": 0.8,
+            "U.S. Mid Cap": 0.19,
+            "U.S. Small Cap": 0.01
+          }
+        },
+        {
+          "ticker": "IJH",
+          "section": "Equities - Index (Passive)",
+          "exposures": {
+            "U.S. Mid Cap": 0.35,
+            "U.S. Small Cap": 0.65
+          }
+        },
+        {
+          "ticker": "VO",
+          "section": "Equities - Index (Passive)",
+          "exposures": {
+            "U.S. Large Cap": 0.11,
+            "U.S. Mid Cap": 0.87,
+            "U.S. Small Cap": 0.005,
+            "International Developed Equity": 0.015
+          }
+        },
+        {
+          "ticker": "IEFA",
+          "section": "Equities - Index (Passive)",
+          "exposures": {
+            "International Developed Equity": 0.98,
+            "Emerging Markets Equity": 0.02
+          }
+        },
+        {
+          "ticker": "FDSVX",
+          "section": "Equities - Advisor (Active)",
+          "exposures": {
+            "U.S. Growth": 1.0
+          }
+        },
+        {
+          "ticker": "FGRIX",
+          "section": "Equities - Advisor (Active)",
+          "exposures": {
+            "U.S. Value": 0.5,
+            "U.S. Growth": 0.1,
+            "U.S. Income": 0.4
+          }
+        },
+        {
+          "ticker": "SPHQ",
+          "section": "Equities - Advisor (Active)",
+          "exposures": {
+            "U.S. Quality": 1.0
+          }
+        },
+        {
+          "ticker": "CGDV",
+          "section": "Equities - Advisor (Active)",
+          "exposures": {
+            "U.S. Value": 0.5,
+            "U.S. Growth": 0.3,
+            "U.S. Income": 0.2
+          }
+        },
+        {
+          "ticker": "FENI",
+          "section": "Equities - Advisor (Active)",
+          "exposures": {
+            "International Developed Equity": 0.99,
+            "Emerging Markets Equity": 0.01
+          }
+        },
+        {
+          "ticker": "AVDE",
+          "section": "Equities - Advisor (Active)",
+          "exposures": {
+            "International Developed Equity": 1.0
+          }
+        },
+        {
+          "ticker": "QINT",
+          "section": "Equities - Advisor (Active)",
+          "exposures": {
+            "International Developed Equity": 0.94,
+            "Emerging Markets Equity": 0.06
+          }
+        },
+        {
+          "ticker": "FIKQX",
+          "section": "Fixed Income - Intermediate (Passive)",
+          "exposures": {
+            "US Short Treasuries": 0.26,
+            "US Intermediate Treasuries": 0.4,
+            "Investment Grade Corporate": 0.24,
+            "High Yield": 0.07,
+            "International Fixed Income (H)": 0.03
+          }
+        },
+        {
+          "ticker": "FTHRX",
+          "section": "Fixed Income - Intermediate (Passive)",
+          "exposures": {
+            "US Short Treasuries": 0.5,
+            "US Intermediate Treasuries": 0.07,
+            "Investment Grade Corporate": 0.4,
+            "High Yield": 0.03
+          }
+        },
+        {
+          "ticker": "FIKRX",
+          "section": "Fixed Income - Advisor",
+          "exposures": {
+            "US Short Treasuries": 0.2,
+            "Investment Grade Corporate": 0.7,
+            "High Yield": 0.1
+          }
+        },
+        {
+          "ticker": "FNSOX",
+          "section": "Fixed Income - Advisor",
+          "exposures": {
+            "US Short Treasuries": 0.7,
+            "US Intermediate Treasuries": 0.01,
+            "Investment Grade Corporate": 0.28,
+            "International Fixed Income (H)": 0.01
+          }
+        }
+      ],
+      "Schwab": [
+        {
+          "ticker": "IVV",
+          "section": "Equities - Index (Passive)",
+          "exposures": {
+            "U.S. Large Cap": 0.8,
+            "U.S. Mid Cap": 0.19,
+            "U.S. Small Cap": 0.01
+          }
+        },
+        {
+          "ticker": "VOO",
+          "section": "Equities - Index (Passive)",
+          "exposures": {
+            "U.S. Large Cap": 0.8,
+            "U.S. Mid Cap": 0.19,
+            "U.S. Small Cap": 0.01
+          }
+        },
+        {
+          "ticker": "SPYM",
+          "section": "Equities - Index (Passive)",
+          "exposures": {
+            "U.S. Large Cap": 0.8,
+            "U.S. Mid Cap": 0.19,
+            "U.S. Small Cap": 0.01
+          }
+        },
+        {
+          "ticker": "IJH",
+          "section": "Equities - Index (Passive)",
+          "exposures": {
+            "U.S. Mid Cap": 0.35,
+            "U.S. Small Cap": 0.65
+          }
+        },
+        {
+          "ticker": "VO",
+          "section": "Equities - Index (Passive)",
+          "exposures": {
+            "U.S. Large Cap": 0.11,
+            "U.S. Mid Cap": 0.87,
+            "U.S. Small Cap": 0.005,
+            "International Developed Equity": 0.015
+          }
+        },
+        {
+          "ticker": "IEFA",
+          "section": "Equities - Index (Passive)",
+          "exposures": {
+            "International Developed Equity": 0.98,
+            "Emerging Markets Equity": 0.02
+          }
+        },
+        {
+          "ticker": "SPHQ",
+          "section": "Equities - Advisor (Active)",
+          "exposures": {
+            "U.S. Quality": 1.0
+          }
+        },
+        {
+          "ticker": "CGDV",
+          "section": "Equities - Advisor (Active)",
+          "exposures": {
+            "U.S. Value": 0.5,
+            "U.S. Growth": 0.3,
+            "U.S. Income": 0.2
+          }
+        },
+        {
+          "ticker": "FENI",
+          "section": "Equities - Advisor (Active)",
+          "exposures": {
+            "International Developed Equity": 0.99,
+            "Emerging Markets Equity": 0.01
+          }
+        },
+        {
+          "ticker": "AVDE",
+          "section": "Equities - Advisor (Active)",
+          "exposures": {
+            "International Developed Equity": 1.0
+          }
+        },
+        {
+          "ticker": "QINT",
+          "section": "Equities - Advisor (Active)",
+          "exposures": {
+            "International Developed Equity": 0.94,
+            "Emerging Markets Equity": 0.06
+          }
+        },
+        {
+          "ticker": "FIGB",
+          "section": "Fixed Income - Intermediate (Passive)",
+          "exposures": {
+            "US Short Treasuries": 0.26,
+            "US Intermediate Treasuries": 0.4,
+            "Investment Grade Corporate": 0.24,
+            "High Yield": 0.07,
+            "International Fixed Income (H)": 0.03
+          }
+        },
+        {
+          "ticker": "IIGD",
+          "section": "Fixed Income - Intermediate (Passive)",
+          "exposures": {
+            "US Short Treasuries": 0.5,
+            "US Intermediate Treasuries": 0.07,
+            "Investment Grade Corporate": 0.4,
+            "High Yield": 0.03
+          }
+        },
+        {
+          "ticker": "FLTB",
+          "section": "Fixed Income - Advisor",
+          "exposures": {
+            "US Short Treasuries": 0.2,
+            "Investment Grade Corporate": 0.7,
+            "High Yield": 0.1
+          }
+        },
+        {
+          "ticker": "SWSBX",
+          "section": "Fixed Income - Advisor",
+          "exposures": {
+            "US Short Treasuries": 0.7,
+            "US Intermediate Treasuries": 0.01,
+            "Investment Grade Corporate": 0.28,
+            "International Fixed Income (H)": 0.01
+          }
+        }
+      ]
+    },
+    "warnings": []
+  },
   "profiles": {
     "Conservative": {
       "targetVolMin": 0.07200000000000001,

@@ -12,6 +12,7 @@ let selectedMvoProfile = "Moderate";
 let selectedAllocationPreset = "CORE";
 let selectedSubAllocationPreset = "CORE";
 let selectedAssumptionSet = "CORE";
+let selectedFundProvider = "Fidelity";
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const escapeHtml = (value) => String(value)
@@ -20,11 +21,11 @@ const escapeHtml = (value) => String(value)
   .replace(/>/g, "&gt;")
   .replace(/"/g, "&quot;");
 const defaultVolatilityPercentiles = {
-  "Conservative": 5,
+  "Conservative": 15,
   "Balanced": 35,
   "Moderate": 55,
   "Growth": 75,
-  "Aggressive Growth": 95,
+  "Aggressive Growth": 90,
 };
 
 const categoryColor = (category) => ({
@@ -160,6 +161,13 @@ function sharedConstraintProfile(profileName) {
       max: rows.length ? Math.max(...rows.map((bounds) => bounds.max)) : 1,
     };
   });
+  if (categoryBounds.Equity) {
+    categoryBounds.Equity = {
+      ...categoryBounds.Equity,
+      min: 0.24,
+      max: 0.99,
+    };
+  }
   return {
     ...baseProfile,
     categoryBounds,
@@ -291,12 +299,48 @@ function projectToSimplex(values) {
   return values.map((value) => Math.max(value - theta, 0));
 }
 
+function projectToCappedSimplex(values, caps, mins = null) {
+  const floors = mins || values.map(() => 0);
+  const floorSum = floors.reduce((sum, floor) => sum + floor, 0);
+  const cappedSum = caps.reduce((sum, cap) => sum + cap, 0);
+  if (floorSum >= 1 - 1e-10) {
+    return floors.map((floor) => floor / Math.max(floorSum, 1e-10));
+  }
+  if (cappedSum <= 1 + 1e-10) {
+    return caps.map((cap) => cap / Math.max(cappedSum, 1e-10));
+  }
+  let low = Math.min(...values) - Math.max(...caps);
+  let high = Math.max(...values);
+  for (let i = 0; i < 80; i += 1) {
+    const mid = (low + high) / 2;
+    const total = values.reduce((sum, value, index) => (
+      sum + Math.min(Math.max(value - mid, floors[index]), caps[index])
+    ), 0);
+    if (total > 1) low = mid;
+    else high = mid;
+  }
+  const theta = (low + high) / 2;
+  const projected = values.map((value, index) => Math.min(Math.max(value - theta, floors[index]), caps[index]));
+  const total = projected.reduce((sum, value) => sum + value, 0) || 1;
+  return projected.map((value) => value / total);
+}
+
 function optimizeProjected(start, gradientFn, iterations = 120, step = 0.08) {
   let weights = projectToSimplex(start);
   for (let i = 0; i < iterations; i += 1) {
     const gradient = gradientFn(weights);
     const rate = step / Math.sqrt(i + 1);
     weights = projectToSimplex(weights.map((weight, index) => weight + rate * gradient[index]));
+  }
+  return weights;
+}
+
+function optimizeCappedProjected(start, gradientFn, caps, mins = null, iterations = 120, step = 0.08) {
+  let weights = projectToCappedSimplex(start, caps, mins);
+  for (let i = 0; i < iterations; i += 1) {
+    const gradient = gradientFn(weights);
+    const rate = step / Math.sqrt(i + 1);
+    weights = projectToCappedSimplex(weights.map((weight, index) => weight + rate * gradient[index]), caps, mins);
   }
   return weights;
 }
@@ -758,7 +802,7 @@ function renderProfiles() {
       <button type="button" class="secondary" data-percentile-shift="5">Up 5%</button>
     </div>
   </div>
-  <p>These percentiles set each portfolio's target volatility range from the portfolios that are feasible under the current allocation and sub-allocation constraints. Lower percentiles create lower-risk targets; higher percentiles create higher-risk targets. Starting defaults are 5%, 35%, 55%, 75%, and 95%.</p>`;
+  <p>These percentiles set each portfolio's target volatility range from the portfolios that are feasible under the current allocation and sub-allocation constraints. Lower percentiles create lower-risk targets; higher percentiles create higher-risk targets. Starting defaults are 15%, 35%, 55%, 75%, and 90%.</p>`;
 
   const allocationPreset = document.querySelector("#allocationPresetSelect");
   if (allocationPreset) allocationPreset.value = selectedAllocationPreset;
@@ -847,6 +891,275 @@ function renderWeights() {
       { variant: "sleeve" }
     )).join("");
   }
+}
+
+const largeCapFundSplit = {
+  IVV: 0.75,
+  SPYM: 0.125,
+  VOO: 0.125,
+};
+
+function fundModelRows(providerName) {
+  return state.fundModels?.providers?.[providerName] || [];
+}
+
+function targetWeightsByAsset(result) {
+  const targets = {};
+  state.assets.forEach((asset, index) => {
+    targets[asset.name] = result.weights[index] || 0;
+  });
+  return targets;
+}
+
+function buildFundCandidates(rows) {
+  const largeTickers = Object.keys(largeCapFundSplit);
+  const largeRows = rows.filter((row) => largeTickers.includes(row.ticker));
+  const candidates = rows
+    .filter((row) => !largeTickers.includes(row.ticker))
+    .filter((row) => Object.values(row.exposures || {}).some((value) => value > 0))
+    .map((row) => ({
+      id: row.ticker,
+      ticker: row.ticker,
+      section: row.section,
+      category: String(row.section || "").toLowerCase().startsWith("fixed income") ? "Fixed Income" : "Equity",
+      exposures: row.exposures || {},
+      split: null,
+    }));
+
+  if (largeRows.length) {
+    const exposures = {};
+    state.assets.forEach((asset) => {
+      const values = largeRows
+        .map((row) => row.exposures?.[asset.name])
+        .filter((value) => Number.isFinite(value));
+      if (values.length) exposures[asset.name] = values.reduce((sum, value) => sum + value, 0) / values.length;
+    });
+    candidates.unshift({
+      id: "Large Cap Blend",
+      ticker: "Large Cap Blend",
+      section: largeRows[0].section,
+      category: "Equity",
+      exposures,
+      split: largeCapFundSplit,
+    });
+  }
+
+  return candidates;
+}
+
+function optimizeFundGroup(candidates, targets, category, categoryTarget) {
+  const groupCandidates = candidates.filter((candidate) => candidate.category === category);
+  if (!groupCandidates.length || categoryTarget <= 0) return [];
+  const assetNames = state.assets
+    .filter((asset) => asset.category === category)
+    .map((asset) => asset.name);
+  if (!assetNames.length) return [];
+
+  const matrix = groupCandidates.map((candidate) => (
+    assetNames.map((assetName) => candidate.exposures?.[assetName] || 0)
+  ));
+  const mins = groupCandidates.map(() => (category === "Fixed Income" ? 0.10 : 0));
+  const caps = groupCandidates.map(() => (category === "Fixed Income" ? 0.40 : 1));
+  const targetVector = assetNames.map((assetName) => targets[assetName] || 0);
+  const gradientFor = (weights) => {
+    const actual = assetNames.map((_, assetIndex) => (
+      categoryTarget * weights.reduce((sum, weight, candidateIndex) => sum + weight * matrix[candidateIndex][assetIndex], 0)
+    ));
+    return groupCandidates.map((_, candidateIndex) => {
+      let gradient = 0;
+      for (let assetIndex = 0; assetIndex < assetNames.length; assetIndex += 1) {
+        gradient += 2 * categoryTarget * matrix[candidateIndex][assetIndex] * (actual[assetIndex] - targetVector[assetIndex]);
+      }
+      return -gradient;
+    });
+  };
+
+  const starts = [
+    Array(groupCandidates.length).fill(1 / groupCandidates.length),
+    ...groupCandidates.map((_, index) => {
+      const weights = Array(groupCandidates.length).fill(0);
+      weights[index] = 1;
+      return weights;
+    }),
+  ];
+  const score = (weights) => {
+    const actual = assetNames.map((_, assetIndex) => (
+      categoryTarget * weights.reduce((sum, weight, candidateIndex) => sum + weight * matrix[candidateIndex][assetIndex], 0)
+    ));
+    return actual.reduce((sum, value, assetIndex) => sum + Math.pow(value - targetVector[assetIndex], 2), 0);
+  };
+  let best = null;
+  starts.forEach((start) => {
+    const weights = optimizeCappedProjected(start, gradientFor, caps, mins, 480, 0.28);
+    const currentScore = score(weights);
+    if (!best || currentScore < best.score) best = { weights, score: currentScore };
+  });
+
+  return groupCandidates.map((candidate, index) => ({
+    candidate,
+    weight: (best.weights[index] || 0) * categoryTarget,
+  }));
+}
+
+function optimizeFundCandidates(candidates, targets, categoryTargets) {
+  return [
+    ...optimizeFundGroup(candidates, targets, "Equity", categoryTargets.Equity || 0),
+    ...optimizeFundGroup(candidates, targets, "Fixed Income", categoryTargets["Fixed Income"] || 0),
+  ];
+}
+
+function calculateFundModel(providerName, result) {
+  const rows = fundModelRows(providerName);
+  const targets = targetWeightsByAsset(result);
+  const allocations = {};
+  const unresolved = [];
+  rows.forEach((row) => {
+    allocations[row.ticker] = 0;
+  });
+
+  const candidates = buildFundCandidates(rows);
+  const candidateWeights = optimizeFundCandidates(candidates, targets, result.categoryWeights || {});
+  candidateWeights.forEach(({ candidate, weight }) => {
+    if (candidate.split) {
+      Object.entries(candidate.split).forEach(([ticker, split]) => {
+        if (Object.prototype.hasOwnProperty.call(allocations, ticker)) {
+          allocations[ticker] += weight * split;
+        }
+      });
+    } else if (Object.prototype.hasOwnProperty.call(allocations, candidate.ticker)) {
+      allocations[candidate.ticker] += weight;
+    }
+  });
+
+  state.assets.forEach((asset) => {
+    if (asset.name === "Cash") return;
+    const target = targets[asset.name] || 0;
+    if (target <= 0.0000001) return;
+    const hasExposure = candidates.some((candidate) => (candidate.exposures?.[asset.name] || 0) > 0);
+    if (!hasExposure) {
+      unresolved.push({ asset: asset.name, value: target });
+    }
+  });
+
+  if (targets.Cash) allocations.Cash = (allocations.Cash || 0) + targets.Cash;
+
+  const actualExposures = {};
+  state.assets.forEach((asset) => {
+    actualExposures[asset.name] = asset.name === "Cash" ? (allocations.Cash || 0) : 0;
+  });
+  rows.forEach((row) => {
+    const fundWeight = allocations[row.ticker] || 0;
+    Object.entries(row.exposures || {}).forEach(([assetName, exposure]) => {
+      actualExposures[assetName] = (actualExposures[assetName] || 0) + fundWeight * exposure;
+    });
+  });
+  const actualCategoryWeights = {
+    Equity: Object.entries(actualExposures).reduce((sum, [assetName, value]) => {
+      const asset = state.assets.find((row) => row.name === assetName);
+      return asset?.category === "Equity" ? sum + value : sum;
+    }, 0),
+    "Fixed Income": Object.entries(actualExposures).reduce((sum, [assetName, value]) => {
+      const asset = state.assets.find((row) => row.name === assetName);
+      return asset?.category === "Fixed Income" ? sum + value : sum;
+    }, 0),
+    Alternatives: Object.entries(actualExposures).reduce((sum, [assetName, value]) => {
+      const asset = state.assets.find((row) => row.name === assetName);
+      return asset?.category === "Alternatives" ? sum + value : sum;
+    }, 0),
+    Cash: allocations.Cash || 0,
+  };
+
+  return { allocations, actualExposures, actualCategoryWeights, targets, unresolved };
+}
+
+function renderFundModels() {
+  const box = document.querySelector("#fundModelContent");
+  if (!box) return;
+  const providers = Object.keys(state.fundModels?.providers || {});
+  if (!providers.length) {
+    box.innerHTML = `<p class="frontier-note">No fund mapping data found. Add Fund Mapping.xlsx to the inputs folder and refresh the model.</p>`;
+    return;
+  }
+  if (!providers.includes(selectedFundProvider)) selectedFundProvider = providers[0];
+  document.querySelectorAll(".fund-tab").forEach((button) => {
+    button.classList.toggle("active", button.dataset.fundProvider === selectedFundProvider);
+  });
+
+  const rows = fundModelRows(selectedFundProvider);
+  const profileNames = Object.keys(results);
+  const models = Object.fromEntries(profileNames.map((profile) => [
+    profile,
+    calculateFundModel(selectedFundProvider, results[profile]),
+  ]));
+  const grouped = [];
+  let lastSection = "";
+  rows.forEach((row) => {
+    if (row.section !== lastSection) {
+      lastSection = row.section;
+      grouped.push({ type: "section", label: row.section });
+    }
+    grouped.push({ type: "fund", row });
+  });
+  grouped.push({ type: "section", label: "Cash or Alternative" });
+  grouped.push({ type: "cash", row: { ticker: "Cash", section: "Cash or Alternative", exposures: { Cash: 1 } } });
+
+  const fundRows = grouped.map((item) => {
+    if (item.type === "section") {
+      const totals = profileNames.map((profile) => {
+        if (item.label === "Cash or Alternative") return models[profile].allocations.Cash || 0;
+        const sectionTotal = rows
+          .filter((row) => row.section === item.label)
+          .reduce((sum, row) => sum + (models[profile].allocations[row.ticker] || 0), 0);
+        return sectionTotal;
+      });
+      return `<tr class="fund-section-row"><td>${item.label}</td>${totals.map((value) => `<td>${pct(value)}</td>`).join("")}</tr>`;
+    }
+    const row = item.row;
+    return `<tr>
+      <td class="text fund-ticker">${row.ticker}</td>
+      ${profileNames.map((profile) => `<td>${pct(models[profile].allocations[row.ticker] || 0)}</td>`).join("")}
+    </tr>`;
+  }).join("");
+
+  const checkAssets = state.assets.filter((asset) => {
+    const hasDiff = profileNames.some((profile) => (
+      Math.abs((models[profile].actualExposures[asset.name] || 0) - (models[profile].targets[asset.name] || 0)) > 0.0025
+    ));
+    const hasTarget = profileNames.some((profile) => (models[profile].targets[asset.name] || 0) > 0.0005);
+    return hasTarget && hasDiff;
+  });
+  const checkRows = checkAssets.map((asset) => `<tr>
+    <td class="text">${asset.name}</td>
+    ${profileNames.map((profile) => {
+      const target = models[profile].targets[asset.name] || 0;
+      const actual = models[profile].actualExposures[asset.name] || 0;
+      const diff = actual - target;
+      return `<td class="${Math.abs(diff) > 0.0025 ? "warn" : "pos"}">${pct(diff)}</td>`;
+    }).join("")}
+  </tr>`).join("");
+  const workbookWarnings = state.fundModels?.warnings || [];
+  const unresolvedWarnings = profileNames.flatMap((profile) => (
+    models[profile].unresolved.map((item) => `${profile}: ${item.asset} target ${pct(item.value)} has no mapped fund exposure.`)
+  ));
+  const warningHtml = [...workbookWarnings, ...unresolvedWarnings].length
+    ? `<div class="fund-warning"><strong>Mapping Notes</strong>${[...workbookWarnings, ...unresolvedWarnings].map((warning) => `<span>${escapeHtml(warning)}</span>`).join("")}</div>`
+    : "";
+
+  box.innerHTML = `
+    <div class="table-wrap">
+      <table class="fund-model-table">
+        <thead><tr><th>Ticker</th>${profileNames.map((profile) => `<th>${profile}</th>`).join("")}</tr></thead>
+        <tbody>${fundRows}</tbody>
+      </table>
+    </div>
+    ${checkRows ? `<div class="fund-check">
+      <div class="panel-title">Exposure Difference Check</div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Asset</th>${profileNames.map((profile) => `<th>${profile}</th>`).join("")}</tr></thead><tbody>${checkRows}</tbody></table>
+      </div>
+    </div>` : ""}
+    ${warningHtml}
+  `;
 }
 
 function pieSlicePath(cx, cy, radius, startAngle, endAngle) {
@@ -1142,9 +1455,9 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
         <line x1="${xScale(region.hull[0].x).toFixed(1)}" y1="${yScale(region.hull[0].y).toFixed(1)}" x2="${xScale(region.hull[1].x).toFixed(1)}" y2="${yScale(region.hull[1].y).toFixed(1)}" stroke="#2f80b7" stroke-width="2.2" stroke-linecap="round"></line>`
       : "";
   const constraintStatus = (actual, min, max) => (actual >= min - 0.0001 && actual <= max + 0.0001 ? "In range" : "Out of range");
-  const constraintProfile = sharedConstraintProfile(selected.profileName || selectedMvoProfile);
+  const displayConstraintProfile = state.profiles[selected.profileName || selectedMvoProfile] || profile;
   const categoryRows = state.categories.map((category) => {
-    const bounds = constraintProfile.categoryBounds[category];
+    const bounds = displayConstraintProfile.categoryBounds[category];
     const actual = selected.categoryWeights?.[category] || 0;
     return `<tr>
       <td>${category}</td>
@@ -1288,6 +1601,7 @@ function renderAll() {
   renderAssets();
   renderAllocationWeights();
   renderWeights();
+  renderFundModels();
   renderMvo();
 }
 
@@ -1381,6 +1695,7 @@ function refreshLiveOutputs() {
   mvoDirty = true;
   renderAllocationWeights();
   renderWeights();
+  renderFundModels();
   if (mvoIsActive()) refreshMvo();
 }
 
@@ -1527,6 +1842,12 @@ document.addEventListener("click", (event) => {
     document.querySelector(`#${dashboardTab.dataset.dashboardTab}`).classList.add("active");
   }
 
+  const fundTab = event.target.closest(".fund-tab");
+  if (fundTab) {
+    selectedFundProvider = fundTab.dataset.fundProvider;
+    renderFundModels();
+  }
+
   const button = event.target.closest("button");
   if (button?.dataset.percentileShift) {
     applyPercentileShift(Number.parseFloat(button.dataset.percentileShift));
@@ -1536,7 +1857,7 @@ document.addEventListener("click", (event) => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260723-percentile-shift-buttons", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260724-vol-percentiles", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });

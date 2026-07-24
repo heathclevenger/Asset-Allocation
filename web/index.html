@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Paul Asset Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260723-percentile-shift-buttons" />
+    <link rel="stylesheet" href="./styles.css?v=20260724-vol-percentiles" />
   </head>
   <body>
     <div class="shell">
@@ -24,6 +24,7 @@
       <div class="nav-row">
         <nav class="tabs" aria-label="Model pages">
           <button class="tab active" data-tab="mvo">Portfolio Optimization</button>
+          <button class="tab" data-tab="fundModels">ETF/Fund Models</button>
           <button class="tab" data-tab="assets">Asset Assumptions</button>
           <button class="tab" data-tab="profiles">Model Constraints</button>
           <button class="tab" data-tab="results">Overview</button>
@@ -120,6 +121,22 @@
           </div>
         </section>
 
+        <section id="fundModels" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>ETF/Fund Models</h2>
+              <p>Fund-level portfolio weights translated from the optimized allocation and sub-sleeve outputs.</p>
+            </div>
+          </div>
+          <div class="dashboard-tabs" aria-label="ETF and fund providers">
+            <button class="fund-tab active" data-fund-provider="Fidelity">Fidelity</button>
+            <button class="fund-tab" data-fund-provider="Schwab">Schwab</button>
+          </div>
+          <div class="panel">
+            <div id="fundModelContent"></div>
+          </div>
+        </section>
+
         <section id="mvo" class="page active">
           <div class="toolbar">
             <div>
@@ -156,6 +173,6 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260723-percentile-shift-buttons"></script>
+    <script src="./app.js?v=20260724-vol-percentiles"></script>
   </body>
 </html>

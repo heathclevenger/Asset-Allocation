@@ -18,6 +18,27 @@ INVESCO_ASSUMPTIONS_FILE = ROOT / "inputs" / "invesco_2026_assumptions.csv"
 MSCI_ASSUMPTIONS_FILE = ROOT / "inputs" / "msci_2026_assumptions.csv"
 CAPITAL_GROUP_FILE = ROOT / "inputs" / "capital_group_2026.xlsx"
 ASSET_ALLOCATION_INTERACTIVE_FILE = ROOT / "inputs" / "Asset-Allocation-Interactive-Data.xlsx"
+FUND_MAPPING_FILE = ROOT / "inputs" / "Fund Mapping.xlsx"
+
+FUND_MAPPING_HEADERS = {
+    "large cap": "U.S. Large Cap",
+    "mid cap": "U.S. Mid Cap",
+    "small cap": "U.S. Small Cap",
+    "us value": "U.S. Value",
+    "us growth": "U.S. Growth",
+    "us income": "U.S. Income",
+    "us quality": "U.S. Quality",
+    "int. developed": "International Developed Equity",
+    "emerging markets": "Emerging Markets Equity",
+    "us short tsy": "US Short Treasuries",
+    "us intermediate tsy": "US Intermediate Treasuries",
+    "us long tsy": "US Long Treasuries",
+    "inv. grade corporate": "Investment Grade Corporate",
+    "high yield": "High Yield",
+    "international fi(h)": "International Fixed Income (H)",
+}
+
+FUND_SECTION_PREFIXES = ("equities", "fixed income")
 
 
 def parse_assumption_percent(value: str) -> float:
@@ -26,6 +47,81 @@ def parse_assumption_percent(value: str) -> float:
         return float(text[:-1]) / 100.0
     number = float(text)
     return number / 100.0 if abs(number) > 1 else number
+
+
+def clean_text(value: object) -> str:
+    return str(value or "").strip()
+
+
+def load_fund_models() -> dict[str, object]:
+    if not FUND_MAPPING_FILE.exists():
+        return {"providers": {}, "warnings": [f"{FUND_MAPPING_FILE.name} was not found in inputs."]}
+
+    wb = load_workbook(FUND_MAPPING_FILE, data_only=True, read_only=True)
+    providers: dict[str, list[dict[str, object]]] = {}
+    warnings: list[str] = []
+
+    for ws in wb.worksheets:
+        rows: list[dict[str, object]] = []
+        current_section = ""
+        current_headers: dict[int, str] = {}
+
+        for row_number, row in enumerate(ws.iter_rows(values_only=True), start=1):
+            ticker = clean_text(row[0] if row else "")
+            row_values = list(row or [])
+            row_headers: dict[int, str] = {}
+            for index, raw_header in enumerate(row_values[2:], start=2):
+                header = clean_text(raw_header).lower()
+                if header in FUND_MAPPING_HEADERS:
+                    row_headers[index] = FUND_MAPPING_HEADERS[header]
+            numeric_values = [
+                value for value in row_values[2:]
+                if isinstance(value, (int, float)) and abs(float(value)) > 1e-12
+            ]
+            lower_ticker = ticker.lower()
+
+            if lower_ticker.startswith(FUND_SECTION_PREFIXES):
+                current_section = ticker
+                if row_headers:
+                    current_headers = row_headers
+                if numeric_values:
+                    warnings.append(f"{ws.title} row {row_number}: section row contains exposure values and was skipped.")
+                continue
+
+            if row_headers:
+                current_headers = row_headers
+                if ticker:
+                    warnings.append(f"{ws.title} row {row_number}: {ticker} appears to be a header row and was skipped.")
+                continue
+
+            if not ticker:
+                if numeric_values:
+                    warnings.append(f"{ws.title} row {row_number}: blank ticker contains exposure values and was skipped.")
+                continue
+
+            if not current_headers:
+                if numeric_values:
+                    warnings.append(f"{ws.title} row {row_number}: {ticker} has exposures before a recognized header row and was skipped.")
+                continue
+
+            exposures: dict[str, float] = {}
+            for index, asset_name in current_headers.items():
+                value = row_values[index] if index < len(row_values) else None
+                if isinstance(value, (int, float)) and abs(float(value)) > 1e-12:
+                    exposures[asset_name] = float(value)
+
+            if not exposures:
+                warnings.append(f"{ws.title} row {row_number}: {ticker} has no usable exposures and was kept at 0%.")
+
+            rows.append({
+                "ticker": ticker,
+                "section": current_section,
+                "exposures": exposures,
+            })
+
+        providers[ws.title] = rows
+
+    return {"providers": providers, "warnings": warnings}
 
 
 def load_vanguard_assumptions() -> dict[str, dict[str, float | str]]:
@@ -615,6 +711,7 @@ def main() -> None:
             "sourceMapping": "JPM U.S. Aggregate Bonds assumption",
         },
     ]
+    fund_models = load_fund_models()
 
     payload = {
         "generatedFrom": str(optimizer.jpm_matrix_path()),
@@ -634,6 +731,7 @@ def main() -> None:
         },
         "volatilityModel": volatility_model,
         "benchmarks": benchmarks,
+        "fundModels": fund_models,
         "profiles": {
             profile: {
                 "targetVolMin": config["target_volatility"][0],
