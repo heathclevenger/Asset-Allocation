@@ -34,11 +34,11 @@ TARGET_VOLATILITY_RULES: Dict[str, Tuple[float, float]] = {
     "Aggressive Growth": (0.055, 0.005),
 }
 CATEGORY_BOUNDS: Dict[str, Dict[str, Tuple[float, float]]] = {
-    "Conservative": {"Equity": (0.30, 0.50), "Fixed Income": (0.55, 0.75), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
-    "Balanced": {"Equity": (0.55, 0.65), "Fixed Income": (0.35, 0.55), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
-    "Moderate": {"Equity": (0.65, 0.75), "Fixed Income": (0.25, 0.40), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
-    "Growth": {"Equity": (0.75, 0.85), "Fixed Income": (0.10, 0.25), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
-    "Aggressive Growth": {"Equity": (0.90, 1.00), "Fixed Income": (0.00, 0.12), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
+    "Conservative": {"Equity": (0.25, 0.50), "Fixed Income": (0.50, 0.75), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
+    "Balanced": {"Equity": (0.40, 0.60), "Fixed Income": (0.40, 0.60), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
+    "Moderate": {"Equity": (0.55, 0.75), "Fixed Income": (0.25, 0.45), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
+    "Growth": {"Equity": (0.75, 0.90), "Fixed Income": (0.10, 0.25), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
+    "Aggressive Growth": {"Equity": (0.90, 1.00), "Fixed Income": (0.00, 0.10), "Alternatives": (0.00, 0.00), "Cash": (CASH_TARGET, CASH_TARGET)},
 }
 
 

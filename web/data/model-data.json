@@ -2138,8 +2138,7 @@
           "ticker": "IEFA",
           "section": "Equities - Index (Passive)",
           "exposures": {
-            "International Developed Equity": 0.98,
-            "Emerging Markets Equity": 0.02
+            "International Developed Equity": 1.0
           }
         },
         {
@@ -2174,8 +2173,7 @@
           "ticker": "FENI",
           "section": "Equities - Advisor (Active)",
           "exposures": {
-            "International Developed Equity": 0.99,
-            "Emerging Markets Equity": 0.01
+            "International Developed Equity": 1.0
           }
         },
         {
@@ -2189,8 +2187,7 @@
           "ticker": "QINT",
           "section": "Equities - Advisor (Active)",
           "exposures": {
-            "International Developed Equity": 0.94,
-            "Emerging Markets Equity": 0.06
+            "International Developed Equity": 1.0
           }
         },
         {
@@ -2325,8 +2322,7 @@
           "ticker": "QINT",
           "section": "Equities - Advisor (Active)",
           "exposures": {
-            "International Developed Equity": 0.95,
-            "Emerging Markets Equity": 0.05
+            "International Developed Equity": 1.0
           }
         },
         {
@@ -2379,11 +2375,11 @@
       "targetVolMax": 0.08200000000000002,
       "categoryBounds": {
         "Equity": {
-          "min": 0.3,
+          "min": 0.25,
           "max": 0.5
         },
         "Fixed Income": {
-          "min": 0.55,
+          "min": 0.5,
           "max": 0.75
         },
         "Alternatives": {
@@ -2401,12 +2397,12 @@
       "targetVolMax": 0.11000000000000001,
       "categoryBounds": {
         "Equity": {
-          "min": 0.55,
-          "max": 0.65
+          "min": 0.4,
+          "max": 0.6
         },
         "Fixed Income": {
-          "min": 0.35,
-          "max": 0.55
+          "min": 0.4,
+          "max": 0.6
         },
         "Alternatives": {
           "min": 0.0,
@@ -2423,12 +2419,12 @@
       "targetVolMax": 0.133,
       "categoryBounds": {
         "Equity": {
-          "min": 0.65,
+          "min": 0.55,
           "max": 0.75
         },
         "Fixed Income": {
           "min": 0.25,
-          "max": 0.4
+          "max": 0.45
         },
         "Alternatives": {
           "min": 0.0,
@@ -2446,7 +2442,7 @@
       "categoryBounds": {
         "Equity": {
           "min": 0.75,
-          "max": 0.85
+          "max": 0.9
         },
         "Fixed Income": {
           "min": 0.1,
@@ -2472,7 +2468,7 @@
         },
         "Fixed Income": {
           "min": 0.0,
-          "max": 0.12
+          "max": 0.1
         },
         "Alternatives": {
           "min": 0.0,

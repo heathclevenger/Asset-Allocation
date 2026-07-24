@@ -899,6 +899,13 @@ const largeCapFundSplit = {
   VOO: 0.125,
 };
 
+const internationalFundSplit = {
+  IEFA: 0.25,
+  FENI: 0.25,
+  AVDE: 0.25,
+  QINT: 0.25,
+};
+
 function fundModelRows(providerName) {
   return state.fundModels?.providers?.[providerName] || [];
 }
@@ -913,9 +920,12 @@ function targetWeightsByAsset(result) {
 
 function buildFundCandidates(rows) {
   const largeTickers = Object.keys(largeCapFundSplit);
+  const internationalTickers = Object.keys(internationalFundSplit);
   const largeRows = rows.filter((row) => largeTickers.includes(row.ticker));
+  const internationalRows = rows.filter((row) => internationalTickers.includes(row.ticker));
   const candidates = rows
     .filter((row) => !largeTickers.includes(row.ticker))
+    .filter((row) => !internationalTickers.includes(row.ticker))
     .filter((row) => Object.values(row.exposures || {}).some((value) => value > 0))
     .map((row) => ({
       id: row.ticker,
@@ -925,6 +935,24 @@ function buildFundCandidates(rows) {
       exposures: row.exposures || {},
       split: null,
     }));
+
+  if (internationalRows.length) {
+    const exposures = {};
+    state.assets.forEach((asset) => {
+      const values = internationalRows
+        .map((row) => row.exposures?.[asset.name])
+        .filter((value) => Number.isFinite(value));
+      if (values.length) exposures[asset.name] = values.reduce((sum, value) => sum + value, 0) / values.length;
+    });
+    candidates.unshift({
+      id: "International Blend",
+      ticker: "International Blend",
+      section: internationalRows[0].section,
+      category: "Equity",
+      exposures,
+      split: internationalFundSplit,
+    });
+  }
 
   if (largeRows.length) {
     const exposures = {};
@@ -1857,7 +1885,7 @@ document.addEventListener("click", (event) => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260724-baseline-vol-percentiles", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260724-allocation-ranges-reset", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
