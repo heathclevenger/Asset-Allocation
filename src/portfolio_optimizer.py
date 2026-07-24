@@ -20,11 +20,11 @@ CASH_TARGET = 0.01
 CATEGORIES = ["Equity", "Fixed Income", "Alternatives", "Cash"]
 MODERATE_VOL_TARGET = 0.130
 VOLATILITY_PERCENTILES: Dict[str, float] = {
-    "Conservative": 15.0,
-    "Balanced": 35.0,
+    "Conservative": 18.0,
+    "Balanced": 38.0,
     "Moderate": 55.0,
-    "Growth": 75.0,
-    "Aggressive Growth": 90.0,
+    "Growth": 77.0,
+    "Aggressive Growth": 90.5,
 }
 TARGET_VOLATILITY_RULES: Dict[str, Tuple[float, float]] = {
     "Conservative": (-0.053, 0.005),
@@ -53,15 +53,15 @@ class Asset:
 
 
 ASSETS: List[Asset] = [
-    Asset("U.S. Large Cap", "Equity", ("U.S. Large Cap",), 0.00, 0.55, "U.S. Large Cap"),
-    Asset("U.S. Mid Cap", "Equity", ("U.S. Mid Cap",), 0.00, 0.08, "U.S. Mid Cap"),
-    Asset("U.S. Small Cap", "Equity", ("U.S. Small Cap",), 0.00, 0.03, "U.S. Small Cap"),
-    Asset("U.S. Value", "Equity", ("U.S. Equity Value Factor",), 0.00, 0.05, "U.S. Equity Value Factor"),
-    Asset("U.S. Growth", "Equity", ("U.S. Large Cap",), 0.00, 0.05, "Correlation proxy: U.S. Large Cap"),
-    Asset("U.S. Income", "Equity", ("U.S. Equity Dividend Yield Factor",), 0.00, 0.05, "U.S. Equity Dividend Yield Factor"),
-    Asset("U.S. Quality", "Equity", ("U.S. Equity Quality Factor",), 0.00, 0.05, "U.S. Equity Quality Factor"),
+    Asset("U.S. Large Cap", "Equity", ("U.S. Large Cap",), 0.15, 0.40, "U.S. Large Cap"),
+    Asset("U.S. Mid Cap", "Equity", ("U.S. Mid Cap",), 0.00, 0.10, "U.S. Mid Cap"),
+    Asset("U.S. Small Cap", "Equity", ("U.S. Small Cap",), 0.00, 0.05, "U.S. Small Cap"),
+    Asset("U.S. Value", "Equity", ("U.S. Equity Value Factor",), 0.00, 0.075, "U.S. Equity Value Factor"),
+    Asset("U.S. Growth", "Equity", ("U.S. Large Cap",), 0.00, 0.075, "Correlation proxy: U.S. Large Cap"),
+    Asset("U.S. Income", "Equity", ("U.S. Equity Dividend Yield Factor",), 0.00, 0.075, "U.S. Equity Dividend Yield Factor"),
+    Asset("U.S. Quality", "Equity", ("U.S. Equity Quality Factor",), 0.00, 0.075, "U.S. Equity Quality Factor"),
     Asset("International Developed Equity", "Equity", ("EAFE Equity",), 0.00, 0.15, "EAFE Equity"),
-    Asset("Emerging Markets Equity", "Equity", ("Emerging Markets Equity",), 0.00, 0.03, "Emerging Markets Equity"),
+    Asset("Emerging Markets Equity", "Equity", ("Emerging Markets Equity",), 0.00, 0.005, "Emerging Markets Equity"),
     Asset("U.S. REITs", "Alternatives", ("U.S. REITs",), 0.00, 0.00, "U.S. REITs"),
     Asset("Commodities", "Alternatives", ("Commodities",), 0.00, 0.00, "Commodities"),
     Asset("US Short Treasuries", "Fixed Income", ("U.S. Short Duration Government/Credit",), 0.00, 0.50, "Proxy: U.S. Short Duration Government/Credit"),

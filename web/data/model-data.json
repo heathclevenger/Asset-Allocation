@@ -17,8 +17,8 @@
       ],
       "return": 0.060805230754333334,
       "volatility": 0.1627911875692516,
-      "minWeight": 0.0,
-      "maxWeight": 0.55,
+      "minWeight": 0.15,
+      "maxWeight": 0.4,
       "sourceMapping": "Average of available source assumptions",
       "_distinctSourceCount": 6
     },
@@ -31,7 +31,7 @@
       "return": 0.06385210604130001,
       "volatility": 0.17718447441309745,
       "minWeight": 0.0,
-      "maxWeight": 0.08,
+      "maxWeight": 0.1,
       "sourceMapping": "Average of available source assumptions",
       "_distinctSourceCount": 5
     },
@@ -44,7 +44,7 @@
       "return": 0.06878161264783333,
       "volatility": 0.20925169517654715,
       "minWeight": 0.0,
-      "maxWeight": 0.03,
+      "maxWeight": 0.05,
       "sourceMapping": "Average of available source assumptions",
       "_distinctSourceCount": 6
     },
@@ -57,7 +57,7 @@
       "return": 0.06579312367725,
       "volatility": 0.16920301906037527,
       "minWeight": 0.0,
-      "maxWeight": 0.05,
+      "maxWeight": 0.075,
       "sourceMapping": "Average of available source assumptions",
       "_distinctSourceCount": 4
     },
@@ -70,7 +70,7 @@
       "return": 0.06342857142857143,
       "volatility": 0.174,
       "minWeight": 0.0,
-      "maxWeight": 0.05,
+      "maxWeight": 0.075,
       "sourceMapping": "Average of available source assumptions",
       "_distinctSourceCount": 2
     },
@@ -83,7 +83,7 @@
       "return": 0.06500206081116666,
       "volatility": 0.15236619857455866,
       "minWeight": 0.0,
-      "maxWeight": 0.05,
+      "maxWeight": 0.075,
       "sourceMapping": "Average of available source assumptions",
       "_distinctSourceCount": 3
     },
@@ -96,7 +96,7 @@
       "return": 0.0625,
       "volatility": 0.1495380911382292,
       "minWeight": 0.0,
-      "maxWeight": 0.05,
+      "maxWeight": 0.075,
       "sourceMapping": "Average of available source assumptions",
       "_distinctSourceCount": 2
     },
@@ -122,7 +122,7 @@
       "return": 0.06370636414599999,
       "volatility": 0.21023543757448734,
       "minWeight": 0.0,
-      "maxWeight": 0.03,
+      "maxWeight": 0.005,
       "sourceMapping": "Average of available source assumptions",
       "_distinctSourceCount": 6
     },
@@ -254,8 +254,8 @@
         ],
         "return": 0.060805230754333334,
         "volatility": 0.1627911875692516,
-        "minWeight": 0.0,
-        "maxWeight": 0.55,
+        "minWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "Average of available source assumptions",
         "_distinctSourceCount": 6
       },
@@ -268,7 +268,7 @@
         "return": 0.06385210604130001,
         "volatility": 0.17718447441309745,
         "minWeight": 0.0,
-        "maxWeight": 0.08,
+        "maxWeight": 0.1,
         "sourceMapping": "Average of available source assumptions",
         "_distinctSourceCount": 5
       },
@@ -281,7 +281,7 @@
         "return": 0.06878161264783333,
         "volatility": 0.20925169517654715,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.05,
         "sourceMapping": "Average of available source assumptions",
         "_distinctSourceCount": 6
       },
@@ -294,7 +294,7 @@
         "return": 0.06579312367725,
         "volatility": 0.16920301906037527,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Average of available source assumptions",
         "_distinctSourceCount": 4
       },
@@ -307,7 +307,7 @@
         "return": 0.06342857142857143,
         "volatility": 0.174,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Average of available source assumptions",
         "_distinctSourceCount": 2
       },
@@ -320,7 +320,7 @@
         "return": 0.06500206081116666,
         "volatility": 0.15236619857455866,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Average of available source assumptions",
         "_distinctSourceCount": 3
       },
@@ -333,7 +333,7 @@
         "return": 0.0625,
         "volatility": 0.1495380911382292,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Average of available source assumptions",
         "_distinctSourceCount": 2
       },
@@ -359,7 +359,7 @@
         "return": 0.06370636414599999,
         "volatility": 0.21023543757448734,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.005,
         "sourceMapping": "Average of available source assumptions",
         "_distinctSourceCount": 6
       },
@@ -490,8 +490,8 @@
         ],
         "return": 0.067,
         "volatility": 0.16470142484350958,
-        "minWeight": 0.0,
-        "maxWeight": 0.55,
+        "minWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "U.S. Large Cap"
       },
       {
@@ -503,7 +503,7 @@
         "return": 0.07,
         "volatility": 0.18562979265648727,
         "minWeight": 0.0,
-        "maxWeight": 0.08,
+        "maxWeight": 0.1,
         "sourceMapping": "U.S. Mid Cap"
       },
       {
@@ -515,7 +515,7 @@
         "return": 0.069,
         "volatility": 0.2109707128132829,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.05,
         "sourceMapping": "U.S. Small Cap"
       },
       {
@@ -527,7 +527,7 @@
         "return": 0.077,
         "volatility": 0.17700476908450113,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "U.S. Equity Value Factor"
       },
       {
@@ -539,7 +539,7 @@
         "return": 0.07,
         "volatility": 0.174,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "JPM 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
         "_distinctSourceCount": 2
       },
@@ -552,7 +552,7 @@
         "return": 0.077,
         "volatility": 0.16356943364767593,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "U.S. Equity Dividend Yield Factor"
       },
       {
@@ -564,7 +564,7 @@
         "return": 0.067,
         "volatility": 0.15107618227645836,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "U.S. Equity Quality Factor"
       },
       {
@@ -588,7 +588,7 @@
         "return": 0.072,
         "volatility": 0.20933182803592407,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.005,
         "sourceMapping": "Emerging Markets Equity"
       },
       {
@@ -709,8 +709,8 @@
         ],
         "return": 0.051,
         "volatility": 0.15,
-        "minWeight": 0.0,
-        "maxWeight": 0.55,
+        "minWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "Vanguard U.S. large-cap"
       },
       {
@@ -722,7 +722,7 @@
         "return": 0.052000000000000005,
         "volatility": 0.151,
         "minWeight": 0.0,
-        "maxWeight": 0.08,
+        "maxWeight": 0.1,
         "sourceMapping": "Vanguard U.S. equities proxy"
       },
       {
@@ -734,7 +734,7 @@
         "return": 0.057,
         "volatility": 0.19699999999999998,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.05,
         "sourceMapping": "Vanguard U.S. small-cap"
       },
       {
@@ -746,7 +746,7 @@
         "return": 0.07400000000000001,
         "volatility": 0.19,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Vanguard U.S. value"
       },
       {
@@ -758,7 +758,7 @@
         "return": 0.046,
         "volatility": 0.163,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Vanguard U.S. growth"
       },
       {
@@ -770,7 +770,7 @@
         "return": 0.06,
         "volatility": 0.15236619857455866,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Vanguard 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
         "_distinctSourceCount": 3
       },
@@ -783,7 +783,7 @@
         "return": 0.061,
         "volatility": 0.1495380911382292,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Vanguard 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
         "_distinctSourceCount": 2
       },
@@ -808,7 +808,7 @@
         "return": 0.03,
         "volatility": 0.251,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.005,
         "sourceMapping": "Vanguard emerging markets equities (unhedged)"
       },
       {
@@ -929,8 +929,8 @@
         ],
         "return": 0.084724353,
         "volatility": 0.191472943,
-        "minWeight": 0.0,
-        "maxWeight": 0.55,
+        "minWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "BlackRock US large cap equities"
       },
       {
@@ -942,7 +942,7 @@
         "return": 0.07850306700000001,
         "volatility": 0.19980720400000002,
         "minWeight": 0.0,
-        "maxWeight": 0.08,
+        "maxWeight": 0.1,
         "sourceMapping": "BlackRock average of US large cap equities and US small cap equities"
       },
       {
@@ -954,7 +954,7 @@
         "return": 0.072281781,
         "volatility": 0.208141465,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.05,
         "sourceMapping": "BlackRock US small cap equities"
       },
       {
@@ -966,7 +966,7 @@
         "return": 0.06579312367725,
         "volatility": 0.16920301906037527,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "BlackRock 2026 was not given for this sleeve; AVERAGE assumptions are used.",
         "_distinctSourceCount": 4
       },
@@ -979,7 +979,7 @@
         "return": 0.07,
         "volatility": 0.174,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "BlackRock 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
         "_distinctSourceCount": 2
       },
@@ -992,7 +992,7 @@
         "return": 0.06,
         "volatility": 0.15236619857455866,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "BlackRock 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
         "_distinctSourceCount": 3
       },
@@ -1005,7 +1005,7 @@
         "return": 0.061,
         "volatility": 0.1495380911382292,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "BlackRock 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
         "_distinctSourceCount": 2
       },
@@ -1030,7 +1030,7 @@
         "return": 0.072746117,
         "volatility": 0.212149497,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.005,
         "sourceMapping": "BlackRock Emerging large cap equities"
       },
       {
@@ -1153,8 +1153,8 @@
         ],
         "return": 0.066,
         "volatility": 0.168,
-        "minWeight": 0.0,
-        "maxWeight": 0.55,
+        "minWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "US large cap"
       },
       {
@@ -1166,7 +1166,7 @@
         "return": 0.06385210604130001,
         "volatility": 0.17718447441309745,
         "minWeight": 0.0,
-        "maxWeight": 0.08,
+        "maxWeight": 0.1,
         "sourceMapping": "Invesco 2026 was not given for this sleeve; AVERAGE assumptions are used.",
         "_distinctSourceCount": 5
       },
@@ -1179,7 +1179,7 @@
         "return": 0.073,
         "volatility": 0.243,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.05,
         "sourceMapping": "US small cap"
       },
       {
@@ -1191,7 +1191,7 @@
         "return": 0.06579312367725,
         "volatility": 0.16920301906037527,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Invesco 2026 was not given for this sleeve; AVERAGE assumptions are used.",
         "_distinctSourceCount": 4
       },
@@ -1204,7 +1204,7 @@
         "return": 0.07,
         "volatility": 0.174,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Invesco 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
         "_distinctSourceCount": 2
       },
@@ -1217,7 +1217,7 @@
         "return": 0.06,
         "volatility": 0.15236619857455866,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Invesco 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
         "_distinctSourceCount": 3
       },
@@ -1230,7 +1230,7 @@
         "return": 0.061,
         "volatility": 0.1495380911382292,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Invesco 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
         "_distinctSourceCount": 2
       },
@@ -1255,7 +1255,7 @@
         "return": 0.077,
         "volatility": 0.187,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.005,
         "sourceMapping": "EM equity"
       },
       {
@@ -1378,8 +1378,8 @@
         ],
         "return": 0.060805230754333334,
         "volatility": 0.1627911875692516,
-        "minWeight": 0.0,
-        "maxWeight": 0.55,
+        "minWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
         "_distinctSourceCount": 6
       },
@@ -1392,7 +1392,7 @@
         "return": 0.06385210604130001,
         "volatility": 0.17718447441309745,
         "minWeight": 0.0,
-        "maxWeight": 0.08,
+        "maxWeight": 0.1,
         "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
         "_distinctSourceCount": 5
       },
@@ -1405,7 +1405,7 @@
         "return": 0.06878161264783333,
         "volatility": 0.20925169517654715,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.05,
         "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
         "_distinctSourceCount": 6
       },
@@ -1418,7 +1418,7 @@
         "return": 0.07200000000000001,
         "volatility": 0.16,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Russell 1000 Value"
       },
       {
@@ -1430,7 +1430,7 @@
         "return": 0.048,
         "volatility": 0.185,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Russell 1000 Growth"
       },
       {
@@ -1442,7 +1442,7 @@
         "return": 0.066,
         "volatility": 0.145,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "MSCI USA High Dividend Yield"
       },
       {
@@ -1454,7 +1454,7 @@
         "return": 0.064,
         "volatility": 0.14800000000000002,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "MSCI USA Quality"
       },
       {
@@ -1479,7 +1479,7 @@
         "return": 0.06370636414599999,
         "volatility": 0.21023543757448734,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.005,
         "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
         "_distinctSourceCount": 6
       },
@@ -1610,8 +1610,8 @@
         ],
         "return": 0.061,
         "volatility": 0.152,
-        "minWeight": 0.0,
-        "maxWeight": 0.55,
+        "minWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "U.S. equity"
       },
       {
@@ -1623,7 +1623,7 @@
         "return": 0.064,
         "volatility": 0.174,
         "minWeight": 0.0,
-        "maxWeight": 0.08,
+        "maxWeight": 0.1,
         "sourceMapping": "Average of U.S. equity and U.S. small-cap equity"
       },
       {
@@ -1635,7 +1635,7 @@
         "return": 0.067,
         "volatility": 0.196,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.05,
         "sourceMapping": "U.S. small-cap equity"
       },
       {
@@ -1647,7 +1647,7 @@
         "return": 0.06579312367725,
         "volatility": 0.16920301906037527,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Capital Group 2026 was not given for this sleeve; AVERAGE assumptions are used.",
         "_distinctSourceCount": 4
       },
@@ -1660,7 +1660,7 @@
         "return": 0.07,
         "volatility": 0.174,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Capital Group 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
         "_distinctSourceCount": 2
       },
@@ -1673,7 +1673,7 @@
         "return": 0.06,
         "volatility": 0.15236619857455866,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Capital Group 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
         "_distinctSourceCount": 3
       },
@@ -1686,7 +1686,7 @@
         "return": 0.061,
         "volatility": 0.1495380911382292,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Capital Group 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
         "_distinctSourceCount": 2
       },
@@ -1711,7 +1711,7 @@
         "return": 0.065,
         "volatility": 0.204,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.005,
         "sourceMapping": "Emerging markets equity"
       },
       {
@@ -1834,8 +1834,8 @@
         ],
         "return": 0.035107031526,
         "volatility": 0.150572757572,
-        "minWeight": 0.0,
-        "maxWeight": 0.55,
+        "minWeight": 0.15,
+        "maxWeight": 0.4,
         "sourceMapping": "US Large"
       },
       {
@@ -1847,7 +1847,7 @@
         "return": 0.0547574632065,
         "volatility": 0.175485375409,
         "minWeight": 0.0,
-        "maxWeight": 0.08,
+        "maxWeight": 0.1,
         "sourceMapping": "Average of US Large and US Small"
       },
       {
@@ -1859,7 +1859,7 @@
         "return": 0.074407894887,
         "volatility": 0.200397993246,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.05,
         "sourceMapping": "US Small"
       },
       {
@@ -1871,7 +1871,7 @@
         "return": 0.040172494709,
         "volatility": 0.149807307157,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "US Large Value"
       },
       {
@@ -1883,7 +1883,7 @@
         "return": 0.07,
         "volatility": 0.174,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Asset Allocation Interactive 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
         "_distinctSourceCount": 2
       },
@@ -1896,7 +1896,7 @@
         "return": 0.067012364867,
         "volatility": 0.148529162076,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "US Large RAFI"
       },
       {
@@ -1908,7 +1908,7 @@
         "return": 0.061,
         "volatility": 0.1495380911382292,
         "minWeight": 0.0,
-        "maxWeight": 0.05,
+        "maxWeight": 0.075,
         "sourceMapping": "Asset Allocation Interactive 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
         "_distinctSourceCount": 2
       },
@@ -1933,7 +1933,7 @@
         "return": 0.065492067876,
         "volatility": 0.197931300411,
         "minWeight": 0.0,
-        "maxWeight": 0.03,
+        "maxWeight": 0.005,
         "sourceMapping": "Emerging Markets"
       },
       {
@@ -2051,11 +2051,11 @@
     "halfWidth": 0.005,
     "profiles": {
       "Conservative": {
-        "percentile": 15.0,
+        "percentile": 18.0,
         "halfWidth": 0.005
       },
       "Balanced": {
-        "percentile": 35.0,
+        "percentile": 38.0,
         "halfWidth": 0.005
       },
       "Moderate": {
@@ -2063,11 +2063,11 @@
         "halfWidth": 0.005
       },
       "Growth": {
-        "percentile": 75.0,
+        "percentile": 77.0,
         "halfWidth": 0.005
       },
       "Aggressive Growth": {
-        "percentile": 90.0,
+        "percentile": 90.5,
         "halfWidth": 0.005
       }
     }
@@ -2153,9 +2153,7 @@
           "ticker": "FGRIX",
           "section": "Equities - Advisor (Active)",
           "exposures": {
-            "U.S. Value": 0.5,
-            "U.S. Growth": 0.1,
-            "U.S. Income": 0.4
+            "U.S. Income": 1.0
           }
         },
         {
@@ -2169,9 +2167,7 @@
           "ticker": "CGDV",
           "section": "Equities - Advisor (Active)",
           "exposures": {
-            "U.S. Value": 0.5,
-            "U.S. Growth": 0.3,
-            "U.S. Income": 0.2
+            "U.S. Value": 1.0
           }
         },
         {
@@ -2288,32 +2284,34 @@
           "ticker": "IEFA",
           "section": "Equities - Index (Passive)",
           "exposures": {
-            "International Developed Equity": 0.98,
-            "Emerging Markets Equity": 0.02
+            "International Developed Equity": 1.0
           }
         },
         {
           "ticker": "SPHQ",
           "section": "Equities - Advisor (Active)",
           "exposures": {
-            "U.S. Quality": 1.0
+            "U.S. Value": 0.25,
+            "U.S. Growth": 0.25,
+            "U.S. Income": 0.25,
+            "U.S. Quality": 0.25
           }
         },
         {
           "ticker": "CGDV",
           "section": "Equities - Advisor (Active)",
           "exposures": {
-            "U.S. Value": 0.5,
-            "U.S. Growth": 0.3,
-            "U.S. Income": 0.2
+            "U.S. Value": 0.25,
+            "U.S. Growth": 0.25,
+            "U.S. Income": 0.25,
+            "U.S. Quality": 0.25
           }
         },
         {
           "ticker": "FENI",
           "section": "Equities - Advisor (Active)",
           "exposures": {
-            "International Developed Equity": 0.99,
-            "Emerging Markets Equity": 0.01
+            "International Developed Equity": 1.0
           }
         },
         {
@@ -2327,8 +2325,8 @@
           "ticker": "QINT",
           "section": "Equities - Advisor (Active)",
           "exposures": {
-            "International Developed Equity": 0.94,
-            "Emerging Markets Equity": 0.06
+            "International Developed Equity": 0.95,
+            "Emerging Markets Equity": 0.05
           }
         },
         {

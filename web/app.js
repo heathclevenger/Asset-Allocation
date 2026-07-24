@@ -21,11 +21,11 @@ const escapeHtml = (value) => String(value)
   .replace(/>/g, "&gt;")
   .replace(/"/g, "&quot;");
 const defaultVolatilityPercentiles = {
-  "Conservative": 15,
-  "Balanced": 35,
+  "Conservative": 18,
+  "Balanced": 38,
   "Moderate": 55,
-  "Growth": 75,
-  "Aggressive Growth": 90,
+  "Growth": 77,
+  "Aggressive Growth": 90.5,
 };
 
 const categoryColor = (category) => ({
@@ -619,7 +619,7 @@ function globalFeasibleRegion(selected, frontier = []) {
   const profile = sharedConstraintProfile(selected.profileName || selectedMvoProfile);
   if (profile) {
     const rand = seededRandom(seedFromString(constraintSignature(profile), 4409));
-    for (let i = 0; i < 12500; i += 1) {
+    for (let i = 0; i < 25000; i += 1) {
       try {
         addPoint(randomAssetWeights(profile, rand));
       } catch (_error) {
@@ -802,7 +802,7 @@ function renderProfiles() {
       <button type="button" class="secondary" data-percentile-shift="5">Up 5%</button>
     </div>
   </div>
-  <p>These percentiles set each portfolio's target volatility range from the portfolios that are feasible under the current allocation and sub-allocation constraints. Lower percentiles create lower-risk targets; higher percentiles create higher-risk targets. Starting defaults are 15%, 35%, 55%, 75%, and 90%.</p>`;
+  <p>These percentiles set each portfolio's target volatility range from the portfolios that are feasible under the current allocation and sub-allocation constraints. Lower percentiles create lower-risk targets; higher percentiles create higher-risk targets. Starting defaults are 18%, 38%, 55%, 77%, and 90.5%.</p>`;
 
   const allocationPreset = document.querySelector("#allocationPresetSelect");
   if (allocationPreset) allocationPreset.value = selectedAllocationPreset;
@@ -1857,7 +1857,7 @@ document.addEventListener("click", (event) => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260724-vol-percentiles", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260724-baseline-vol-percentiles", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
