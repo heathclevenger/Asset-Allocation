@@ -749,6 +749,34 @@ function statusFor(profileName, vol) {
   return "In target";
 }
 
+function constraintStatus(actual, min, max) {
+  return actual >= min - 0.0001 && actual <= max + 0.0001 ? "In range" : "Out of range";
+}
+
+function selectedRangeStatus(selected, profileName) {
+  const displayProfile = state.profiles[profileName];
+  if (!displayProfile) return "Out of range";
+  const categoryOk = state.categories.every((category) => {
+    const bounds = displayProfile.categoryBounds?.[category];
+    if (!bounds) return true;
+    const actual = selected.categoryWeights?.[category] || 0;
+    return constraintStatus(actual, bounds.min, bounds.max) === "In range";
+  });
+  const assetsOk = state.assets.every((asset, index) => (
+    constraintStatus(selected.weights[index] || 0, asset.minWeight, asset.maxWeight) === "In range"
+  ));
+  return categoryOk && assetsOk ? "In range" : "Out of range";
+}
+
+function renderMvoSelectedStatus(profileName, selected = null, status = "Checking ranges...") {
+  const box = document.querySelector("#mvoSelectedStatus");
+  if (!box) return;
+  const cls = status === "In range" ? "pos" : status === "Checking ranges..." ? "" : "warn";
+  box.innerHTML = `<span>Selected:</span>
+    <strong>${profileName}</strong>
+    <em class="${cls}">${status}</em>`;
+}
+
 function renderMetrics() {
   const box = document.querySelector("#metrics");
   if (!box) return;
@@ -1378,7 +1406,7 @@ function renderMvo() {
   renderMvoControls();
   if (!frontierResult) return;
   if (frontierResult.error) {
-    document.querySelector("#mvoMetrics").innerHTML = `<div class="metric"><div class="label">Status</div><div class="value warn">Error</div><div class="status warn">${frontierResult.error}</div></div>`;
+    renderMvoSelectedStatus(selectedMvoProfile, null, "Out of range");
     document.querySelector("#frontierChart").innerHTML = `<p class="frontier-note">The MVO chart could not run. Check that Asset Assumptions have valid return and volatility numbers.</p>`;
     document.querySelector("#mvoWeightCharts").innerHTML = "";
     document.querySelector("#mvoConstraints").innerHTML = "";
@@ -1388,15 +1416,7 @@ function renderMvo() {
   if (!baseSelected) return;
   const profile = state.profiles[selectedMvoProfile];
   const selected = selectedMvoDisplayResult(selectedMvoProfile, baseSelected, frontierResult.frontier);
-  const metrics = document.querySelector("#mvoMetrics");
-  const status = statusFor(selectedMvoProfile, selected.stats.volatility);
-  metrics.innerHTML = [
-    ["Portfolio", selectedMvoProfile],
-    ["Expected Return", pct(selected.stats.expectedReturn)],
-    ["Volatility", pct(selected.stats.volatility)],
-    ["Target Volatility", `${pct(profile.targetVolMin)} - ${pct(profile.targetVolMax)}`],
-    ["Status", status],
-  ].map(([label, value]) => `<div class="metric"><div class="label">${label}</div><div class="value">${value}</div></div>`).join("");
+  renderMvoSelectedStatus(selectedMvoProfile, selected, selectedRangeStatus(selected, selectedMvoProfile));
 
   const charts = document.querySelector("#mvoWeightCharts");
   charts.innerHTML = [
@@ -1482,7 +1502,6 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
       ? `<line x1="${xScale(region.hull[0].x).toFixed(1)}" y1="${yScale(region.hull[0].y).toFixed(1)}" x2="${xScale(region.hull[1].x).toFixed(1)}" y2="${yScale(region.hull[1].y).toFixed(1)}" stroke="#8ecae6" stroke-width="14" stroke-linecap="round" opacity="0.42"></line>
         <line x1="${xScale(region.hull[0].x).toFixed(1)}" y1="${yScale(region.hull[0].y).toFixed(1)}" x2="${xScale(region.hull[1].x).toFixed(1)}" y2="${yScale(region.hull[1].y).toFixed(1)}" stroke="#2f80b7" stroke-width="2.2" stroke-linecap="round"></line>`
       : "";
-  const constraintStatus = (actual, min, max) => (actual >= min - 0.0001 && actual <= max + 0.0001 ? "In range" : "Out of range");
   const displayConstraintProfile = state.profiles[selected.profileName || selectedMvoProfile] || profile;
   const categoryRows = state.categories.map((category) => {
     const bounds = displayConstraintProfile.categoryBounds[category];
@@ -1689,7 +1708,7 @@ function refreshMvo() {
     renderMvo();
     return;
   }
-  document.querySelector("#mvoMetrics").innerHTML = `<div class="metric"><div class="label">Status</div><div class="value">Calculating</div></div>`;
+  renderMvoSelectedStatus(selectedMvoProfile, null, "Checking ranges...");
   document.querySelector("#frontierChart").innerHTML = `<p class="frontier-note">Calculating efficient frontier...</p>`;
   document.querySelector("#mvoWeightCharts").innerHTML = `<p class="frontier-note">Calculating weights...</p>`;
   document.querySelector("#mvoConstraints").innerHTML = "";
@@ -1885,7 +1904,7 @@ document.addEventListener("click", (event) => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260724-allocation-ranges-reset", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260724-mvo-dropdown-toolbar", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
@@ -1898,7 +1917,7 @@ async function init() {
     runOptimization();
   } catch (error) {
     const message = `Model data did not load: ${error.message}`;
-    document.querySelector("#mvoMetrics").innerHTML = `<div class="metric"><div class="label">Status</div><div class="value warn">No Data</div><div class="status warn">${message}</div></div>`;
+    renderMvoSelectedStatus(selectedMvoProfile, null, "Out of range");
     document.querySelector("#frontierChart").innerHTML = `<p class="frontier-note">${message}</p>`;
   }
 }

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Paul Asset Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260724-allocation-ranges-reset" />
+    <link rel="stylesheet" href="./styles.css?v=20260724-mvo-dropdown-toolbar" />
   </head>
   <body>
     <div class="shell">
@@ -148,8 +148,12 @@
               <select id="mvoProfileSelect"></select>
             </div>
           </div>
-          <div class="metrics" id="mvoMetrics">
-            <div class="metric"><div class="label">Status</div><div class="value">Loading</div></div>
+          <div class="mvo-selector-row">
+            <div class="mvo-selected-card" id="mvoSelectedStatus">
+              <span>Selected:</span>
+              <strong>Loading</strong>
+              <em>Checking ranges...</em>
+            </div>
           </div>
           <div class="frontier-layout">
             <div class="panel">
@@ -173,6 +177,6 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260724-allocation-ranges-reset"></script>
+    <script src="./app.js?v=20260724-mvo-dropdown-toolbar"></script>
   </body>
 </html>
