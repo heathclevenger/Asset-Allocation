@@ -15,7 +15,6 @@ WEB_DATA = ROOT / "web" / "data" / "model-data.json"
 BLACKROCK_ASSUMPTIONS_FILE = ROOT / "inputs" / "blackrock-capital-market-assumptions.xlsx"
 VANGUARD_ASSUMPTIONS_FILE = ROOT / "inputs" / "vanguard_2026_assumptions.csv"
 INVESCO_ASSUMPTIONS_FILE = ROOT / "inputs" / "invesco_2026_assumptions.csv"
-MSCI_ASSUMPTIONS_FILE = ROOT / "inputs" / "msci_2026_assumptions.csv"
 CAPITAL_GROUP_FILE = ROOT / "inputs" / "capital_group_2026.xlsx"
 ASSET_ALLOCATION_INTERACTIVE_FILE = ROOT / "inputs" / "Asset-Allocation-Interactive-Data.xlsx"
 FUND_MAPPING_FILE = ROOT / "inputs" / "Fund Mapping.xlsx"
@@ -26,8 +25,6 @@ FUND_MAPPING_HEADERS = {
     "small cap": "U.S. Small Cap",
     "us value": "U.S. Value",
     "us growth": "U.S. Growth",
-    "us income": "U.S. Income",
-    "us quality": "U.S. Quality",
     "int. developed": "International Developed Equity",
     "emerging markets": "Emerging Markets Equity",
     "us short tsy": "US Short Treasuries",
@@ -143,52 +140,20 @@ def load_vanguard_assumptions() -> dict[str, dict[str, float | str]]:
     return out
 
 
-JPM_FALLBACK_TO_AVERAGE = {"U.S. Growth"}
+JPM_FALLBACK_TO_AVERAGE = set()
 CAPITAL_GROUP_FALLBACK_TO_AVERAGE = {
     "U.S. Value",
-    "U.S. Growth",
-    "U.S. Income",
-    "U.S. Quality",
     "U.S. REITs",
     "Commodities",
 }
-ASSET_ALLOCATION_INTERACTIVE_FALLBACK_TO_AVERAGE = {
-    "U.S. Growth",
-    "U.S. Quality",
-}
+ASSET_ALLOCATION_INTERACTIVE_FALLBACK_TO_AVERAGE = set()
 INVESCO_FALLBACK_TO_AVERAGE = {
     "U.S. Mid Cap",
     "U.S. Value",
-    "U.S. Growth",
-    "U.S. Income",
-    "U.S. Quality",
     "U.S. REITs",
     "Cash",
 }
-FALLBACK_RETURN_OVERRIDES = {
-    "U.S. Growth": 0.0700,
-    "U.S. Income": 0.0600,
-    "U.S. Quality": 0.0610,
-}
-
-
-def load_msci_assumptions() -> dict[str, dict[str, float | str]]:
-    if not MSCI_ASSUMPTIONS_FILE.exists():
-        return {}
-    out: dict[str, dict[str, float | str]] = {}
-    with MSCI_ASSUMPTIONS_FILE.open(newline="", encoding="utf-8-sig") as handle:
-        reader = csv.DictReader(handle)
-        for row in reader:
-            model_asset = optimizer.normalize_name(row.get("Model Asset", ""))
-            provider_asset = row.get("Provider Asset", "").strip()
-            if not model_asset or not provider_asset:
-                continue
-            out[model_asset] = {
-                "return": parse_assumption_percent(row.get("Return", "0")),
-                "volatility": parse_assumption_percent(row.get("Volatility", "0")),
-                "sourceMapping": provider_asset,
-            }
-    return out
+FALLBACK_RETURN_OVERRIDES = {}
 
 
 def load_capital_group_assumptions() -> dict[str, dict[str, float | str]]:
@@ -280,9 +245,6 @@ def load_asset_allocation_interactive_correlation() -> dict[str, dict[str, float
     return out
 BLACKROCK_FALLBACK_TO_AVERAGE = {
     "U.S. Value",
-    "U.S. Growth",
-    "U.S. Income",
-    "U.S. Quality",
     "Commodities",
     "US Short Treasuries",
 }
@@ -308,7 +270,6 @@ ASSET_ALLOCATION_INTERACTIVE_CORRELATION_MAP = {
     "U.S. Small Cap": "US Small",
     "U.S. Value": "US Large Value",
     "U.S. Growth": "US Large Growth",
-    "U.S. Income": "US Large RAFI",
     "International Developed Equity": "Dev ex US Large",
     "Emerging Markets Equity": "Emerging Markets",
     "U.S. REITs": "REITs",
@@ -456,6 +417,41 @@ def average_assumption_sets(source_sets: list[list[dict | None]], fallback_by_so
         asset["sourceMapping"] = "Average of available source assumptions"
         averaged.append(asset)
     return averaged
+
+
+def apply_growth_proxy(source_assets: list[dict | None]) -> list[dict | None]:
+    out = [dict(asset) if asset is not None else None for asset in source_assets]
+    by_name = {
+        optimizer.normalize_name(asset["name"]): index
+        for index, asset in enumerate(out)
+        if asset is not None
+    }
+    model_index_by_name = {
+        optimizer.normalize_name(asset.name): index
+        for index, asset in enumerate(optimizer.ASSETS)
+    }
+    growth_index = by_name.get(optimizer.normalize_name("U.S. Growth"), model_index_by_name.get(optimizer.normalize_name("U.S. Growth")))
+    large_index = by_name.get(optimizer.normalize_name("U.S. Large Cap"))
+    small_index = by_name.get(optimizer.normalize_name("U.S. Small Cap"))
+    if growth_index is None or large_index is None or small_index is None:
+        return out
+    large = out[large_index]
+    small = out[small_index]
+    if large is None or small is None:
+        return out
+    model_asset = optimizer.ASSETS[growth_index]
+    growth = dict(out[growth_index] or {
+        "name": model_asset.name,
+        "category": model_asset.category,
+        "sourceNames": list(model_asset.source_names),
+        "minWeight": model_asset.min_weight,
+        "maxWeight": model_asset.max_weight,
+    })
+    growth["return"] = (large["return"] + small["return"]) / 2.0
+    growth["volatility"] = (large["volatility"] + small["volatility"]) / 2.0
+    growth["sourceMapping"] = ""
+    out[growth_index] = growth
+    return out
 
 
 def apply_average_fallback(source_assets: list[dict | None], average_assets: list[dict], source_name: str, fallback_names: set[str] | None = None) -> list[dict]:
@@ -610,6 +606,7 @@ def main() -> None:
         }
         for i, asset in enumerate(optimizer.ASSETS)
     ]
+    jpm_assets = apply_growth_proxy(jpm_assets)
     vanguard_assumptions = load_vanguard_assumptions()
     raw_vanguard_assets = []
     for asset in jpm_assets:
@@ -624,7 +621,9 @@ def main() -> None:
             })
         else:
             raw_vanguard_assets.append(None)
+    raw_vanguard_assets = apply_growth_proxy(raw_vanguard_assets)
     raw_blackrock_assets = build_blackrock_assumptions(jpm_assets)
+    raw_blackrock_assets = apply_growth_proxy(raw_blackrock_assets)
     capital_group_assumptions = load_capital_group_assumptions()
     raw_capital_group_assets = []
     for asset in jpm_assets:
@@ -639,6 +638,7 @@ def main() -> None:
             })
         else:
             raw_capital_group_assets.append(None)
+    raw_capital_group_assets = apply_growth_proxy(raw_capital_group_assets)
     invesco_assumptions = load_invesco_assumptions()
     raw_invesco_assets = []
     for asset in jpm_assets:
@@ -653,20 +653,7 @@ def main() -> None:
             })
         else:
             raw_invesco_assets.append(None)
-    msci_assumptions = load_msci_assumptions()
-    raw_msci_assets = []
-    for asset in jpm_assets:
-        normalized_asset_name = optimizer.normalize_name(asset["name"])
-        if normalized_asset_name in msci_assumptions:
-            assumption = msci_assumptions[normalized_asset_name]
-            raw_msci_assets.append({
-                **asset,
-                "return": assumption["return"],
-                "volatility": assumption["volatility"],
-                "sourceMapping": assumption["sourceMapping"],
-            })
-        else:
-            raw_msci_assets.append(None)
+    raw_invesco_assets = apply_growth_proxy(raw_invesco_assets)
     asset_allocation_interactive_assumptions = load_asset_allocation_interactive_assumptions()
     raw_asset_allocation_interactive_assets = []
     for asset in jpm_assets:
@@ -681,15 +668,15 @@ def main() -> None:
             })
         else:
             raw_asset_allocation_interactive_assets.append(None)
+    raw_asset_allocation_interactive_assets = apply_growth_proxy(raw_asset_allocation_interactive_assets)
     average_assets = average_assumption_sets(
-        [jpm_assets, raw_vanguard_assets, raw_blackrock_assets, raw_invesco_assets, raw_msci_assets, raw_capital_group_assets, raw_asset_allocation_interactive_assets],
-        [JPM_FALLBACK_TO_AVERAGE, set(), BLACKROCK_FALLBACK_TO_AVERAGE, INVESCO_FALLBACK_TO_AVERAGE, set(), CAPITAL_GROUP_FALLBACK_TO_AVERAGE, ASSET_ALLOCATION_INTERACTIVE_FALLBACK_TO_AVERAGE],
+        [jpm_assets, raw_vanguard_assets, raw_blackrock_assets, raw_invesco_assets, raw_capital_group_assets, raw_asset_allocation_interactive_assets],
+        [JPM_FALLBACK_TO_AVERAGE, set(), BLACKROCK_FALLBACK_TO_AVERAGE, INVESCO_FALLBACK_TO_AVERAGE, CAPITAL_GROUP_FALLBACK_TO_AVERAGE, ASSET_ALLOCATION_INTERACTIVE_FALLBACK_TO_AVERAGE],
     )
     jpm_assets = apply_average_fallback(jpm_assets, average_assets, "JPM 2026", JPM_FALLBACK_TO_AVERAGE)
     vanguard_assets = apply_average_fallback(raw_vanguard_assets, average_assets, "Vanguard 2026")
     blackrock_assets = apply_average_fallback(raw_blackrock_assets, average_assets, "BlackRock 2026", BLACKROCK_FALLBACK_TO_AVERAGE)
     invesco_assets = apply_average_fallback(raw_invesco_assets, average_assets, "Invesco 2026", INVESCO_FALLBACK_TO_AVERAGE)
-    msci_assets = apply_average_fallback(raw_msci_assets, average_assets, "MSCI 2026")
     capital_group_assets = apply_average_fallback(raw_capital_group_assets, average_assets, "Capital Group 2026", CAPITAL_GROUP_FALLBACK_TO_AVERAGE)
     asset_allocation_interactive_assets = apply_average_fallback(raw_asset_allocation_interactive_assets, average_assets, "Asset Allocation Interactive 2026", ASSET_ALLOCATION_INTERACTIVE_FALLBACK_TO_AVERAGE)
     corr = blend_available_correlations(corr, average_assets)
@@ -725,7 +712,6 @@ def main() -> None:
             "Vanguard 2026": vanguard_assets,
             "BlackRock 2026": blackrock_assets,
             "Invesco 2026": invesco_assets,
-            "MSCI 2026": msci_assets,
             "Capital Group 2026": capital_group_assets,
             "Asset Allocation Interactive 2026": asset_allocation_interactive_assets,
         },

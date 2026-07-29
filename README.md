@@ -19,7 +19,6 @@ Cash is hard constrained to exactly 1% in every portfolio and every optimization
 - `inputs/blackrock-capital-market-assumptions.xlsx` - BlackRock assumptions used for the `BlackRock 2026` dropdown set.
 - `inputs/vanguard_2026_assumptions.csv` - Vanguard assumptions transcribed from screenshot/table form.
 - `inputs/invesco_2026_assumptions.csv` - Invesco assumptions transcribed from screenshot/table form.
-- `inputs/msci_2026_assumptions.csv` - MSCI/suggested benchmark assumptions for U.S. equity factor sleeves.
 - `inputs/capital_group_2026.xlsx` - Capital Group assumptions and correlation matrix transcribed from screenshot/table form.
 - `inputs/Asset-Allocation-Interactive-Data.xlsx` - Asset Allocation Interactive assumptions, model mapping, and correlation matrix.
 - `outputs/paul_asset_allocation_model.xlsx` - Excel workbook with assumptions, outputs, constraints, checks, and source/setup notes.
@@ -64,8 +63,6 @@ Model Asset,Provider Asset,Return,Volatility,Source Note
 When a new Vanguard screenshot is available, paste the screenshot or table into Codex and ask to convert it to `inputs/vanguard_2026_assumptions.csv`. Use the 50th percentile return and median volatility unless the model policy changes. Any missing or unclear provider category should be confirmed before mapping; if no approved proxy exists, that sleeve should fall back to CORE average assumptions and the source note should say so.
 
 Invesco should stay in `inputs/invesco_2026_assumptions.csv`. Invesco currently comes from screenshot/table data, so the CSV is the reviewable source file. Use arithmetic return as the return assumption and expected risk as the volatility assumption. Any missing or unclear provider category should be confirmed before mapping; approved fallbacks should use CORE average assumptions and the source note should say so.
-
-MSCI should stay in `inputs/msci_2026_assumptions.csv`. It currently covers only U.S. Income, U.S. Quality, U.S. Growth, and U.S. Value. All other sleeves fall back to CORE average assumptions.
 
 Capital Group should stay in `inputs/capital_group_2026.xlsx`, with assumptions on the `Assumptions` sheet and correlations on the `Correlations` sheet. Capital Group assumptions use long-term expected return and standard deviation. Capital Group correlations are averaged with JPM correlations only where a model sleeve has an approved Capital Group correlation mapping; otherwise the model keeps the JPM correlation value.
 

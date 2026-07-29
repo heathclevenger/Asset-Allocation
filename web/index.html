@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Paul Asset Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260724-mvo-dropdown-toolbar" />
+    <link rel="stylesheet" href="./styles.css?v=20260729-market-view" />
   </head>
   <body>
     <div class="shell">
@@ -23,16 +23,16 @@
 
       <div class="nav-row">
         <nav class="tabs" aria-label="Model pages">
-          <button class="tab active" data-tab="mvo">Portfolio Optimization</button>
-          <button class="tab" data-tab="fundModels">ETF/Fund Models</button>
+          <button class="tab active" data-tab="results">Overview</button>
           <button class="tab" data-tab="assets">Asset Assumptions</button>
           <button class="tab" data-tab="profiles">Model Constraints</button>
-          <button class="tab" data-tab="results">Overview</button>
+          <button class="tab" data-tab="mvo">Portfolio Optimization</button>
+          <button class="tab" data-tab="fundModels">ETF/Fund Models</button>
         </nav>
       </div>
 
       <main>
-        <section id="results" class="page">
+        <section id="results" class="page active">
           <div class="toolbar">
             <div>
               <h2>Overview</h2>
@@ -65,7 +65,7 @@
           <div class="toolbar">
             <div>
               <h2>Model Constraints</h2>
-              <p>Edit volatility percentiles, allocation constraints, and sub-allocation constraints.</p>
+              <p>Select the volatility case and review allocation and sub-allocation constraints.</p>
             </div>
           </div>
           <div id="volatilityControl" class="anchor-control"></div>
@@ -107,7 +107,7 @@
           <div class="toolbar">
             <div>
               <h2>Asset Assumptions</h2>
-              <p>Edit return and volatility assumptions. Sleeve range constraints are managed on the Model Constraints page.</p>
+              <p>Review return and volatility assumptions. Sleeve range constraints are managed on the Model Constraints page.</p>
             </div>
             <div class="select-control">
               <label for="assumptionSetSelect">Assumption Set</label>
@@ -118,6 +118,12 @@
           </div>
           <div class="table-wrap">
             <table id="assetsTable"></table>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Asset Assumption Comparison</div>
+            <div class="table-wrap assumption-comparison-wrap">
+              <table id="assetComparisonTable" class="assumption-comparison-table"></table>
+            </div>
           </div>
         </section>
 
@@ -134,10 +140,11 @@
           </div>
           <div class="panel">
             <div id="fundModelContent"></div>
+            <div id="fundModelPrintContent" class="print-only"></div>
           </div>
         </section>
 
-        <section id="mvo" class="page active">
+        <section id="mvo" class="page">
           <div class="toolbar">
             <div>
               <h2>Portfolio Optimization</h2>
@@ -177,6 +184,6 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260724-mvo-dropdown-toolbar"></script>
+    <script src="./app.js?v=20260729-market-view"></script>
   </body>
 </html>

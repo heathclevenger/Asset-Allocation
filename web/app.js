@@ -13,6 +13,8 @@ let selectedAllocationPreset = "CORE";
 let selectedSubAllocationPreset = "CORE";
 let selectedAssumptionSet = "CORE";
 let selectedFundProvider = "Fidelity";
+let selectedVolatilityCase = "Base";
+let prePdfAssumptionSet = null;
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const escapeHtml = (value) => String(value)
@@ -21,11 +23,17 @@ const escapeHtml = (value) => String(value)
   .replace(/>/g, "&gt;")
   .replace(/"/g, "&quot;");
 const defaultVolatilityPercentiles = {
-  "Conservative": 18,
-  "Balanced": 38,
+  "Conservative": 20,
+  "Balanced": 35,
   "Moderate": 55,
-  "Growth": 77,
-  "Aggressive Growth": 90.5,
+  "Growth": 75,
+  "Aggressive Growth": 90,
+};
+
+const volatilityCases = {
+  Bear: -5,
+  Base: 0,
+  Bull: 5,
 };
 
 const categoryColor = (category) => ({
@@ -43,8 +51,6 @@ const assetColor = (asset, index) => ({
   "U.S. Small Cap": "#ee9b00",
   "International Developed Equity": "#6a4c93",
   "Emerging Markets Equity": "#2a9d8f",
-  "U.S. Income": "#4361ee",
-  "U.S. Quality": "#2f6f4e",
   "U.S. REITs": "#bc6c25",
   "Commodities": "#7f4f24",
   "US Short Treasuries": "#1d3557",
@@ -116,6 +122,19 @@ function applyAssumptionSet(name) {
     asset.volatility = source.volatility;
     asset.sourceMapping = source.sourceMapping;
   });
+}
+
+function applyVolatilityCase(caseName) {
+  selectedVolatilityCase = volatilityCases[caseName] === undefined ? "Base" : caseName;
+  ensureVolatilityModel();
+  const shift = volatilityCases[selectedVolatilityCase];
+  Object.entries(defaultVolatilityPercentiles).forEach(([profileName, basePercentile]) => {
+    state.volatilityModel.profiles ||= {};
+    state.volatilityModel.profiles[profileName] ||= {};
+    state.volatilityModel.profiles[profileName].percentile = Math.max(0, Math.min(100, basePercentile + shift));
+    state.volatilityModel.profiles[profileName].halfWidth = state.volatilityModel.halfWidth;
+  });
+  applyVolatilityModel();
 }
 
 function percentileValue(values, percentile) {
@@ -814,23 +833,20 @@ function renderProfiles() {
   applyVolatilityModel();
   const control = document.querySelector("#volatilityControl");
   const model = state.volatilityModel;
-  control.innerHTML = `<div class="percentile-grid">
-    ${Object.keys(state.profiles).map((name) => `<div class="percentile-field">
-      <label>${name} Volatility Percentile</label>
-      <div class="unit-input">
-        ${editableCell(model.profiles[name].percentile || 0, `volatilityModel.profiles.${name}.percentile`, "number")}
-        <span>%</span>
-      </div>
-    </div>`).join("")}
-  </div>
-  <div class="percentile-shift-field">
-    <label>Shift All Percentiles</label>
-    <div class="percentile-shift-buttons">
-      <button type="button" class="secondary" data-percentile-shift="-5">Down 5%</button>
-      <button type="button" class="secondary" data-percentile-shift="5">Up 5%</button>
+  control.innerHTML = `<div class="volatility-case-layout">
+    <div class="volatility-case-control">
+      <label for="volatilityCaseSelect">Market View</label>
+      <select id="volatilityCaseSelect">
+        ${Object.keys(volatilityCases).map((name) => `<option value="${name}" ${name === selectedVolatilityCase ? "selected" : ""}>${name}</option>`).join("")}
+      </select>
     </div>
-  </div>
-  <p>These percentiles set each portfolio's target volatility range from the portfolios that are feasible under the current allocation and sub-allocation constraints. Lower percentiles create lower-risk targets; higher percentiles create higher-risk targets. Starting defaults are 18%, 38%, 55%, 77%, and 90.5%.</p>`;
+    <div class="percentile-grid read-only-percentiles">
+      ${Object.keys(state.profiles).map((name) => `<div class="percentile-field">
+        <label>${name} Volatility Percentile</label>
+        <strong>${(model.profiles[name].percentile || 0).toFixed(0)}%</strong>
+      </div>`).join("")}
+    </div>
+  </div>`;
 
   const allocationPreset = document.querySelector("#allocationPresetSelect");
   if (allocationPreset) allocationPreset.value = selectedAllocationPreset;
@@ -879,9 +895,42 @@ function renderAssets() {
   table.innerHTML = `<thead><tr><th>Asset</th><th>Category</th><th>Source</th><th>Return</th><th>Volatility</th></tr></thead>
   <tbody>${state.assets.map((asset, i) => `<tr>
       <td class="text">${asset.name}</td><td>${asset.category}</td><td class="text">${assetSourceDisplay(asset)}</td>
-      <td>${editableCell(asset.return, `assets.${i}.return`)}</td>
-      <td>${editableCell(asset.volatility, `assets.${i}.volatility`)}</td>
+      <td>${pct(asset.return)}</td>
+      <td>${pct(asset.volatility)}</td>
     </tr>`).join("")}</tbody>`;
+
+  renderAssetComparison();
+}
+
+function providerShortName(name) {
+  const clean = name.replace(/\s*2026\s*/i, "").trim();
+  const labels = {
+    "Asset Allocation Interactive": "AAI",
+    "Capital Group": "CG",
+    BlackRock: "BR",
+    Vanguard: "VG",
+  };
+  return labels[clean] || clean;
+}
+
+function renderAssetComparison() {
+  const table = document.querySelector("#assetComparisonTable");
+  if (!table || !state.assumptionSets) return;
+  const providers = Object.keys(state.assumptionSets).filter((name) => name !== "CORE");
+  const providerHeaders = providers.map((name) => `<th>${providerShortName(name)}</th>`).join("");
+  table.innerHTML = `<thead>
+    <tr>
+      <th rowspan="2">Asset Class</th>
+      <th colspan="${providers.length}">Return</th>
+      <th colspan="${providers.length}">Volatility</th>
+    </tr>
+    <tr>${providerHeaders}${providerHeaders}</tr>
+  </thead>
+  <tbody>${state.assets.map((asset, assetIndex) => `<tr>
+    <td class="text">${asset.name}</td>
+    ${providers.map((provider) => `<td>${pct(state.assumptionSets[provider][assetIndex].return)}</td>`).join("")}
+    ${providers.map((provider) => `<td>${pct(state.assumptionSets[provider][assetIndex].volatility)}</td>`).join("")}
+  </tr>`).join("")}</tbody>`;
 }
 
 function renderAllocationWeights() {
@@ -1128,24 +1177,12 @@ function calculateFundModel(providerName, result) {
   return { allocations, actualExposures, actualCategoryWeights, targets, unresolved };
 }
 
-function renderFundModels() {
-  const box = document.querySelector("#fundModelContent");
-  if (!box) return;
-  const providers = Object.keys(state.fundModels?.providers || {});
-  if (!providers.length) {
-    box.innerHTML = `<p class="frontier-note">No fund mapping data found. Add Fund Mapping.xlsx to the inputs folder and refresh the model.</p>`;
-    return;
-  }
-  if (!providers.includes(selectedFundProvider)) selectedFundProvider = providers[0];
-  document.querySelectorAll(".fund-tab").forEach((button) => {
-    button.classList.toggle("active", button.dataset.fundProvider === selectedFundProvider);
-  });
-
-  const rows = fundModelRows(selectedFundProvider);
+function fundModelHtml(providerName, includeHeading = false) {
+  const rows = fundModelRows(providerName);
   const profileNames = Object.keys(results);
   const models = Object.fromEntries(profileNames.map((profile) => [
     profile,
-    calculateFundModel(selectedFundProvider, results[profile]),
+    calculateFundModel(providerName, results[profile]),
   ]));
   const grouped = [];
   let lastSection = "";
@@ -1201,7 +1238,8 @@ function renderFundModels() {
     ? `<div class="fund-warning"><strong>Mapping Notes</strong>${[...workbookWarnings, ...unresolvedWarnings].map((warning) => `<span>${escapeHtml(warning)}</span>`).join("")}</div>`
     : "";
 
-  box.innerHTML = `
+  return `
+    ${includeHeading ? `<h3 class="print-section-heading">${providerName}</h3>` : ""}
     <div class="table-wrap">
       <table class="fund-model-table">
         <thead><tr><th>Ticker</th>${profileNames.map((profile) => `<th>${profile}</th>`).join("")}</tr></thead>
@@ -1216,6 +1254,31 @@ function renderFundModels() {
     </div>` : ""}
     ${warningHtml}
   `;
+}
+
+function renderFundModelPrintContent() {
+  const box = document.querySelector("#fundModelPrintContent");
+  if (!box) return;
+  const providers = Object.keys(state.fundModels?.providers || {});
+  box.innerHTML = providers.map((provider) => (
+    `<div class="print-provider-section">${fundModelHtml(provider, true)}</div>`
+  )).join("");
+}
+
+function renderFundModels() {
+  const box = document.querySelector("#fundModelContent");
+  if (!box) return;
+  const providers = Object.keys(state.fundModels?.providers || {});
+  if (!providers.length) {
+    box.innerHTML = `<p class="frontier-note">No fund mapping data found. Add Fund Mapping.xlsx to the inputs folder and refresh the model.</p>`;
+    return;
+  }
+  if (!providers.includes(selectedFundProvider)) selectedFundProvider = providers[0];
+  document.querySelectorAll(".fund-tab").forEach((button) => {
+    button.classList.toggle("active", button.dataset.fundProvider === selectedFundProvider);
+  });
+  box.innerHTML = fundModelHtml(selectedFundProvider);
+  renderFundModelPrintContent();
 }
 
 function pieSlicePath(cx, cy, radius, startAngle, endAngle) {
@@ -1445,7 +1508,28 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
       volatility: benchmark.volatility,
     },
   }));
-  const all = [...frontier, ...assetPoints, ...benchmarkPoints, selected, ...region.points.map((point) => ({ stats: point.stats })), ...region.hull.map((point) => ({ stats: point.stats }))];
+  const spBenchmark = benchmarkPoints.find((point) => point.benchmark.name === "S&P 500");
+  const aggBenchmark = benchmarkPoints.find((point) => point.benchmark.name === "AGG");
+  const benchmarkBlendPoints = spBenchmark && aggBenchmark
+    ? [
+      { spWeight: 0.10, aggWeight: 0.90, label: "10/90" },
+      { spWeight: 0.20, aggWeight: 0.80, label: "20/80" },
+      { spWeight: 0.30, aggWeight: 0.70, label: "30/70" },
+      { spWeight: 0.40, aggWeight: 0.60, label: "40/60" },
+      { spWeight: 0.50, aggWeight: 0.50, label: "50/50" },
+      { spWeight: 0.60, aggWeight: 0.40, label: "60/40" },
+      { spWeight: 0.70, aggWeight: 0.30, label: "70/30" },
+      { spWeight: 0.80, aggWeight: 0.20, label: "80/20" },
+      { spWeight: 0.90, aggWeight: 0.10, label: "90/10" },
+    ].map((blend) => ({
+      ...blend,
+      stats: {
+        expectedReturn: (spBenchmark.stats.expectedReturn * blend.spWeight) + (aggBenchmark.stats.expectedReturn * blend.aggWeight),
+        volatility: (spBenchmark.stats.volatility * blend.spWeight) + (aggBenchmark.stats.volatility * blend.aggWeight),
+      },
+    }))
+    : [];
+  const all = [...frontier, ...assetPoints, ...benchmarkPoints, ...benchmarkBlendPoints, selected, ...region.points.map((point) => ({ stats: point.stats })), ...region.hull.map((point) => ({ stats: point.stats }))];
   const regionDotStep = Math.max(1, Math.ceil(region.points.length / 950));
   const visibleRegionPoints = region.points.filter((_, index) => index % regionDotStep === 0);
   const minVol = Math.min(...all.map((p) => p.stats.volatility));
@@ -1563,6 +1647,14 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
     <line x1="${(bandX + bandWidth).toFixed(1)}" y1="${pad.top}" x2="${(bandX + bandWidth).toFixed(1)}" y2="${height - pad.bottom}" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="5 5"></line>
     ${regionShape}
     ${visibleRegionPoints.map((point) => `<circle cx="${xScale(point.x).toFixed(1)}" cy="${yScale(point.y).toFixed(1)}" r="1.45" fill="#2f80b7" opacity="0.18"></circle>`).join("")}
+    ${spBenchmark && aggBenchmark ? `<line x1="${xScale(aggBenchmark.stats.volatility).toFixed(1)}" y1="${yScale(aggBenchmark.stats.expectedReturn).toFixed(1)}" x2="${xScale(spBenchmark.stats.volatility).toFixed(1)}" y2="${yScale(spBenchmark.stats.expectedReturn).toFixed(1)}" stroke="#536575" stroke-width="1.6" stroke-dasharray="5 4" opacity="0.9"></line>` : ""}
+    ${benchmarkBlendPoints.map((blend) => {
+      const x = xScale(blend.stats.volatility);
+      const y = yScale(blend.stats.expectedReturn);
+      return `<g class="benchmark-point blend-point" tabindex="0" role="button" aria-label="${blend.label} S&P 500 and AGG blend" data-tooltip-title="${blend.label} S&amp;P/AGG" data-tooltip-body="S&amp;P ${pct(blend.spWeight)} | AGG ${pct(blend.aggWeight)}">
+        <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.6" fill="#ffffff" stroke="#536575" stroke-width="2"></circle>
+      </g>`;
+    }).join("")}
     ${assetPoints.map((p, index) => {
       const x = xScale(p.stats.volatility);
       const y = yScale(p.stats.expectedReturn);
@@ -1668,11 +1760,12 @@ function resetModel() {
   state = clone(baseData);
   selectedAssumptionSet = state.selectedAssumptionSet || "CORE";
   applyAssumptionSet(selectedAssumptionSet);
+  selectedVolatilityCase = "Base";
   selectedAllocationPreset = "CORE";
   selectedSubAllocationPreset = "CORE";
   applySubAllocationPreset(selectedSubAllocationPreset);
   ensureVolatilityModel();
-  applyVolatilityModel();
+  applyVolatilityCase(selectedVolatilityCase);
   renderEditableInputs();
   runOptimization();
 }
@@ -1751,6 +1844,30 @@ function scheduleLiveUpdate() {
   liveUpdateTimer = window.setTimeout(refreshLiveOutputs, 180);
 }
 
+function exportPdfReport() {
+  if (!state) return;
+  prePdfAssumptionSet = selectedAssumptionSet;
+  applyAssumptionSet("CORE");
+  renderAssets();
+  renderAllocationWeights();
+  renderWeights();
+  renderFundModels();
+  mvoDirty = true;
+  if (mvoDirty || !frontierResult) {
+    try {
+      frontierResult = calculateEfficientFrontier();
+      mvoDirty = false;
+    } catch (error) {
+      frontierResult = { error: error.message };
+      mvoDirty = false;
+    }
+  }
+  renderMvo();
+  renderFundModelPrintContent();
+  document.body.classList.add("pdf-export");
+  window.setTimeout(() => window.print(), 150);
+}
+
 function updateInputState(input) {
   const value = input.dataset.type === "percent" ? num(input.value) / 100 : num(input.value);
   setPath(input.dataset.path, value);
@@ -1760,17 +1877,6 @@ function updateInputState(input) {
 
 function commitInputUpdate(input) {
   updateInputState(input);
-  runOptimization();
-}
-
-function applyPercentileShift(shift) {
-  if (!Number.isFinite(shift) || Math.abs(shift) < 1e-9) {
-    return;
-  }
-  ensureVolatilityModel();
-  Object.values(state.volatilityModel.profiles).forEach((rule) => {
-    rule.percentile = Math.max(0, Math.min(100, (rule.percentile || 0) + shift));
-  });
   runOptimization();
 }
 
@@ -1867,6 +1973,11 @@ document.addEventListener("change", (event) => {
     runOptimization();
     return;
   }
+  if (event.target.matches("#volatilityCaseSelect")) {
+    applyVolatilityCase(event.target.value);
+    runOptimization();
+    return;
+  }
   if (!event.target.matches("input[data-path]")) return;
   commitInputUpdate(event.target);
 });
@@ -1896,15 +2007,22 @@ document.addEventListener("click", (event) => {
   }
 
   const button = event.target.closest("button");
-  if (button?.dataset.percentileShift) {
-    applyPercentileShift(Number.parseFloat(button.dataset.percentileShift));
-  }
   if (button?.id === "resetModel") resetModel();
+  if (button?.id === "exportPdf") exportPdfReport();
+});
+
+window.addEventListener("afterprint", () => {
+  document.body.classList.remove("pdf-export");
+  if (prePdfAssumptionSet && prePdfAssumptionSet !== selectedAssumptionSet) {
+    applyAssumptionSet(prePdfAssumptionSet);
+    runOptimization();
+  }
+  prePdfAssumptionSet = null;
 });
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260724-mvo-dropdown-toolbar", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260729-market-view", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
@@ -1913,7 +2031,7 @@ async function init() {
     applyAssumptionSet(selectedAssumptionSet);
     applySubAllocationPreset(selectedSubAllocationPreset);
     ensureVolatilityModel();
-    applyVolatilityModel();
+    applyVolatilityCase(selectedVolatilityCase);
     runOptimization();
   } catch (error) {
     const message = `Model data did not load: ${error.message}`;

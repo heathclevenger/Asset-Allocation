@@ -18,7 +18,7 @@
       "return": 0.060805230754333334,
       "volatility": 0.1627911875692516,
       "minWeight": 0.15,
-      "maxWeight": 0.4,
+      "maxWeight": 0.55,
       "sourceMapping": "Average of available source assumptions",
       "_distinctSourceCount": 6
     },
@@ -54,12 +54,12 @@
       "sourceNames": [
         "U.S. Equity Value Factor"
       ],
-      "return": 0.06579312367725,
-      "volatility": 0.16920301906037527,
+      "return": 0.063724164903,
+      "volatility": 0.1722706920805004,
       "minWeight": 0.0,
       "maxWeight": 0.075,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 4
+      "_distinctSourceCount": 3
     },
     {
       "name": "U.S. Growth",
@@ -67,38 +67,12 @@
       "sourceNames": [
         "U.S. Large Cap"
       ],
-      "return": 0.06342857142857143,
-      "volatility": 0.174,
+      "return": 0.06479342170108333,
+      "volatility": 0.18602144137289936,
       "minWeight": 0.0,
       "maxWeight": 0.075,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 2
-    },
-    {
-      "name": "U.S. Income",
-      "category": "Equity",
-      "sourceNames": [
-        "U.S. Equity Dividend Yield Factor"
-      ],
-      "return": 0.06500206081116666,
-      "volatility": 0.15236619857455866,
-      "minWeight": 0.0,
-      "maxWeight": 0.075,
-      "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 3
-    },
-    {
-      "name": "U.S. Quality",
-      "category": "Equity",
-      "sourceNames": [
-        "U.S. Equity Quality Factor"
-      ],
-      "return": 0.0625,
-      "volatility": 0.1495380911382292,
-      "minWeight": 0.0,
-      "maxWeight": 0.075,
-      "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 2
+      "_distinctSourceCount": 6
     },
     {
       "name": "International Developed Equity",
@@ -255,7 +229,7 @@
         "return": 0.060805230754333334,
         "volatility": 0.1627911875692516,
         "minWeight": 0.15,
-        "maxWeight": 0.4,
+        "maxWeight": 0.55,
         "sourceMapping": "Average of available source assumptions",
         "_distinctSourceCount": 6
       },
@@ -291,12 +265,12 @@
         "sourceNames": [
           "U.S. Equity Value Factor"
         ],
-        "return": 0.06579312367725,
-        "volatility": 0.16920301906037527,
+        "return": 0.063724164903,
+        "volatility": 0.1722706920805004,
         "minWeight": 0.0,
         "maxWeight": 0.075,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 4
+        "_distinctSourceCount": 3
       },
       {
         "name": "U.S. Growth",
@@ -304,38 +278,12 @@
         "sourceNames": [
           "U.S. Large Cap"
         ],
-        "return": 0.06342857142857143,
-        "volatility": 0.174,
+        "return": 0.06479342170108333,
+        "volatility": 0.18602144137289936,
         "minWeight": 0.0,
         "maxWeight": 0.075,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 2
-      },
-      {
-        "name": "U.S. Income",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Dividend Yield Factor"
-        ],
-        "return": 0.06500206081116666,
-        "volatility": 0.15236619857455866,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 3
-      },
-      {
-        "name": "U.S. Quality",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Quality Factor"
-        ],
-        "return": 0.0625,
-        "volatility": 0.1495380911382292,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 2
+        "_distinctSourceCount": 6
       },
       {
         "name": "International Developed Equity",
@@ -491,7 +439,7 @@
         "return": 0.067,
         "volatility": 0.16470142484350958,
         "minWeight": 0.15,
-        "maxWeight": 0.4,
+        "maxWeight": 0.55,
         "sourceMapping": "U.S. Large Cap"
       },
       {
@@ -536,36 +484,11 @@
         "sourceNames": [
           "U.S. Large Cap"
         ],
-        "return": 0.07,
-        "volatility": 0.174,
+        "return": 0.068,
+        "volatility": 0.18783606882839624,
         "minWeight": 0.0,
         "maxWeight": 0.075,
-        "sourceMapping": "JPM 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
-        "_distinctSourceCount": 2
-      },
-      {
-        "name": "U.S. Income",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Dividend Yield Factor"
-        ],
-        "return": 0.077,
-        "volatility": 0.16356943364767593,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "U.S. Equity Dividend Yield Factor"
-      },
-      {
-        "name": "U.S. Quality",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Quality Factor"
-        ],
-        "return": 0.067,
-        "volatility": 0.15107618227645836,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "U.S. Equity Quality Factor"
+        "sourceMapping": ""
       },
       {
         "name": "International Developed Equity",
@@ -710,7 +633,7 @@
         "return": 0.051,
         "volatility": 0.15,
         "minWeight": 0.15,
-        "maxWeight": 0.4,
+        "maxWeight": 0.55,
         "sourceMapping": "Vanguard U.S. large-cap"
       },
       {
@@ -755,37 +678,11 @@
         "sourceNames": [
           "U.S. Large Cap"
         ],
-        "return": 0.046,
-        "volatility": 0.163,
+        "return": 0.054,
+        "volatility": 0.1735,
         "minWeight": 0.0,
         "maxWeight": 0.075,
-        "sourceMapping": "Vanguard U.S. growth"
-      },
-      {
-        "name": "U.S. Income",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Dividend Yield Factor"
-        ],
-        "return": 0.06,
-        "volatility": 0.15236619857455866,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Vanguard 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
-        "_distinctSourceCount": 3
-      },
-      {
-        "name": "U.S. Quality",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Quality Factor"
-        ],
-        "return": 0.061,
-        "volatility": 0.1495380911382292,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Vanguard 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
-        "_distinctSourceCount": 2
+        "sourceMapping": ""
       },
       {
         "name": "International Developed Equity",
@@ -930,7 +827,7 @@
         "return": 0.084724353,
         "volatility": 0.191472943,
         "minWeight": 0.15,
-        "maxWeight": 0.4,
+        "maxWeight": 0.55,
         "sourceMapping": "BlackRock US large cap equities"
       },
       {
@@ -963,12 +860,12 @@
         "sourceNames": [
           "U.S. Equity Value Factor"
         ],
-        "return": 0.06579312367725,
-        "volatility": 0.16920301906037527,
+        "return": 0.063724164903,
+        "volatility": 0.1722706920805004,
         "minWeight": 0.0,
         "maxWeight": 0.075,
         "sourceMapping": "BlackRock 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 4
+        "_distinctSourceCount": 3
       },
       {
         "name": "U.S. Growth",
@@ -976,38 +873,11 @@
         "sourceNames": [
           "U.S. Large Cap"
         ],
-        "return": 0.07,
-        "volatility": 0.174,
         "minWeight": 0.0,
         "maxWeight": 0.075,
-        "sourceMapping": "BlackRock 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
-        "_distinctSourceCount": 2
-      },
-      {
-        "name": "U.S. Income",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Dividend Yield Factor"
-        ],
-        "return": 0.06,
-        "volatility": 0.15236619857455866,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "BlackRock 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
-        "_distinctSourceCount": 3
-      },
-      {
-        "name": "U.S. Quality",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Quality Factor"
-        ],
-        "return": 0.061,
-        "volatility": 0.1495380911382292,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "BlackRock 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
-        "_distinctSourceCount": 2
+        "return": 0.07850306700000001,
+        "volatility": 0.19980720400000002,
+        "sourceMapping": ""
       },
       {
         "name": "International Developed Equity",
@@ -1154,7 +1024,7 @@
         "return": 0.066,
         "volatility": 0.168,
         "minWeight": 0.15,
-        "maxWeight": 0.4,
+        "maxWeight": 0.55,
         "sourceMapping": "US large cap"
       },
       {
@@ -1188,12 +1058,12 @@
         "sourceNames": [
           "U.S. Equity Value Factor"
         ],
-        "return": 0.06579312367725,
-        "volatility": 0.16920301906037527,
+        "return": 0.063724164903,
+        "volatility": 0.1722706920805004,
         "minWeight": 0.0,
         "maxWeight": 0.075,
         "sourceMapping": "Invesco 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 4
+        "_distinctSourceCount": 3
       },
       {
         "name": "U.S. Growth",
@@ -1201,38 +1071,11 @@
         "sourceNames": [
           "U.S. Large Cap"
         ],
-        "return": 0.07,
-        "volatility": 0.174,
         "minWeight": 0.0,
         "maxWeight": 0.075,
-        "sourceMapping": "Invesco 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
-        "_distinctSourceCount": 2
-      },
-      {
-        "name": "U.S. Income",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Dividend Yield Factor"
-        ],
-        "return": 0.06,
-        "volatility": 0.15236619857455866,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Invesco 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
-        "_distinctSourceCount": 3
-      },
-      {
-        "name": "U.S. Quality",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Quality Factor"
-        ],
-        "return": 0.061,
-        "volatility": 0.1495380911382292,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Invesco 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
-        "_distinctSourceCount": 2
+        "return": 0.0695,
+        "volatility": 0.20550000000000002,
+        "sourceMapping": ""
       },
       {
         "name": "International Developed Equity",
@@ -1369,238 +1212,6 @@
         "_distinctSourceCount": 5
       }
     ],
-    "MSCI 2026": [
-      {
-        "name": "U.S. Large Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Large Cap"
-        ],
-        "return": 0.060805230754333334,
-        "volatility": 0.1627911875692516,
-        "minWeight": 0.15,
-        "maxWeight": 0.4,
-        "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 6
-      },
-      {
-        "name": "U.S. Mid Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Mid Cap"
-        ],
-        "return": 0.06385210604130001,
-        "volatility": 0.17718447441309745,
-        "minWeight": 0.0,
-        "maxWeight": 0.1,
-        "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 5
-      },
-      {
-        "name": "U.S. Small Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Small Cap"
-        ],
-        "return": 0.06878161264783333,
-        "volatility": 0.20925169517654715,
-        "minWeight": 0.0,
-        "maxWeight": 0.05,
-        "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 6
-      },
-      {
-        "name": "U.S. Value",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Value Factor"
-        ],
-        "return": 0.07200000000000001,
-        "volatility": 0.16,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Russell 1000 Value"
-      },
-      {
-        "name": "U.S. Growth",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Large Cap"
-        ],
-        "return": 0.048,
-        "volatility": 0.185,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Russell 1000 Growth"
-      },
-      {
-        "name": "U.S. Income",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Dividend Yield Factor"
-        ],
-        "return": 0.066,
-        "volatility": 0.145,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "MSCI USA High Dividend Yield"
-      },
-      {
-        "name": "U.S. Quality",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Quality Factor"
-        ],
-        "return": 0.064,
-        "volatility": 0.14800000000000002,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "MSCI USA Quality"
-      },
-      {
-        "name": "International Developed Equity",
-        "category": "Equity",
-        "sourceNames": [
-          "EAFE Equity"
-        ],
-        "return": 0.07339483415016666,
-        "volatility": 0.1723935390255424,
-        "minWeight": 0.0,
-        "maxWeight": 0.15,
-        "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 6
-      },
-      {
-        "name": "Emerging Markets Equity",
-        "category": "Equity",
-        "sourceNames": [
-          "Emerging Markets Equity"
-        ],
-        "return": 0.06370636414599999,
-        "volatility": 0.21023543757448734,
-        "minWeight": 0.0,
-        "maxWeight": 0.005,
-        "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 6
-      },
-      {
-        "name": "U.S. REITs",
-        "category": "Alternatives",
-        "sourceNames": [
-          "U.S. REITs"
-        ],
-        "return": 0.06275230887325,
-        "volatility": 0.17711721987295678,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 4
-      },
-      {
-        "name": "Commodities",
-        "category": "Alternatives",
-        "sourceNames": [
-          "Commodities"
-        ],
-        "return": 0.0564192112385,
-        "volatility": 0.17097718021116862,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 4
-      },
-      {
-        "name": "US Short Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Short Duration Government/Credit"
-        ],
-        "return": 0.038635009898400005,
-        "volatility": 0.014780531045622988,
-        "minWeight": 0.0,
-        "maxWeight": 0.5,
-        "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 5
-      },
-      {
-        "name": "US Intermediate Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Intermediate Treasuries"
-        ],
-        "return": 0.04194449137133333,
-        "volatility": 0.039317852367530874,
-        "minWeight": 0.0,
-        "maxWeight": 0.5,
-        "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 6
-      },
-      {
-        "name": "US Long Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Long Treasuries"
-        ],
-        "return": 0.05246465970966666,
-        "volatility": 0.11858315531531803,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 6
-      },
-      {
-        "name": "Investment Grade Corporate",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Inv Grade Corporate Bonds"
-        ],
-        "return": 0.0516179765925,
-        "volatility": 0.060255405979988165,
-        "minWeight": 0.0,
-        "maxWeight": 0.4,
-        "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 6
-      },
-      {
-        "name": "High Yield",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. High Yield Bonds"
-        ],
-        "return": 0.057138708312166664,
-        "volatility": 0.07469913969925997,
-        "minWeight": 0.0,
-        "maxWeight": 0.1,
-        "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 6
-      },
-      {
-        "name": "International Fixed Income (H)",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "World Government Bonds hedged"
-        ],
-        "return": 0.04546449369266667,
-        "volatility": 0.05072974678375203,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 6
-      },
-      {
-        "name": "Cash",
-        "category": "Cash",
-        "sourceNames": [
-          "U.S. Cash"
-        ],
-        "return": 0.0339961312012,
-        "volatility": 0.006197570339358973,
-        "minWeight": 0.01,
-        "maxWeight": 0.01,
-        "sourceMapping": "MSCI 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 5
-      }
-    ],
     "Capital Group 2026": [
       {
         "name": "U.S. Large Cap",
@@ -1611,7 +1222,7 @@
         "return": 0.061,
         "volatility": 0.152,
         "minWeight": 0.15,
-        "maxWeight": 0.4,
+        "maxWeight": 0.55,
         "sourceMapping": "U.S. equity"
       },
       {
@@ -1644,12 +1255,12 @@
         "sourceNames": [
           "U.S. Equity Value Factor"
         ],
-        "return": 0.06579312367725,
-        "volatility": 0.16920301906037527,
+        "return": 0.063724164903,
+        "volatility": 0.1722706920805004,
         "minWeight": 0.0,
         "maxWeight": 0.075,
         "sourceMapping": "Capital Group 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 4
+        "_distinctSourceCount": 3
       },
       {
         "name": "U.S. Growth",
@@ -1657,38 +1268,11 @@
         "sourceNames": [
           "U.S. Large Cap"
         ],
-        "return": 0.07,
+        "minWeight": 0.0,
+        "maxWeight": 0.075,
+        "return": 0.064,
         "volatility": 0.174,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Capital Group 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
-        "_distinctSourceCount": 2
-      },
-      {
-        "name": "U.S. Income",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Dividend Yield Factor"
-        ],
-        "return": 0.06,
-        "volatility": 0.15236619857455866,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Capital Group 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
-        "_distinctSourceCount": 3
-      },
-      {
-        "name": "U.S. Quality",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Quality Factor"
-        ],
-        "return": 0.061,
-        "volatility": 0.1495380911382292,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Capital Group 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
-        "_distinctSourceCount": 2
+        "sourceMapping": ""
       },
       {
         "name": "International Developed Equity",
@@ -1835,7 +1419,7 @@
         "return": 0.035107031526,
         "volatility": 0.150572757572,
         "minWeight": 0.15,
-        "maxWeight": 0.4,
+        "maxWeight": 0.55,
         "sourceMapping": "US Large"
       },
       {
@@ -1880,37 +1464,11 @@
         "sourceNames": [
           "U.S. Large Cap"
         ],
-        "return": 0.07,
-        "volatility": 0.174,
         "minWeight": 0.0,
         "maxWeight": 0.075,
-        "sourceMapping": "Asset Allocation Interactive 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
-        "_distinctSourceCount": 2
-      },
-      {
-        "name": "U.S. Income",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Dividend Yield Factor"
-        ],
-        "return": 0.067012364867,
-        "volatility": 0.148529162076,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "US Large RAFI"
-      },
-      {
-        "name": "U.S. Quality",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Quality Factor"
-        ],
-        "return": 0.061,
-        "volatility": 0.1495380911382292,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Asset Allocation Interactive 2026 was not given for this sleeve; fallback return input and AVERAGE volatility assumptions are used.",
-        "_distinctSourceCount": 2
+        "return": 0.054757463206500004,
+        "volatility": 0.175485375409,
+        "sourceMapping": ""
       },
       {
         "name": "International Developed Equity",
@@ -2051,11 +1609,11 @@
     "halfWidth": 0.005,
     "profiles": {
       "Conservative": {
-        "percentile": 18.0,
+        "percentile": 20.0,
         "halfWidth": 0.005
       },
       "Balanced": {
-        "percentile": 38.0,
+        "percentile": 35.0,
         "halfWidth": 0.005
       },
       "Moderate": {
@@ -2063,11 +1621,11 @@
         "halfWidth": 0.005
       },
       "Growth": {
-        "percentile": 77.0,
+        "percentile": 75.0,
         "halfWidth": 0.005
       },
       "Aggressive Growth": {
-        "percentile": 90.5,
+        "percentile": 90.0,
         "halfWidth": 0.005
       }
     }
@@ -2151,16 +1709,12 @@
         {
           "ticker": "FGRIX",
           "section": "Equities - Advisor (Active)",
-          "exposures": {
-            "U.S. Income": 1.0
-          }
+          "exposures": {}
         },
         {
           "ticker": "SPHQ",
           "section": "Equities - Advisor (Active)",
-          "exposures": {
-            "U.S. Quality": 1.0
-          }
+          "exposures": {}
         },
         {
           "ticker": "CGDV",
@@ -2289,9 +1843,7 @@
           "section": "Equities - Advisor (Active)",
           "exposures": {
             "U.S. Value": 0.25,
-            "U.S. Growth": 0.25,
-            "U.S. Income": 0.25,
-            "U.S. Quality": 0.25
+            "U.S. Growth": 0.25
           }
         },
         {
@@ -2299,9 +1851,7 @@
           "section": "Equities - Advisor (Active)",
           "exposures": {
             "U.S. Value": 0.25,
-            "U.S. Growth": 0.25,
-            "U.S. Income": 0.25,
-            "U.S. Quality": 0.25
+            "U.S. Growth": 0.25
           }
         },
         {
@@ -2367,7 +1917,10 @@
         }
       ]
     },
-    "warnings": []
+    "warnings": [
+      "Fidelity row 10: FGRIX has no usable exposures and was kept at 0%.",
+      "Fidelity row 11: SPHQ has no usable exposures and was kept at 0%."
+    ]
   },
   "profiles": {
     "Conservative": {
@@ -2484,362 +2037,290 @@
   "correlation": [
     [
       1.0,
-      0.9396863861360392,
-      0.8746598481428527,
-      0.9376613499588065,
-      0.9624410718529106,
-      0.9262371695672527,
-      0.9512044501601155,
-      0.8306701981235516,
-      0.7145031297843191,
-      0.7240160326523981,
-      0.36336485802498564,
-      0.033534986408900375,
-      -0.015895335464734442,
-      0.033686040703943425,
-      0.47130228732583224,
-      0.7203694183145068,
-      0.24100490577556535,
-      0.021205651061230773
+      0.9397914371944377,
+      0.8755170852278987,
+      0.9372537993224503,
+      0.961540500202416,
+      0.8305951153097813,
+      0.7167573247270356,
+      0.7238754358744994,
+      0.3643932698559379,
+      0.028778489367674815,
+      -0.013228283034248257,
+      0.03398457009056481,
+      0.47109801164832454,
+      0.7226546148127545,
+      0.24431506677821316,
+      0.022128010755387596
     ],
     [
-      0.9396863861360392,
+      0.9397914371944377,
       1.0,
-      0.9406509231035449,
-      0.9261878197688658,
-      0.9045489393842587,
-      0.9178387728969577,
-      0.9298767800229917,
-      0.8119615619960621,
-      0.7072262718269874,
-      0.7413766168983482,
-      0.3715369448656878,
-      0.0024614343314870338,
-      -0.04485504504039567,
-      0.006878922238750572,
-      0.46084755251328924,
-      0.7380581171991547,
-      0.21128634505289856,
-      -0.0014608951216026364
+      0.9408157935114345,
+      0.9257921307477491,
+      0.9043385910404038,
+      0.8117453950963472,
+      0.7081298129212494,
+      0.7411541878466181,
+      0.371967593164783,
+      -0.00030472481839177316,
+      -0.04331588984535768,
+      0.006905629151195298,
+      0.4605692476104557,
+      0.7389880322399364,
+      0.21306253083299675,
+      -0.000974646266145943
     ],
     [
-      0.8746598481428527,
-      0.9406509231035449,
+      0.8755170852278987,
+      0.9408157935114345,
       1.0,
-      0.8870975204623466,
-      0.8289838358605892,
-      0.8672702367498648,
-      0.8744953083480602,
-      0.7647369226620861,
-      0.665693928077601,
-      0.7257607508208529,
-      0.32795284450633794,
-      -0.03524808456182604,
-      -0.07115437011781471,
-      -0.028272567208095685,
-      0.4150363910039545,
-      0.7137915567172688,
-      0.17568427718622653,
-      -0.016591262009236246
+      0.8865964880512953,
+      0.8292599424914789,
+      0.7647347271886032,
+      0.6660024715291324,
+      0.7256823699279897,
+      0.328078685483979,
+      -0.0365977551290359,
+      -0.07050082252343648,
+      -0.028268544995597798,
+      0.41486452373618077,
+      0.7141124153233517,
+      0.17649115164650955,
+      -0.016378230101210273
     ],
     [
-      0.9376613499588065,
-      0.9261878197688658,
-      0.8870975204623466,
+      0.9372537993224503,
+      0.9257921307477491,
+      0.8865964880512953,
       1.0,
-      0.8736517876305159,
-      0.9719356558612534,
-      0.9373900951222949,
-      0.8247958281639189,
-      0.7027967274027921,
-      0.7545523162989438,
-      0.38876355123001655,
-      0.05383121243203698,
-      -0.030040012624453036,
-      0.00642023192584431,
-      0.4435720501763023,
-      0.7142341260190608,
-      0.12254049598156112,
-      -0.005815576847764718
+      0.8744725392253463,
+      0.824431349633596,
+      0.7026752230391766,
+      0.7542149106215732,
+      0.3887960948638276,
+      0.052469444532997754,
+      -0.02905526866128586,
+      0.006139747372493665,
+      0.44326639744898505,
+      0.7140867469776082,
+      0.12346287629389371,
+      -0.005559935120789839
     ],
     [
-      0.9624410718529106,
-      0.9045489393842587,
-      0.8289838358605892,
-      0.8736517876305159,
+      0.961540500202416,
+      0.9043385910404038,
+      0.8292599424914789,
+      0.8744725392253463,
       1.0,
-      0.8679092940717741,
-      0.9577112514546389,
-      0.7796343057139095,
-      0.6872044157276165,
-      0.6716142839163514,
-      0.3267151878048719,
-      0.07426292134725947,
-      0.0036100858959608986,
-      0.06374286749609559,
-      0.453779424475456,
-      0.6886871350249474,
-      0.1746977080628067,
-      0.014163154360970607
+      0.7792029678195196,
+      0.688752226739409,
+      0.6713155967355285,
+      0.32748703024432335,
+      0.07001567551863172,
+      0.006513937649301494,
+      0.06363816754324947,
+      0.4534319817482996,
+      0.6902320492122108,
+      0.17739368747006706,
+      0.014965480830846013
     ],
     [
-      0.9262371695672527,
-      0.9178387728969577,
-      0.8672702367498648,
-      0.9719356558612534,
-      0.8679092940717741,
+      0.8305951153097813,
+      0.8117453950963472,
+      0.7647347271886032,
+      0.824431349633596,
+      0.7792029678195196,
       1.0,
-      0.9180771892579973,
-      0.8157835154786217,
-      0.7048137891782574,
-      0.7625867020226476,
-      0.4035116381874243,
-      0.05845804081582937,
-      -0.014921315696349404,
-      0.030582495480443166,
-      0.458687484174808,
-      0.7129027540584533,
-      0.13461552913589697,
-      -0.02046107182984687
+      0.8203605178259726,
+      0.6674675854884115,
+      0.4293133902755015,
+      0.10356553753913064,
+      0.03370383781316841,
+      0.03285055397615996,
+      0.5264188955240982,
+      0.7335502965277902,
+      0.27633556237383006,
+      0.054234268096369
     ],
     [
-      0.9512044501601155,
-      0.9298767800229917,
-      0.8744953083480602,
-      0.9373900951222949,
-      0.9577112514546389,
-      0.9180771892579973,
+      0.7167573247270356,
+      0.7081298129212494,
+      0.6660024715291324,
+      0.7026752230391766,
+      0.688752226739409,
+      0.8203605178259726,
       1.0,
-      0.8441546475388119,
-      0.7028628322116496,
-      0.7618825909742701,
-      0.38942080871952633,
-      0.15238149100557538,
-      0.019266430195251406,
-      0.03492461584338248,
-      0.5052643729615651,
-      0.7242116848275774,
-      0.16702698194859872,
-      0.01585984132279396
+      0.5683697356753283,
+      0.4851832911986935,
+      0.0838236256414422,
+      0.006955826637397576,
+      0.02682648256661947,
+      0.5018947424287422,
+      0.6936920503596288,
+      0.24670140717898237,
+      0.04800393759170157
     ],
     [
-      0.8306701981235516,
-      0.8119615619960621,
-      0.7647369226620861,
-      0.8247958281639189,
-      0.7796343057139095,
-      0.8157835154786217,
-      0.8441546475388119,
+      0.7238754358744994,
+      0.7411541878466181,
+      0.7256823699279897,
+      0.7542149106215732,
+      0.6713155967355285,
+      0.6674675854884115,
+      0.5683697356753283,
       1.0,
-      0.8194460592925515,
-      0.6677576586750228,
-      0.4288864545301476,
-      0.10584439768606893,
-      0.03206708410195319,
-      0.032821792496324914,
-      0.5266574534778994,
-      0.7326869608243614,
-      0.2745825502412501,
-      0.053734830242963105
+      0.2705556203124658,
+      0.15729668983932799,
+      0.16476218983700108,
+      0.2589930382841279,
+      0.5421803846602412,
+      0.6834513976776131,
+      0.3103306166726061,
+      -0.02961014480692313
     ],
     [
-      0.7145031297843191,
-      0.7072262718269874,
-      0.665693928077601,
-      0.7027967274027921,
-      0.6872044157276165,
-      0.7048137891782574,
-      0.7028628322116496,
-      0.8194460592925515,
+      0.3643932698559379,
+      0.371967593164783,
+      0.328078685483979,
+      0.3887960948638276,
+      0.32748703024432335,
+      0.4293133902755015,
+      0.4851832911986935,
+      0.2705556203124658,
       1.0,
-      0.5678294796396017,
-      0.485204904061726,
-      0.08267960867973487,
-      0.00749886606608037,
-      0.026825672257350684,
-      0.5015579901927176,
-      0.6937341881258892,
-      0.2469315546129637,
-      0.04815048089223768
+      -0.042755977240112285,
+      -0.1496004774968018,
+      -0.1886268241331297,
+      0.17603063784344952,
+      0.39233024932641586,
+      -0.19441887430480564,
+      -0.005980505865463857
     ],
     [
-      0.7240160326523981,
-      0.7413766168983482,
-      0.7257607508208529,
-      0.7545523162989438,
-      0.6716142839163514,
-      0.7625867020226476,
-      0.7618825909742701,
-      0.6677576586750228,
-      0.5678294796396017,
+      0.028778489367674815,
+      -0.00030472481839177316,
+      -0.0365977551290359,
+      0.052469444532997754,
+      0.07001567551863172,
+      0.10356553753913064,
+      0.0838236256414422,
+      0.15729668983932799,
+      -0.042755977240112285,
       1.0,
-      0.2703070020067809,
-      0.15889959603702764,
-      0.16325126038109303,
-      0.25892912186117195,
-      0.5423866070696951,
-      0.6828607798807392,
-      0.3088582792674872,
-      -0.029968276989271368
+      0.8793943179968372,
+      0.651018564526777,
+      0.5718572850862056,
+      0.0936569796185984,
+      0.6357159902179784,
+      0.33660592705772685
     ],
     [
-      0.36336485802498564,
-      0.3715369448656878,
-      0.32795284450633794,
-      0.38876355123001655,
-      0.3267151878048719,
-      0.4035116381874243,
-      0.38942080871952633,
-      0.4288864545301476,
-      0.485204904061726,
-      0.2703070020067809,
+      -0.013228283034248257,
+      -0.04331588984535768,
+      -0.07050082252343648,
+      -0.02905526866128586,
+      0.006513937649301494,
+      0.03370383781316841,
+      0.006955826637397576,
+      0.16476218983700108,
+      -0.1496004774968018,
+      0.8793943179968372,
       1.0,
-      -0.042991356629885014,
-      -0.14924615513839729,
-      -0.18860220217797458,
-      0.1758974611988336,
-      0.39236067524725793,
-      -0.1940746652643821,
-      -0.005914970753224594
+      0.8535313257093049,
+      0.6028699401826436,
+      0.03421949315810936,
+      0.7143096706379191,
+      0.17312816763795696
     ],
     [
-      0.033534986408900375,
-      0.0024614343314870338,
-      -0.03524808456182604,
-      0.05383121243203698,
-      0.07426292134725947,
-      0.05845804081582937,
-      0.15238149100557538,
-      0.10584439768606893,
-      0.08267960867973487,
-      0.15889959603702764,
-      -0.042991356629885014,
+      0.03398457009056481,
+      0.006905629151195298,
+      -0.028268544995597798,
+      0.006139747372493665,
+      0.06363816754324947,
+      0.03285055397615996,
+      0.02682648256661947,
+      0.2589930382841279,
+      -0.1886268241331297,
+      0.651018564526777,
+      0.8535313257093049,
       1.0,
-      0.8723649146258081,
-      0.6489882326892329,
-      0.5715339737003114,
-      0.09246682672680884,
-      0.6302685446386592,
-      0.33453350857113917
+      0.6260880984647581,
+      0.06500687207943445,
+      0.6870911615981946,
+      0.04702470408863292
     ],
     [
-      -0.015895335464734442,
-      -0.04485504504039567,
-      -0.07115437011781471,
-      -0.030040012624453036,
-      0.0036100858959608986,
-      -0.014921315696349404,
-      0.019266430195251406,
-      0.03206708410195319,
-      0.00749886606608037,
-      0.16325126038109303,
-      -0.14924615513839729,
-      0.8723649146258081,
+      0.47109801164832454,
+      0.4605692476104557,
+      0.41486452373618077,
+      0.44326639744898505,
+      0.4534319817482996,
+      0.5264188955240982,
+      0.5018947424287422,
+      0.5421803846602412,
+      0.17603063784344952,
+      0.5718572850862056,
+      0.6028699401826436,
+      0.6260880984647581,
       1.0,
-      0.852784112162483,
-      0.6012354336126332,
-      0.03474713991217919,
-      0.7147502237201466,
-      0.17354592385654002
+      0.6588909111403229,
+      0.6681237200495843,
+      0.06470380239528503
     ],
     [
-      0.033686040703943425,
-      0.006878922238750572,
-      -0.028272567208095685,
-      0.00642023192584431,
-      0.06374286749609559,
-      0.030582495480443166,
-      0.03492461584338248,
-      0.032821792496324914,
-      0.026825672257350684,
-      0.25892912186117195,
-      -0.18860220217797458,
-      0.6489882326892329,
-      0.852784112162483,
+      0.7226546148127545,
+      0.7389880322399364,
+      0.7141124153233517,
+      0.7140867469776082,
+      0.6902320492122108,
+      0.7335502965277902,
+      0.6936920503596288,
+      0.6834513976776131,
+      0.39233024932641586,
+      0.0936569796185984,
+      0.03421949315810936,
+      0.06500687207943445,
+      0.6588909111403229,
       1.0,
-      0.6260096887967921,
-      0.06499937039701911,
-      0.6866372053705365,
-      0.04703984003833005
+      0.29263263624670477,
+      -0.001103509262044612
     ],
     [
-      0.47130228732583224,
-      0.46084755251328924,
-      0.4150363910039545,
-      0.4435720501763023,
-      0.453779424475456,
-      0.458687484174808,
-      0.5052643729615651,
-      0.5266574534778994,
-      0.5015579901927176,
-      0.5423866070696951,
-      0.1758974611988336,
-      0.5715339737003114,
-      0.6012354336126332,
-      0.6260096887967921,
+      0.24431506677821316,
+      0.21306253083299675,
+      0.17649115164650955,
+      0.12346287629389371,
+      0.17739368747006706,
+      0.27633556237383006,
+      0.24670140717898237,
+      0.3103306166726061,
+      -0.19441887430480564,
+      0.6357159902179784,
+      0.7143096706379191,
+      0.6870911615981946,
+      0.6681237200495843,
+      0.29263263624670477,
       1.0,
-      0.6585134701097551,
-      0.6667155316782946,
-      0.06442993148914632
+      0.14256915875120266
     ],
     [
-      0.7203694183145068,
-      0.7380581171991547,
-      0.7137915567172688,
-      0.7142341260190608,
-      0.6886871350249474,
-      0.7129027540584533,
-      0.7242116848275774,
-      0.7326869608243614,
-      0.6937341881258892,
-      0.6828607798807392,
-      0.39236067524725793,
-      0.09246682672680884,
-      0.03474713991217919,
-      0.06499937039701911,
-      0.6585134701097551,
-      1.0,
-      0.29282935156229434,
-      -0.0009467307394138977
-    ],
-    [
-      0.24100490577556535,
-      0.21128634505289856,
-      0.17568427718622653,
-      0.12254049598156112,
-      0.1746977080628067,
-      0.13461552913589697,
-      0.16702698194859872,
-      0.2745825502412501,
-      0.2469315546129637,
-      0.3088582792674872,
-      -0.1940746652643821,
-      0.6302685446386592,
-      0.7147502237201466,
-      0.6866372053705365,
-      0.6667155316782946,
-      0.29282935156229434,
-      1.0,
-      0.1429806406592672
-    ],
-    [
-      0.021205651061230773,
-      -0.0014608951216026364,
-      -0.016591262009236246,
-      -0.005815576847764718,
-      0.014163154360970607,
-      -0.02046107182984687,
-      0.01585984132279396,
-      0.053734830242963105,
-      0.04815048089223768,
-      -0.029968276989271368,
-      -0.005914970753224594,
-      0.33453350857113917,
-      0.17354592385654002,
-      0.04703984003833005,
-      0.06442993148914632,
-      -0.0009467307394138977,
-      0.1429806406592672,
+      0.022128010755387596,
+      -0.000974646266145943,
+      -0.016378230101210273,
+      -0.005559935120789839,
+      0.014965480830846013,
+      0.054234268096369,
+      0.04800393759170157,
+      -0.02961014480692313,
+      -0.005980505865463857,
+      0.33660592705772685,
+      0.17312816763795696,
+      0.04702470408863292,
+      0.06470380239528503,
+      -0.001103509262044612,
+      0.14256915875120266,
       1.0
     ]
   ]

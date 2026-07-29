@@ -348,6 +348,40 @@ p {
 
 .allocation-pie-grid {
   grid-template-columns: repeat(5, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.allocation-pie-grid .pie-card {
+  padding: 12px 10px;
+}
+
+.allocation-pie-grid .pie-title {
+  margin-bottom: 10px;
+}
+
+.allocation-pie-grid .pie-content {
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.allocation-pie-grid .pie-content svg {
+  width: 116px;
+  height: 116px;
+}
+
+.allocation-pie-grid .pie-legend {
+  gap: 5px;
+  font-size: 10px;
+}
+
+.allocation-pie-grid .pie-legend > span {
+  grid-template-columns: 8px minmax(0, 1fr);
+}
+
+.allocation-pie-grid .pie-legend strong {
+  display: block;
+  margin-top: 2px;
 }
 
 .sleeve-pie-grid {
@@ -712,11 +746,48 @@ p {
   gap: 12px;
 }
 
+.volatility-case-layout {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.55fr) minmax(0, 2fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.volatility-case-control {
+  background: #fff;
+  border: 1px solid #c7d1da;
+  padding: 10px;
+}
+
+.volatility-case-control label,
+.percentile-field label {
+  display: block;
+  font-weight: 800;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.volatility-case-control select {
+  width: 100%;
+}
+
 .percentile-field {
   min-width: 0;
   background: #fff;
   border: 1px solid #c7d1da;
   padding: 10px;
+}
+
+.read-only-percentiles .percentile-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 68px;
+}
+
+.read-only-percentiles strong {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .percentile-shift-field {
@@ -1105,6 +1176,52 @@ td.text input {
   min-width: 82px;
 }
 
+.assumption-comparison-wrap {
+  overflow-x: visible;
+}
+
+.assumption-comparison-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.assumption-comparison-table thead tr:first-child th {
+  background: var(--slate);
+  border-right-color: #5f7282;
+}
+
+.assumption-comparison-table thead tr:first-child th:nth-child(3) {
+  border-left: 3px solid #000;
+}
+
+.assumption-comparison-table thead tr:nth-child(2) th {
+  font-size: 10px;
+  white-space: nowrap;
+  padding: 7px 4px;
+}
+
+.assumption-comparison-table thead tr:nth-child(2) th:nth-child(7),
+.assumption-comparison-table tbody td:nth-child(8) {
+  border-left: 3px solid #000;
+}
+
+.assumption-comparison-table td {
+  font-size: 11px;
+  padding: 7px 5px;
+  text-align: center;
+}
+
+.assumption-comparison-table th:first-child,
+.assumption-comparison-table td:first-child {
+  width: 220px;
+  text-align: left;
+}
+
+.assumption-comparison-table th:not(:first-child),
+.assumption-comparison-table td:not(:first-child) {
+  width: calc((100% - 220px) / 12);
+}
+
 footer {
   height: 52px;
   margin-top: 26px;
@@ -1115,6 +1232,10 @@ footer {
   justify-content: space-between;
   padding: 0 12px;
   font-weight: 800;
+}
+
+.print-only {
+  display: none;
 }
 
 @media (max-width: 760px) {
@@ -1222,5 +1343,216 @@ footer {
     margin-top: 0;
     grid-column: 1;
     grid-row: 1;
+  }
+}
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 0.35in;
+  }
+
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  body {
+    background: #fff;
+    font-size: 10px;
+  }
+
+  .shell {
+    max-width: none;
+    min-height: 0;
+    padding: 0;
+  }
+
+  .masthead {
+    height: 62px;
+    padding: 0 18px;
+  }
+
+  .core-mark {
+    font-size: 34px;
+  }
+
+  .brand-sub {
+    font-size: 12px;
+  }
+
+  .title-block h1 {
+    font-size: 18px;
+    margin: 0;
+  }
+
+  .model-actions,
+  .nav-row,
+  .tabs,
+  .dashboard-tabs,
+  .fund-tab,
+  .select-control,
+  .anchor-control button,
+  .mvo-selector-row {
+    display: none !important;
+  }
+
+  main {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page,
+  .page.active,
+  .dashboard-panel,
+  .dashboard-panel.active {
+    display: block !important;
+  }
+
+  .page {
+    width: 100%;
+    padding: 12px 0 0;
+    break-before: page;
+    page-break-before: always;
+  }
+
+  #results {
+    order: 1;
+    break-before: auto;
+    page-break-before: auto;
+  }
+
+  #assets {
+    order: 2;
+  }
+
+  #profiles {
+    order: 3;
+  }
+
+  #fundModels {
+    order: 4;
+  }
+
+  #mvo {
+    order: 5;
+  }
+
+  #results .panel {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  #subSleeveWeights {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .toolbar {
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-size: 15px;
+    margin-bottom: 3px;
+  }
+
+  p {
+    font-size: 10px;
+  }
+
+  .panel {
+    margin-top: 10px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .panel-title,
+  .constraint-title,
+  .print-section-heading {
+    font-size: 12px;
+    padding: 7px 10px;
+  }
+
+  .table-wrap {
+    overflow: visible;
+  }
+
+  table {
+    min-width: 0;
+    font-size: 8.5px;
+  }
+
+  th,
+  td {
+    padding: 4px 5px;
+  }
+
+  input,
+  select {
+    border: 0;
+    padding: 0;
+    background: transparent;
+  }
+
+  .frontier-chart-grid {
+    grid-template-columns: 150px 1fr;
+    gap: 12px;
+  }
+
+  .frontier-chart-grid svg {
+    max-height: 4.8in;
+  }
+
+  .asset-color-legend {
+    font-size: 8px;
+  }
+
+  .mvo-weight-charts .pie-content {
+    grid-template-columns: 130px 1fr;
+  }
+
+  .mvo-weight-charts .pie-content svg,
+  .mvo-weight-charts .pie-card:nth-child(2) .pie-content svg {
+    width: 130px;
+    height: 130px;
+  }
+
+  .allocation-pie-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .sleeve-pie-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pie-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  #fundModelContent {
+    display: none;
+  }
+
+  #fundModelPrintContent.print-only {
+    display: block;
+  }
+
+  .print-provider-section {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .print-provider-section:first-child {
+    break-before: auto;
+    page-break-before: auto;
+  }
+
+  footer {
+    height: 34px;
+    margin-top: 12px;
+    padding: 0 10px;
+    font-size: 10px;
   }
 }
