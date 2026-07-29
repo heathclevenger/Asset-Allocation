@@ -1,5 +1,6 @@
 const pct = (value) => `${(value * 100).toFixed(2)}%`;
 const num = (value) => Number.parseFloat(value || 0);
+const wholePct = (value) => `${Math.round(value * 100)}%`;
 
 let baseData;
 let state;
@@ -937,9 +938,15 @@ function renderAssetComparison() {
 }
 
 function renderAllocationWeights() {
+  const allocationPct = (category, value) => {
+    if (category === "Equity") return `${Math.ceil(value * 100)}%`;
+    if (category === "Fixed Income") return `${Math.floor(value * 100)}%`;
+    if (category === "Cash") return "1%";
+    return wholePct(value);
+  };
   const table = document.querySelector("#allocationWeightsTable");
   table.innerHTML = `<thead><tr><th>Allocation</th>${Object.keys(results).map((p) => `<th>${p}</th>`).join("")}</tr></thead>
-  <tbody>${state.categories.map((category) => `<tr><td>${category}</td>${Object.values(results).map((result) => `<td>${pct(result.categoryWeights[category] || 0)}</td>`).join("")}</tr>`).join("")}</tbody>`;
+  <tbody>${state.categories.map((category) => `<tr><td>${category}</td>${Object.values(results).map((result) => `<td>${allocationPct(category, result.categoryWeights[category] || 0)}</td>`).join("")}</tr>`).join("")}</tbody>`;
 
   const charts = document.querySelector("#allocationPieCharts");
   if (charts) {
@@ -949,6 +956,7 @@ function renderAllocationWeights() {
         label: category,
         value: result.categoryWeights[category] || 0,
         color: categoryColor(category),
+        displayPct: allocationPct(category, result.categoryWeights[category] || 0),
       }))
     )).join("");
   }
@@ -1298,6 +1306,7 @@ function pieSlicePath(cx, cy, radius, startAngle, endAngle) {
 }
 
 function pieSliceMarkup(item, total, startAngle, endAngle) {
+  const displayPct = item.displayPct || pct(item.value);
   const isFull = item.value / total > 0.999;
   const shape = isFull
     ? `<circle cx="62" cy="62" r="48" fill="${item.color}"></circle>`
@@ -1311,12 +1320,12 @@ function pieSliceMarkup(item, total, startAngle, endAngle) {
   const tooltipY = Math.max(2, Math.min(124 - tooltipH - 2, anchorY < 62 ? anchorY + 10 : anchorY - tooltipH - 10));
   const label = escapeHtml(item.label);
   const shortLabel = label.length > 28 ? `${label.slice(0, 25)}...` : label;
-  return `<g class="pie-slice" tabindex="0" role="button" aria-label="${label}: ${pct(item.value)}" data-tooltip-title="${label}" data-tooltip-body="${pct(item.value)}">
+  return `<g class="pie-slice" tabindex="0" role="button" aria-label="${label}: ${displayPct}" data-tooltip-title="${label}" data-tooltip-body="${displayPct}">
     ${shape}
     <g class="pie-tooltip" transform="translate(${tooltipX.toFixed(1)}, ${tooltipY.toFixed(1)})">
       <rect x="0" y="0" width="${tooltipW}" height="${tooltipH}" rx="3"></rect>
       <text x="7" y="14">${shortLabel}</text>
-      <text x="7" y="27">${pct(item.value)}</text>
+      <text x="7" y="27">${displayPct}</text>
     </g>
   </g>`;
 }
@@ -1346,10 +1355,10 @@ function renderPieCard(title, items, options = {}) {
           ? visible
             .sort((a, b) => b.value - a.value)
             .map((item) => `<div class="sleeve-row">
-              <div class="sleeve-row-label"><i style="--pie-color:${item.color}"></i><span>${item.label}</span><strong>${pct(item.value)}</strong></div>
+              <div class="sleeve-row-label"><i style="--pie-color:${item.color}"></i><span>${item.label}</span><strong>${item.displayPct || pct(item.value)}</strong></div>
               <div class="sleeve-bar"><span style="--pie-color:${item.color}; width:${Math.max(item.value * 100, 1).toFixed(2)}%"></span></div>
             </div>`).join("")
-          : visible.map((item) => `<span><i style="--pie-color:${item.color}"></i>${item.label} <strong>${pct(item.value)}</strong></span>`).join("")}
+          : visible.map((item) => `<span><i style="--pie-color:${item.color}"></i>${item.label} <strong>${item.displayPct || pct(item.value)}</strong></span>`).join("")}
       </div>
     </div>
   </div>`;
@@ -2366,7 +2375,7 @@ window.addEventListener("afterprint", () => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260729-monte-carlo-legend-center", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260729-overview-rounding", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
