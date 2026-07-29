@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Paul Asset Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260729-market-view" />
+    <link rel="stylesheet" href="./styles.css?v=20260729-monte-carlo-scenario100" />
   </head>
   <body>
     <div class="shell">
@@ -27,6 +27,7 @@
           <button class="tab" data-tab="assets">Asset Assumptions</button>
           <button class="tab" data-tab="profiles">Model Constraints</button>
           <button class="tab" data-tab="mvo">Portfolio Optimization</button>
+          <button class="tab" data-tab="monteCarlo">Monte Carlo</button>
           <button class="tab" data-tab="fundModels">ETF/Fund Models</button>
         </nav>
       </div>
@@ -177,6 +178,40 @@
           </div>
         </section>
 
+        <section id="monteCarlo" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>Monte Carlo</h2>
+              <p>Five-year simulated portfolio performance compared with S&amp;P 500 and AGG reference benchmarks.</p>
+            </div>
+            <div class="select-control">
+              <label for="mcProfileSelect">Portfolio</label>
+              <select id="mcProfileSelect"></select>
+            </div>
+            <div class="select-control compact">
+              <label for="mcScenarioSeed">Scenario</label>
+              <input id="mcScenarioSeed" type="number" min="1" step="1" value="100" />
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Hypothetical Annual Return Scenario</div>
+            <div id="monteCarloChart" class="monte-carlo-chart"><p class="frontier-note">Calculating simulation...</p></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Sub-Sleeve Annual Time-Weighted Return Path</div>
+            <div class="asset-toggle-actions">
+              <button type="button" id="selectAllMcAssets">Select All</button>
+              <button type="button" id="deselectAllMcAssets">Deselect All</button>
+            </div>
+            <div id="monteCarloAssetToggles" class="asset-toggle-grid"></div>
+            <div id="monteCarloAssetsChart" class="monte-carlo-chart"><p class="frontier-note">Calculating simulation...</p></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Sub-Sleeve Five-Year CAGR</div>
+            <div id="monteCarloAssetBarsChart" class="monte-carlo-chart"><p class="frontier-note">Calculating simulation...</p></div>
+          </div>
+        </section>
+
       </main>
 
       <footer>
@@ -184,6 +219,6 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260729-market-view"></script>
+    <script src="./app.js?v=20260729-monte-carlo-scenario100"></script>
   </body>
 </html>

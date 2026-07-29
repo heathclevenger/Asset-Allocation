@@ -454,6 +454,10 @@ def apply_growth_proxy(source_assets: list[dict | None]) -> list[dict | None]:
     return out
 
 
+def apply_derived_proxies(source_assets: list[dict | None]) -> list[dict | None]:
+    return apply_growth_proxy(source_assets)
+
+
 def apply_average_fallback(source_assets: list[dict | None], average_assets: list[dict], source_name: str, fallback_names: set[str] | None = None) -> list[dict]:
     fallback_names = fallback_names or set()
     out = []
@@ -606,7 +610,7 @@ def main() -> None:
         }
         for i, asset in enumerate(optimizer.ASSETS)
     ]
-    jpm_assets = apply_growth_proxy(jpm_assets)
+    jpm_assets = apply_derived_proxies(jpm_assets)
     vanguard_assumptions = load_vanguard_assumptions()
     raw_vanguard_assets = []
     for asset in jpm_assets:
@@ -621,9 +625,9 @@ def main() -> None:
             })
         else:
             raw_vanguard_assets.append(None)
-    raw_vanguard_assets = apply_growth_proxy(raw_vanguard_assets)
+    raw_vanguard_assets = apply_derived_proxies(raw_vanguard_assets)
     raw_blackrock_assets = build_blackrock_assumptions(jpm_assets)
-    raw_blackrock_assets = apply_growth_proxy(raw_blackrock_assets)
+    raw_blackrock_assets = apply_derived_proxies(raw_blackrock_assets)
     capital_group_assumptions = load_capital_group_assumptions()
     raw_capital_group_assets = []
     for asset in jpm_assets:
@@ -638,7 +642,7 @@ def main() -> None:
             })
         else:
             raw_capital_group_assets.append(None)
-    raw_capital_group_assets = apply_growth_proxy(raw_capital_group_assets)
+    raw_capital_group_assets = apply_derived_proxies(raw_capital_group_assets)
     invesco_assumptions = load_invesco_assumptions()
     raw_invesco_assets = []
     for asset in jpm_assets:
@@ -653,7 +657,7 @@ def main() -> None:
             })
         else:
             raw_invesco_assets.append(None)
-    raw_invesco_assets = apply_growth_proxy(raw_invesco_assets)
+    raw_invesco_assets = apply_derived_proxies(raw_invesco_assets)
     asset_allocation_interactive_assumptions = load_asset_allocation_interactive_assumptions()
     raw_asset_allocation_interactive_assets = []
     for asset in jpm_assets:
@@ -668,7 +672,7 @@ def main() -> None:
             })
         else:
             raw_asset_allocation_interactive_assets.append(None)
-    raw_asset_allocation_interactive_assets = apply_growth_proxy(raw_asset_allocation_interactive_assets)
+    raw_asset_allocation_interactive_assets = apply_derived_proxies(raw_asset_allocation_interactive_assets)
     average_assets = average_assumption_sets(
         [jpm_assets, raw_vanguard_assets, raw_blackrock_assets, raw_invesco_assets, raw_capital_group_assets, raw_asset_allocation_interactive_assets],
         [JPM_FALLBACK_TO_AVERAGE, set(), BLACKROCK_FALLBACK_TO_AVERAGE, INVESCO_FALLBACK_TO_AVERAGE, CAPITAL_GROUP_FALLBACK_TO_AVERAGE, ASSET_ALLOCATION_INTERACTIVE_FALLBACK_TO_AVERAGE],

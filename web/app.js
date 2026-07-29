@@ -9,6 +9,9 @@ let mvoDirty = true;
 let mvoTimer = null;
 let liveUpdateTimer = null;
 let selectedMvoProfile = "Moderate";
+let selectedMcProfile = "Moderate";
+let monteCarloSeed = 100;
+let selectedMcAssets = null;
 let selectedAllocationPreset = "CORE";
 let selectedSubAllocationPreset = "CORE";
 let selectedAssumptionSet = "CORE";
@@ -1498,6 +1501,304 @@ function renderMvo() {
   renderFrontierChart(selected, frontierResult.frontier, frontierResult.assetPoints, profile);
 }
 
+function normalSample(rand) {
+  const u1 = Math.max(rand(), 1e-12);
+  const u2 = Math.max(rand(), 1e-12);
+  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+}
+
+function benchmarkByName(name) {
+  return (state.benchmarks || []).find((benchmark) => benchmark.name === name);
+}
+
+function choleskyDecomposition(matrix) {
+  const size = matrix.length;
+  const lower = Array.from({ length: size }, () => Array(size).fill(0));
+  for (let i = 0; i < size; i += 1) {
+    for (let j = 0; j <= i; j += 1) {
+      let sum = matrix[i][j];
+      for (let k = 0; k < j; k += 1) sum -= lower[i][k] * lower[j][k];
+      if (i === j) {
+        lower[i][j] = Math.sqrt(Math.max(sum, 1e-10));
+      } else {
+        lower[i][j] = sum / Math.max(lower[j][j], 1e-10);
+      }
+    }
+  }
+  return lower;
+}
+
+function correlatedNormalVector(cholesky, rand) {
+  const independent = cholesky.map(() => normalSample(rand));
+  return cholesky.map((row) => row.reduce((sum, value, index) => sum + value * independent[index], 0));
+}
+
+function simulateScenarioUniverse(portfolio, seed) {
+  const years = 5;
+  const months = years * 12;
+  const runs = 3000;
+  const rand = seededRandom(seed);
+  const covariance = covarianceMatrix(state.assets, state.correlation).map((row) => row.map((value) => value / 12));
+  const cholesky = choleskyDecomposition(covariance);
+  const largeCapIndex = state.assets.findIndex((asset) => asset.name === "U.S. Large Cap");
+  const sp = benchmarkByName("S&P 500");
+  const agg = benchmarkByName("AGG");
+  const monthlyReturns = state.assets.map((asset) => asset.return / 12);
+  const aggMonthlyReturn = agg.return / 12;
+  const aggMonthlyVolatility = agg.volatility / Math.sqrt(12);
+  const paths = [];
+
+  for (let run = 0; run < runs; run += 1) {
+    const values = {
+      [selectedMcProfile]: [100],
+      "S&P 500": [100],
+      AGG: [100],
+    };
+    const assetValues = state.assets.map(() => [100]);
+    for (let month = 0; month < months; month += 1) {
+      const shocks = correlatedNormalVector(cholesky, rand);
+      const assetReturns = state.assets.map((asset, index) => Math.max(-0.95, monthlyReturns[index] + shocks[index]));
+      const portfolioReturn = portfolio.weights.reduce((sum, weight, index) => sum + weight * assetReturns[index], 0);
+      const spReturn = largeCapIndex >= 0 ? assetReturns[largeCapIndex] : Math.max(-0.95, sp.return / 12 + (sp.volatility / Math.sqrt(12)) * normalSample(rand));
+      const aggReturn = Math.max(-0.95, aggMonthlyReturn + aggMonthlyVolatility * normalSample(rand));
+      values[selectedMcProfile].push(values[selectedMcProfile].at(-1) * (1 + portfolioReturn));
+      values["S&P 500"].push(values["S&P 500"].at(-1) * (1 + spReturn));
+      values.AGG.push(values.AGG.at(-1) * (1 + aggReturn));
+      assetReturns.forEach((assetReturn, index) => {
+        assetValues[index].push(assetValues[index].at(-1) * (1 + assetReturn));
+      });
+    }
+    paths.push({ ...values, assetValues });
+  }
+  return paths;
+}
+
+function renderMonteCarloControls() {
+  const select = document.querySelector("#mcProfileSelect");
+  const seedInput = document.querySelector("#mcScenarioSeed");
+  if (!select) return;
+  const profileNames = Object.keys(state.profiles);
+  if (!profileNames.includes(selectedMcProfile)) selectedMcProfile = profileNames[0];
+  select.innerHTML = profileNames.map((name) => `<option value="${name}" ${name === selectedMcProfile ? "selected" : ""}>${name}</option>`).join("");
+  select.value = selectedMcProfile;
+  if (seedInput) seedInput.value = monteCarloSeed;
+}
+
+function ensureMonteCarloAssetSelection() {
+  const names = state.assets.map((asset) => asset.name);
+  if (!selectedMcAssets) selectedMcAssets = new Set(names);
+  selectedMcAssets = new Set(names.filter((name) => selectedMcAssets.has(name)));
+}
+
+function renderMonteCarloAssetToggles() {
+  const toggles = document.querySelector("#monteCarloAssetToggles");
+  if (!toggles) return;
+  ensureMonteCarloAssetSelection();
+  toggles.innerHTML = state.assets.map((asset, index) => `
+    <label class="asset-toggle" style="--asset-color:${assetColor(asset, index)}">
+      <input type="checkbox" data-mc-asset="${escapeHtml(asset.name)}" ${selectedMcAssets.has(asset.name) ? "checked" : ""} />
+      <span></span>
+      ${escapeHtml(asset.name)}
+    </label>
+  `).join("");
+}
+
+function annualReturnsFromMonthlyValues(values) {
+  return [1, 2, 3, 4, 5].map((year) => {
+    const endIndex = year * 12;
+    const startIndex = endIndex - 12;
+    return values[endIndex] / values[startIndex] - 1;
+  });
+}
+
+function renderMonteCarloAssetsChart(selectedPath) {
+  const assetChart = document.querySelector("#monteCarloAssetsChart");
+  if (!assetChart || !selectedPath?.assetValues) return;
+  renderMonteCarloAssetToggles();
+
+  const rows = state.assets.map((asset, index) => {
+    const values = selectedPath.assetValues[index] || [100];
+    return {
+      asset,
+      values,
+      totalReturn: (values.at(-1) || 100) / 100 - 1,
+      color: assetColor(asset, index),
+    };
+  }).filter((row) => selectedMcAssets?.has(row.asset.name));
+  if (!rows.length) {
+    assetChart.innerHTML = `<p class="frontier-note">Select at least one asset to show the scenario path.</p>`;
+    return;
+  }
+
+  const width = 980;
+  const height = 430;
+  const pad = { left: 66, right: 88, top: 38, bottom: 52 };
+  const plotW = width - pad.left - pad.right;
+  const plotH = height - pad.top - pad.bottom;
+  const years = [0, 1, 2, 3, 4, 5];
+  const returnPaths = rows.map((row) => ({
+    ...row,
+    returns: row.values.map((value) => value / 100 - 1),
+  }));
+  const allReturns = returnPaths.flatMap((row) => row.returns);
+  const yMinRaw = Math.min(0, ...allReturns);
+  const yMaxRaw = Math.max(0, ...allReturns);
+  const yPadding = Math.max(0.02, (yMaxRaw - yMinRaw) * 0.12);
+  const yMin = Math.floor((yMinRaw - yPadding) * 20) / 20;
+  const yMax = Math.ceil((yMaxRaw + yPadding) * 20) / 20;
+  const xScale = (month) => pad.left + (month / 60) * plotW;
+  const yScale = (value) => pad.top + (1 - ((value - yMin) / Math.max(yMax - yMin, 1e-8))) * plotH;
+  const yTicks = Array.from({ length: 5 }, (_, index) => yMin + ((yMax - yMin) * index) / 4);
+  const pathFor = (row) => row.returns.map((value, index) => (
+    `${index === 0 ? "M" : "L"} ${xScale(index).toFixed(1)},${yScale(value).toFixed(1)}`
+  )).join(" ");
+
+  assetChart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monte Carlo sub-sleeve five-year time-weighted return path chart">
+    <rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff"></rect>
+    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="#f6f7f8" stroke="#ccd5dd"></rect>
+    ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="#dce3e9"></line>
+      <text x="${width - pad.right + 12}" y="${yScale(tick) + 4}" text-anchor="start" class="frontier-axis">${pct(tick)}</text>`).join("")}
+    ${years.map((year) => `<line x1="${xScale(year * 12)}" y1="${pad.top}" x2="${xScale(year * 12)}" y2="${height - pad.bottom}" stroke="#e6ebef"></line>
+      <text x="${xScale(year * 12)}" y="${height - 20}" text-anchor="middle" class="frontier-axis">Year ${year}</text>`).join("")}
+    <line x1="${pad.left}" y1="${yScale(0)}" x2="${width - pad.right}" y2="${yScale(0)}" stroke="#101820" stroke-width="1.1"></line>
+    ${returnPaths.map((row) => `<path d="${pathFor(row)}" fill="none" stroke="${row.color}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="${pathFor(row)}" fill="none" stroke="transparent" stroke-width="9" data-tooltip-title="${escapeHtml(row.asset.name)}" data-tooltip-body="Five-year return: ${pct(row.totalReturn)}"></path>`).join("")}
+    <text x="${pad.left + plotW / 2}" y="${height - 4}" text-anchor="middle" class="frontier-axis">Scenario year</text>
+    <text x="16" y="${height / 2}" text-anchor="middle" transform="rotate(-90 16 ${height / 2})" class="frontier-axis">Time-weighted return</text>
+  </svg>`;
+}
+
+function renderMonteCarloAssetBarsChart(selectedPath) {
+  const assetBars = document.querySelector("#monteCarloAssetBarsChart");
+  if (!assetBars || !selectedPath?.assetValues) return;
+  ensureMonteCarloAssetSelection();
+
+  const rows = state.assets.map((asset, index) => {
+    const values = selectedPath.assetValues[index] || [100];
+    return {
+      asset,
+      value: Math.pow((values.at(-1) || 100) / 100, 1 / 5) - 1,
+      color: assetColor(asset, index),
+    };
+  }).filter((row) => selectedMcAssets?.has(row.asset.name));
+  if (!rows.length) {
+    assetBars.innerHTML = `<p class="frontier-note">Select at least one asset to show the annualized return bars.</p>`;
+    return;
+  }
+
+  const width = 980;
+  const rowH = 25;
+  const height = 92 + rows.length * rowH;
+  const pad = { left: 226, right: 72, top: 34, bottom: 42 };
+  const plotW = width - pad.left - pad.right;
+  const values = rows.map((row) => row.value);
+  const xMinRaw = Math.min(0, ...values);
+  const xMaxRaw = Math.max(0, ...values);
+  const xPadding = Math.max(0.02, (xMaxRaw - xMinRaw) * 0.12);
+  const xMin = Math.floor((xMinRaw - xPadding) * 20) / 20;
+  const xMax = Math.ceil((xMaxRaw + xPadding) * 20) / 20;
+  const xScale = (value) => pad.left + ((value - xMin) / Math.max(xMax - xMin, 1e-8)) * plotW;
+  const zeroX = xScale(0);
+  const ticks = Array.from({ length: 5 }, (_, index) => xMin + ((xMax - xMin) * index) / 4);
+
+  assetBars.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monte Carlo sub-sleeve CAGR bar chart">
+    <rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff"></rect>
+    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${height - pad.top - pad.bottom}" fill="#f6f7f8" stroke="#ccd5dd"></rect>
+    ${ticks.map((tick) => `<line x1="${xScale(tick)}" y1="${pad.top}" x2="${xScale(tick)}" y2="${height - pad.bottom}" stroke="#dce3e9"></line>
+      <text x="${xScale(tick)}" y="${height - 16}" text-anchor="middle" class="frontier-axis">${pct(tick)}</text>`).join("")}
+    <line x1="${zeroX}" y1="${pad.top}" x2="${zeroX}" y2="${height - pad.bottom}" stroke="#101820" stroke-width="1.2"></line>
+    ${rows.map((row, index) => {
+      const y = pad.top + index * rowH + 6;
+      const x = Math.min(zeroX, xScale(row.value));
+      const w = Math.max(2, Math.abs(xScale(row.value) - zeroX));
+      const labelX = row.value >= 0 ? x + w + 8 : x - 8;
+      return `<text x="${pad.left - 12}" y="${y + 10}" text-anchor="end" class="frontier-axis">${escapeHtml(row.asset.name)}</text>
+        <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="13" rx="1" fill="${row.color}" data-tooltip-title="${escapeHtml(row.asset.name)}" data-tooltip-body="Five-year CAGR: ${pct(row.value)}"></rect>
+        <text x="${labelX.toFixed(1)}" y="${y + 10}" text-anchor="${row.value >= 0 ? "start" : "end"}" class="frontier-axis">${pct(row.value)}</text>`;
+    }).join("")}
+    <text x="${pad.left + plotW / 2}" y="${height - 2}" text-anchor="middle" class="frontier-axis">Five-year CAGR</text>
+  </svg>`;
+}
+
+function renderMonteCarlo() {
+  renderMonteCarloControls();
+  const chart = document.querySelector("#monteCarloChart");
+  const assetChart = document.querySelector("#monteCarloAssetsChart");
+  const assetBars = document.querySelector("#monteCarloAssetBarsChart");
+  if (!chart || !results[selectedMcProfile]) return;
+
+  const portfolio = results[selectedMcProfile];
+  const sp = benchmarkByName("S&P 500");
+  const agg = benchmarkByName("AGG");
+  if (!sp || !agg) {
+    chart.innerHTML = `<p class="frontier-note">Benchmark assumptions are not available.</p>`;
+    if (assetChart) assetChart.innerHTML = "";
+    if (assetBars) assetBars.innerHTML = "";
+    return;
+  }
+
+  const scenarioSeed = seedFromString(`${monteCarloSeed}`, 9101);
+  const paths = simulateScenarioUniverse(portfolio, scenarioSeed);
+  const pickRand = seededRandom(scenarioSeed + 99);
+  const selectedPath = paths[Math.floor(pickRand() * paths.length)];
+  const series = [
+    { label: "S&P 500", expectedReturn: sp.return, volatility: sp.volatility, values: selectedPath["S&P 500"] },
+    { label: selectedMcProfile, expectedReturn: portfolio.stats.expectedReturn, volatility: portfolio.stats.volatility, values: selectedPath[selectedMcProfile] },
+    { label: "AGG", expectedReturn: agg.return, volatility: agg.volatility, values: selectedPath.AGG },
+  ];
+  const years = [1, 2, 3, 4, 5];
+  const annualSeries = series.map((row) => ({
+    ...row,
+    annualReturns: annualReturnsFromMonthlyValues(row.values),
+  }));
+  const width = 980;
+  const height = 390;
+  const pad = { left: 66, right: 28, top: 48, bottom: 54 };
+  const plotW = width - pad.left - pad.right;
+  const plotH = height - pad.top - pad.bottom;
+  const allAnnualReturns = annualSeries.flatMap((row) => row.annualReturns);
+  const yMinRaw = Math.min(0, ...allAnnualReturns);
+  const yMaxRaw = Math.max(0, ...allAnnualReturns);
+  const yPadding = Math.max(0.02, (yMaxRaw - yMinRaw) * 0.12);
+  const yMin = Math.floor((yMinRaw - yPadding) * 20) / 20;
+  const yMax = Math.ceil((yMaxRaw + yPadding) * 20) / 20;
+  const yScale = (value) => pad.top + (1 - ((value - yMin) / Math.max(yMax - yMin, 1e-8))) * plotH;
+  const zeroY = yScale(0);
+  const groupW = plotW / years.length;
+  const barW = Math.min(42, groupW / 5);
+  const xCenter = (index) => pad.left + groupW * index + groupW / 2;
+  const colors = {
+    "S&P 500": "#101820",
+    [selectedMcProfile]: "#007d87",
+    AGG: "#d6a100",
+  };
+  const yTicks = Array.from({ length: 5 }, (_, i) => yMin + ((yMax - yMin) * i) / 4);
+
+  chart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monte Carlo random annual return scenario chart">
+    <rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff"></rect>
+    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="#f6f7f8" stroke="#ccd5dd"></rect>
+    ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="#dce3e9"></line>
+      <text x="${pad.left - 10}" y="${yScale(tick) + 4}" text-anchor="end" class="frontier-axis">${pct(tick)}</text>`).join("")}
+    <line x1="${pad.left}" y1="${zeroY}" x2="${width - pad.right}" y2="${zeroY}" stroke="#101820" stroke-width="1.2"></line>
+    ${years.map((year, index) => `<text x="${xCenter(index)}" y="${height - 18}" text-anchor="middle" class="frontier-axis">Year ${year}</text>`).join("")}
+    ${annualSeries.map((row, seriesIndex) => row.annualReturns.map((value, yearIndex) => {
+      const x = xCenter(yearIndex) - barW * 1.65 + seriesIndex * barW * 1.15;
+      const y = Math.min(yScale(value), zeroY);
+      const h = Math.max(2, Math.abs(zeroY - yScale(value)));
+      const labelY = value >= 0 ? y - 6 : y + h + 14;
+      return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="1" fill="${colors[row.label]}" data-tooltip-title="${escapeHtml(row.label)}" data-tooltip-body="Year ${years[yearIndex]}: ${pct(value)}"></rect>
+        <text x="${(x + barW / 2).toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" class="frontier-axis">${pct(value)}</text>`;
+    }).join("")).join("")}
+    <g transform="translate(${pad.left}, 20)">
+      ${annualSeries.map((row, index) => `<rect x="${index * 170}" y="-7" width="22" height="4" rx="2" fill="${colors[row.label]}"></rect><text x="${index * 170 + 30}" y="4" class="frontier-axis">${row.label}</text>`).join("")}
+    </g>
+    <text x="${pad.left}" y="${pad.top - 14}" class="frontier-axis">Annual Return</text>
+  </svg>`;
+
+  renderMonteCarloAssetsChart(selectedPath);
+  renderMonteCarloAssetBarsChart(selectedPath);
+}
+
 function renderFrontierChart(selected, frontier, assetPoints, profile) {
   const box = document.querySelector("#frontierChart");
   const region = globalFeasibleRegion(selected, frontier);
@@ -1742,6 +2043,7 @@ function renderAll() {
   renderWeights();
   renderFundModels();
   renderMvo();
+  renderMonteCarlo();
 }
 
 function renderEditableInputs() {
@@ -1761,6 +2063,9 @@ function resetModel() {
   selectedAssumptionSet = state.selectedAssumptionSet || "CORE";
   applyAssumptionSet(selectedAssumptionSet);
   selectedVolatilityCase = "Base";
+  selectedMcProfile = "Moderate";
+  monteCarloSeed = 100;
+  selectedMcAssets = null;
   selectedAllocationPreset = "CORE";
   selectedSubAllocationPreset = "CORE";
   applySubAllocationPreset(selectedSubAllocationPreset);
@@ -1947,6 +2252,12 @@ document.addEventListener("focusout", (event) => {
 });
 
 document.addEventListener("input", (event) => {
+  if (event.target.matches("#mcScenarioSeed")) {
+    if (event.target.value.trim() === "") return;
+    monteCarloSeed = Math.max(1, Math.round(num(event.target.value) || 1));
+    renderMonteCarlo();
+    return;
+  }
   if (!event.target.matches("input[data-path]")) return;
   updateInputState(event.target);
   scheduleLiveUpdate();
@@ -1961,6 +2272,26 @@ document.addEventListener("change", (event) => {
   if (event.target.matches("#mvoProfileSelect")) {
     selectedMvoProfile = event.target.value;
     renderMvo();
+    return;
+  }
+  if (event.target.matches("#mcProfileSelect")) {
+    selectedMcProfile = event.target.value;
+    renderMonteCarlo();
+    return;
+  }
+  if (event.target.matches("input[data-mc-asset]")) {
+    ensureMonteCarloAssetSelection();
+    const assetName = event.target.dataset.mcAsset;
+    if (event.target.checked) selectedMcAssets.add(assetName);
+    else selectedMcAssets.delete(assetName);
+    renderMonteCarlo();
+    return;
+  }
+  if (event.target.matches("#mcScenarioSeed")) {
+    if (event.target.value.trim() === "") return;
+    monteCarloSeed = Math.max(1, Math.round(num(event.target.value) || 1));
+    event.target.value = monteCarloSeed;
+    renderMonteCarlo();
     return;
   }
   if (event.target.matches("#allocationPresetSelect")) {
@@ -2000,6 +2331,16 @@ document.addEventListener("click", (event) => {
     document.querySelector(`#${dashboardTab.dataset.dashboardTab}`).classList.add("active");
   }
 
+  if (event.target.closest("#selectAllMcAssets")) {
+    selectedMcAssets = new Set(state.assets.map((asset) => asset.name));
+    renderMonteCarlo();
+  }
+
+  if (event.target.closest("#deselectAllMcAssets")) {
+    selectedMcAssets = new Set(["U.S. Large Cap"]);
+    renderMonteCarlo();
+  }
+
   const fundTab = event.target.closest(".fund-tab");
   if (fundTab) {
     selectedFundProvider = fundTab.dataset.fundProvider;
@@ -2022,7 +2363,7 @@ window.addEventListener("afterprint", () => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260729-market-view", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260729-monte-carlo-scenario100", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
