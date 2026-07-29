@@ -1773,6 +1773,9 @@ function renderMonteCarlo() {
     AGG: "#d6a100",
   };
   const yTicks = Array.from({ length: 5 }, (_, i) => yMin + ((yMax - yMin) * i) / 4);
+  const legendStep = 170;
+  const legendWidth = legendStep * (annualSeries.length - 1) + 96;
+  const legendStart = pad.left + plotW / 2 - legendWidth / 2;
 
   chart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monte Carlo random annual return scenario chart">
     <rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff"></rect>
@@ -1789,8 +1792,8 @@ function renderMonteCarlo() {
       return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="1" fill="${colors[row.label]}" data-tooltip-title="${escapeHtml(row.label)}" data-tooltip-body="Year ${years[yearIndex]}: ${pct(value)}"></rect>
         <text x="${(x + barW / 2).toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" class="frontier-axis">${pct(value)}</text>`;
     }).join("")).join("")}
-    <g transform="translate(${pad.left}, 20)">
-      ${annualSeries.map((row, index) => `<rect x="${index * 170}" y="-7" width="22" height="4" rx="2" fill="${colors[row.label]}"></rect><text x="${index * 170 + 30}" y="4" class="frontier-axis">${row.label}</text>`).join("")}
+    <g transform="translate(${legendStart}, 20)">
+      ${annualSeries.map((row, index) => `<rect x="${index * legendStep}" y="-7" width="22" height="4" rx="2" fill="${colors[row.label]}"></rect><text x="${index * legendStep + 30}" y="4" class="frontier-axis">${row.label}</text>`).join("")}
     </g>
     <text x="${pad.left}" y="${pad.top - 14}" class="frontier-axis">Annual Return</text>
   </svg>`;
@@ -2363,7 +2366,7 @@ window.addEventListener("afterprint", () => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260729-monte-carlo-scenario100", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260729-monte-carlo-legend-center", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
