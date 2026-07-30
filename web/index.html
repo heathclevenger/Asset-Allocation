@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Paul Asset Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260729-overview-rounding" />
+    <link rel="stylesheet" href="./styles.css?v=20260730-flat-tabs" />
   </head>
-  <body>
+  <body data-view-mode="client">
     <div class="shell">
       <header class="masthead">
         <div class="brand">
@@ -16,6 +16,16 @@
         <div class="title-block">
           <h1>Asset Allocation</h1>
           <div class="model-actions">
+            <div class="view-mode-control">
+              <button type="button" class="settings-button" aria-label="View settings">&#9881;</button>
+              <label>
+                View
+                <select id="viewModeSelect">
+                  <option value="advisor">Advisor</option>
+                  <option value="client" selected>Client</option>
+                </select>
+              </label>
+            </div>
             <button id="resetModel" class="secondary">Reset</button>
           </div>
         </div>
@@ -23,17 +33,20 @@
 
       <div class="nav-row">
         <nav class="tabs" aria-label="Model pages">
-          <button class="tab active" data-tab="results">Overview</button>
-          <button class="tab" data-tab="assets">Asset Assumptions</button>
-          <button class="tab" data-tab="profiles">Model Constraints</button>
-          <button class="tab" data-tab="mvo">Portfolio Optimization</button>
-          <button class="tab" data-tab="monteCarlo">Monte Carlo</button>
-          <button class="tab" data-tab="fundModels">ETF/Fund Models</button>
+          <button class="tab" data-tab="results" data-view-tab="advisor">Overview</button>
+          <button class="tab" data-tab="assets" data-view-tab="advisor">Asset Assumptions</button>
+          <button class="tab" data-tab="profiles" data-view-tab="advisor">Model Constraints</button>
+          <button class="tab" data-tab="mvo" data-view-tab="advisor">Portfolio Optimization</button>
+          <button class="tab" data-tab="monteCarlo" data-view-tab="advisor">Monte Carlo</button>
+          <button class="tab" data-tab="fundModels" data-view-tab="advisor">ETF/Fund Models</button>
+          <button class="tab active" data-tab="clientPortfolio" data-view-tab="client">Portfolio</button>
+          <button class="tab" data-tab="monteCarlo" data-view-tab="client">Monte Carlo</button>
+          <button class="tab" data-tab="clientAssets" data-view-tab="client">Asset Assumptions</button>
         </nav>
       </div>
 
       <main>
-        <section id="results" class="page active">
+        <section id="results" class="page">
           <div class="toolbar">
             <div>
               <h2>Overview</h2>
@@ -212,6 +225,46 @@
           </div>
         </section>
 
+        <section id="clientPortfolio" class="page active">
+          <div class="toolbar">
+            <div>
+              <h2>Portfolio</h2>
+              <p>Portfolio allocation and optimized asset mix by risk profile.</p>
+            </div>
+            <div class="select-control">
+              <label for="clientProfileSelect">Portfolio</label>
+              <select id="clientProfileSelect"></select>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Allocation Weights</div>
+            <div id="clientAllocationPieCharts" class="pie-grid allocation-pie-grid"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Portfolio Weights</div>
+            <div id="clientWeightCharts" class="mvo-weight-charts"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Efficient Frontier</div>
+            <div id="clientFrontierChart" class="frontier-chart"><p class="frontier-note">Calculating efficient frontier...</p></div>
+          </div>
+        </section>
+
+        <section id="clientAssets" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>Asset Assumptions</h2>
+              <p>Comparison of source assumptions used in the allocation model.</p>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Asset Assumption Comparison</div>
+            <div class="table-wrap assumption-comparison-wrap">
+              <table id="clientAssetComparisonTable" class="assumption-comparison-table"></table>
+            </div>
+          </div>
+        </section>
+
       </main>
 
       <footer>
@@ -219,6 +272,6 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260729-overview-rounding"></script>
+    <script src="./app.js?v=20260730-flat-tabs"></script>
   </body>
 </html>

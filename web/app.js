@@ -1,6 +1,12 @@
 const pct = (value) => `${(value * 100).toFixed(2)}%`;
 const num = (value) => Number.parseFloat(value || 0);
 const wholePct = (value) => `${Math.round(value * 100)}%`;
+const displayAllocationPct = (category, value) => {
+  if (category === "Equity") return `${Math.ceil(value * 100)}%`;
+  if (category === "Fixed Income") return `${Math.floor(value * 100)}%`;
+  if (category === "Cash") return "1%";
+  return wholePct(value);
+};
 
 let baseData;
 let state;
@@ -10,9 +16,11 @@ let mvoDirty = true;
 let mvoTimer = null;
 let liveUpdateTimer = null;
 let selectedMvoProfile = "Moderate";
+let selectedClientProfile = "Moderate";
 let selectedMcProfile = "Moderate";
 let monteCarloSeed = 100;
 let selectedMcAssets = null;
+let viewMode = "client";
 let selectedAllocationPreset = "CORE";
 let selectedSubAllocationPreset = "CORE";
 let selectedAssumptionSet = "CORE";
@@ -40,11 +48,19 @@ const volatilityCases = {
   Bull: 5,
 };
 
+const chartTheme = {
+  surface: "#f7f3eb",
+  plot: "#f1ece3",
+  border: "#cfc7bb",
+  grid: "#d9d2c8",
+  gridLight: "#e7dfd4",
+};
+
 const categoryColor = (category) => ({
-  "Equity": "#007481",
-  "Fixed Income": "#c99700",
-  "Alternatives": "#8f3f71",
-  "Cash": "#6c757d",
+  "Equity": "#3d5568",
+  "Fixed Income": "#b98256",
+  "Alternatives": "#7e8d99",
+  "Cash": "#9b9a93",
 }[category] || "#6c757d");
 
 const assetColor = (asset, index) => ({
@@ -762,7 +778,7 @@ function runOptimization() {
   results = calculateConstrainedResults();
   renderAll();
   mvoDirty = true;
-  if (mvoIsActive()) refreshMvo();
+  if (mvoIsActive() || clientPortfolioIsActive()) refreshMvo();
 }
 
 function statusFor(profileName, vol) {
@@ -903,7 +919,8 @@ function renderAssets() {
       <td>${pct(asset.volatility)}</td>
     </tr>`).join("")}</tbody>`;
 
-  renderAssetComparison();
+  renderAssetComparison("#assetComparisonTable");
+  renderAssetComparison("#clientAssetComparisonTable");
 }
 
 function providerShortName(name) {
@@ -917,8 +934,8 @@ function providerShortName(name) {
   return labels[clean] || clean;
 }
 
-function renderAssetComparison() {
-  const table = document.querySelector("#assetComparisonTable");
+function renderAssetComparison(selector = "#assetComparisonTable") {
+  const table = document.querySelector(selector);
   if (!table || !state.assumptionSets) return;
   const providers = Object.keys(state.assumptionSets).filter((name) => name !== "CORE");
   const providerHeaders = providers.map((name) => `<th>${providerShortName(name)}</th>`).join("");
@@ -938,15 +955,9 @@ function renderAssetComparison() {
 }
 
 function renderAllocationWeights() {
-  const allocationPct = (category, value) => {
-    if (category === "Equity") return `${Math.ceil(value * 100)}%`;
-    if (category === "Fixed Income") return `${Math.floor(value * 100)}%`;
-    if (category === "Cash") return "1%";
-    return wholePct(value);
-  };
   const table = document.querySelector("#allocationWeightsTable");
   table.innerHTML = `<thead><tr><th>Allocation</th>${Object.keys(results).map((p) => `<th>${p}</th>`).join("")}</tr></thead>
-  <tbody>${state.categories.map((category) => `<tr><td>${category}</td>${Object.values(results).map((result) => `<td>${allocationPct(category, result.categoryWeights[category] || 0)}</td>`).join("")}</tr>`).join("")}</tbody>`;
+  <tbody>${state.categories.map((category) => `<tr><td>${category}</td>${Object.values(results).map((result) => `<td>${displayAllocationPct(category, result.categoryWeights[category] || 0)}</td>`).join("")}</tr>`).join("")}</tbody>`;
 
   const charts = document.querySelector("#allocationPieCharts");
   if (charts) {
@@ -956,7 +967,7 @@ function renderAllocationWeights() {
         label: category,
         value: result.categoryWeights[category] || 0,
         color: categoryColor(category),
-        displayPct: allocationPct(category, result.categoryWeights[category] || 0),
+        displayPct: displayAllocationPct(category, result.categoryWeights[category] || 0),
       }))
     )).join("");
   }
@@ -1348,7 +1359,7 @@ function renderPieCard(title, items, options = {}) {
     <div class="pie-content">
       <svg viewBox="0 0 124 124" role="img" aria-label="${title} allocation pie chart">
         ${slices}
-        <circle cx="62" cy="62" r="48" fill="none" stroke="#ffffff" stroke-width="1.5"></circle>
+        <circle cx="62" cy="62" r="48" fill="none" stroke="${chartTheme.surface}" stroke-width="1.5"></circle>
       </svg>
       <div class="pie-legend">
         ${options.variant === "sleeve"
@@ -1364,13 +1375,14 @@ function renderPieCard(title, items, options = {}) {
   </div>`;
 }
 
-function renderAllocationSummaryCard(profileName, result, profile) {
+function renderAllocationSummaryCard(profileName, result, profile, options = {}) {
   const percentile = state.volatilityModel?.profiles?.[profileName]?.percentile ?? "";
   const items = state.categories
     .map((category) => ({
       label: category,
       value: result.categoryWeights[category] || 0,
       color: categoryColor(category),
+      displayPct: displayAllocationPct(category, result.categoryWeights[category] || 0),
     }))
     .filter((item) => item.value > 0.0005);
   const total = items.reduce((sum, item) => sum + item.value, 0) || 1;
@@ -1382,7 +1394,7 @@ function renderAllocationSummaryCard(profileName, result, profile) {
     return path;
   }).join("");
 
-  return `<div class="pie-card allocation-summary-card">
+  return `<div class="pie-card allocation-summary-card ${options.variant === "client" ? "client-summary-card" : ""}">
     <div class="pie-title">Allocation Weights</div>
     <div class="allocation-summary-layout">
       <div class="allocation-context">
@@ -1390,22 +1402,22 @@ function renderAllocationSummaryCard(profileName, result, profile) {
           <span>Portfolio</span>
           <strong class="allocation-profile">${profileName}</strong>
         </div>
-        <div class="allocation-context-box">
+        ${options.variant === "client" ? "" : `<div class="allocation-context-box">
           <span>Volatility Percentile</span>
           <strong>${Number(percentile).toFixed(0)}th</strong>
           <span class="allocation-target-label">Target Volatility</span>
           <strong>${pct(profile.targetVolMin)} - ${pct(profile.targetVolMax)}</strong>
-        </div>
+        </div>`}
       </div>
       <div class="allocation-pie-block">
         <svg viewBox="0 0 124 124" role="img" aria-label="${profileName} allocation pie chart">
           ${slices}
-          <circle cx="62" cy="62" r="48" fill="none" stroke="#ffffff" stroke-width="1.5"></circle>
+          <circle cx="62" cy="62" r="48" fill="none" stroke="${chartTheme.surface}" stroke-width="1.5"></circle>
         </svg>
         <div class="allocation-summary-list">
           ${items.map((item) => `<div style="--pie-color:${item.color}">
             <span><i style="--pie-color:${item.color}"></i>${item.label}</span>
-            <strong>${pct(item.value)}</strong>
+            <strong>${item.displayPct || pct(item.value)}</strong>
           </div>`).join("")}
         </div>
       </div>
@@ -1508,6 +1520,61 @@ function renderMvo() {
   ].join("");
 
   renderFrontierChart(selected, frontierResult.frontier, frontierResult.assetPoints, profile);
+}
+
+function renderClientPortfolioControls() {
+  const select = document.querySelector("#clientProfileSelect");
+  if (!select) return;
+  const profileNames = Object.keys(state.profiles);
+  if (!profileNames.includes(selectedClientProfile)) selectedClientProfile = profileNames[0];
+  select.innerHTML = profileNames.map((name) => `<option value="${name}" ${name === selectedClientProfile ? "selected" : ""}>${name}</option>`).join("");
+  select.value = selectedClientProfile;
+}
+
+function renderClientPortfolio() {
+  renderClientPortfolioControls();
+  const allocationCharts = document.querySelector("#clientAllocationPieCharts");
+  const weightCharts = document.querySelector("#clientWeightCharts");
+  const frontierBox = document.querySelector("#clientFrontierChart");
+  if (!allocationCharts || !weightCharts || !frontierBox) return;
+
+  allocationCharts.innerHTML = Object.entries(results).map(([profile, result]) => renderPieCard(
+    profile,
+    state.categories.map((category) => ({
+      label: category,
+      value: result.categoryWeights[category] || 0,
+      color: categoryColor(category),
+      displayPct: displayAllocationPct(category, result.categoryWeights[category] || 0),
+    }))
+  )).join("");
+
+  if (!frontierResult) return;
+  if (frontierResult.error) {
+    weightCharts.innerHTML = "";
+    frontierBox.innerHTML = `<p class="frontier-note">The chart could not run. Check that assumptions have valid return and volatility numbers.</p>`;
+    return;
+  }
+
+  const baseSelected = results[selectedClientProfile];
+  if (!baseSelected) return;
+  const profile = state.profiles[selectedClientProfile];
+  const selected = selectedMvoDisplayResult(selectedClientProfile, baseSelected, frontierResult.frontier);
+  weightCharts.innerHTML = [
+    renderAllocationSummaryCard(selectedClientProfile, selected, profile, { variant: "client" }),
+    renderPieCard(
+      "Sub-Sleeve Weights",
+      state.assets.map((asset, index) => ({
+        label: asset.name,
+        value: selected.weights[index] || 0,
+        color: assetColor(asset, index),
+      })),
+      { variant: "sleeve" }
+    ),
+  ].join("");
+  renderFrontierChart(selected, frontierResult.frontier, frontierResult.assetPoints, profile, {
+    chartSelector: "#clientFrontierChart",
+    constraintsSelector: null,
+  });
 }
 
 function normalSample(rand) {
@@ -1663,11 +1730,11 @@ function renderMonteCarloAssetsChart(selectedPath) {
   )).join(" ");
 
   assetChart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monte Carlo sub-sleeve five-year time-weighted return path chart">
-    <rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff"></rect>
-    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="#f6f7f8" stroke="#ccd5dd"></rect>
-    ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="#dce3e9"></line>
+    <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
+    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
+    ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line>
       <text x="${width - pad.right + 12}" y="${yScale(tick) + 4}" text-anchor="start" class="frontier-axis">${pct(tick)}</text>`).join("")}
-    ${years.map((year) => `<line x1="${xScale(year * 12)}" y1="${pad.top}" x2="${xScale(year * 12)}" y2="${height - pad.bottom}" stroke="#e6ebef"></line>
+    ${years.map((year) => `<line x1="${xScale(year * 12)}" y1="${pad.top}" x2="${xScale(year * 12)}" y2="${height - pad.bottom}" stroke="${chartTheme.gridLight}"></line>
       <text x="${xScale(year * 12)}" y="${height - 20}" text-anchor="middle" class="frontier-axis">Year ${year}</text>`).join("")}
     <line x1="${pad.left}" y1="${yScale(0)}" x2="${width - pad.right}" y2="${yScale(0)}" stroke="#101820" stroke-width="1.1"></line>
     ${returnPaths.map((row) => `<path d="${pathFor(row)}" fill="none" stroke="${row.color}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -1711,9 +1778,9 @@ function renderMonteCarloAssetBarsChart(selectedPath) {
   const ticks = Array.from({ length: 5 }, (_, index) => xMin + ((xMax - xMin) * index) / 4);
 
   assetBars.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monte Carlo sub-sleeve CAGR bar chart">
-    <rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff"></rect>
-    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${height - pad.top - pad.bottom}" fill="#f6f7f8" stroke="#ccd5dd"></rect>
-    ${ticks.map((tick) => `<line x1="${xScale(tick)}" y1="${pad.top}" x2="${xScale(tick)}" y2="${height - pad.bottom}" stroke="#dce3e9"></line>
+    <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
+    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${height - pad.top - pad.bottom}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
+    ${ticks.map((tick) => `<line x1="${xScale(tick)}" y1="${pad.top}" x2="${xScale(tick)}" y2="${height - pad.bottom}" stroke="${chartTheme.grid}"></line>
       <text x="${xScale(tick)}" y="${height - 16}" text-anchor="middle" class="frontier-axis">${pct(tick)}</text>`).join("")}
     <line x1="${zeroX}" y1="${pad.top}" x2="${zeroX}" y2="${height - pad.bottom}" stroke="#101820" stroke-width="1.2"></line>
     ${rows.map((row, index) => {
@@ -1787,9 +1854,9 @@ function renderMonteCarlo() {
   const legendStart = pad.left + plotW / 2 - legendWidth / 2;
 
   chart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monte Carlo random annual return scenario chart">
-    <rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff"></rect>
-    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="#f6f7f8" stroke="#ccd5dd"></rect>
-    ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="#dce3e9"></line>
+    <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
+    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
+    ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line>
       <text x="${pad.left - 10}" y="${yScale(tick) + 4}" text-anchor="end" class="frontier-axis">${pct(tick)}</text>`).join("")}
     <line x1="${pad.left}" y1="${zeroY}" x2="${width - pad.right}" y2="${zeroY}" stroke="#101820" stroke-width="1.2"></line>
     ${years.map((year, index) => `<text x="${xCenter(index)}" y="${height - 18}" text-anchor="middle" class="frontier-axis">Year ${year}</text>`).join("")}
@@ -1811,8 +1878,10 @@ function renderMonteCarlo() {
   renderMonteCarloAssetBarsChart(selectedPath);
 }
 
-function renderFrontierChart(selected, frontier, assetPoints, profile) {
-  const box = document.querySelector("#frontierChart");
+function renderFrontierChart(selected, frontier, assetPoints, profile, options = {}) {
+  const box = document.querySelector(options.chartSelector || "#frontierChart");
+  if (!box) return;
+  const constraintsSelector = options.constraintsSelector === undefined ? "#mvoConstraints" : options.constraintsSelector;
   const region = globalFeasibleRegion(selected, frontier);
   const benchmarkPoints = (state.benchmarks || []).map((benchmark) => ({
     benchmark,
@@ -1949,11 +2018,11 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
     ${state.assets.map((asset, index) => `<span><i style="--asset-color:${assetColor(asset, index)}"></i>${asset.name}</span>`).join("")}
   </div>
   <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Efficient frontier chart showing MVO portfolio volatility and expected return">
-    <rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff"></rect>
-    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="#f6f7f8" stroke="#ccd5dd"></rect>
-    ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="#dce3e9"></line>
+    <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
+    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
+    ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line>
       <text x="${pad.left - 12}" y="${yScale(tick) + 4}" text-anchor="end" class="frontier-axis">${pct(tick)}</text>`).join("")}
-    ${xTicks.map((tick) => `<line x1="${xScale(tick)}" y1="${pad.top}" x2="${xScale(tick)}" y2="${height - pad.bottom}" stroke="#e6ebef"></line>
+    ${xTicks.map((tick) => `<line x1="${xScale(tick)}" y1="${pad.top}" x2="${xScale(tick)}" y2="${height - pad.bottom}" stroke="${chartTheme.gridLight}"></line>
       <text x="${xScale(tick)}" y="${height - 26}" text-anchor="middle" class="frontier-axis">${pct(tick)}</text>`).join("")}
     <rect x="${bandX.toFixed(1)}" y="${pad.top}" width="${bandWidth.toFixed(1)}" height="${plotH}" fill="#00a95a" opacity="0.11"></rect>
     <line x1="${bandX.toFixed(1)}" y1="${pad.top}" x2="${bandX.toFixed(1)}" y2="${height - pad.bottom}" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="5 5"></line>
@@ -1965,7 +2034,7 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
       const x = xScale(blend.stats.volatility);
       const y = yScale(blend.stats.expectedReturn);
       return `<g class="benchmark-point blend-point" tabindex="0" role="button" aria-label="${blend.label} S&P 500 and AGG blend" data-tooltip-title="${blend.label} S&amp;P/AGG" data-tooltip-body="S&amp;P ${pct(blend.spWeight)} | AGG ${pct(blend.aggWeight)}">
-        <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.6" fill="#ffffff" stroke="#536575" stroke-width="2"></circle>
+        <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.6" fill="${chartTheme.surface}" stroke="#536575" stroke-width="2"></circle>
       </g>`;
     }).join("")}
     ${assetPoints.map((p, index) => {
@@ -2023,7 +2092,7 @@ function renderFrontierChart(selected, frontier, assetPoints, profile) {
   </div>
   `;
 
-  const constraintsBox = document.querySelector("#mvoConstraints");
+  const constraintsBox = constraintsSelector ? document.querySelector(constraintsSelector) : null;
   if (constraintsBox) {
     constraintsBox.innerHTML = `<div class="chart-constraints">
     <div class="constraint-grid">
@@ -2055,7 +2124,27 @@ function renderAll() {
   renderWeights();
   renderFundModels();
   renderMvo();
+  renderClientPortfolio();
   renderMonteCarlo();
+}
+
+function activateTab(tabName) {
+  document.querySelectorAll(".tab").forEach((x) => x.classList.remove("active"));
+  document.querySelectorAll(".page").forEach((x) => x.classList.remove("active"));
+  const tab = Array.from(document.querySelectorAll(`.tab[data-tab="${tabName}"]`))
+    .find((candidate) => candidate.dataset.viewTab === viewMode || candidate.dataset.viewTab === "all");
+  const page = document.querySelector(`#${tabName}`);
+  if (tab) tab.classList.add("active");
+  if (page) page.classList.add("active");
+  if (tabName === "mvo" || tabName === "clientPortfolio") refreshMvo();
+}
+
+function setViewMode(mode) {
+  viewMode = mode === "client" ? "client" : "advisor";
+  document.body.dataset.viewMode = viewMode;
+  const select = document.querySelector("#viewModeSelect");
+  if (select) select.value = viewMode;
+  activateTab(viewMode === "client" ? "clientPortfolio" : "results");
 }
 
 function renderEditableInputs() {
@@ -2075,6 +2164,7 @@ function resetModel() {
   selectedAssumptionSet = state.selectedAssumptionSet || "CORE";
   applyAssumptionSet(selectedAssumptionSet);
   selectedVolatilityCase = "Base";
+  selectedClientProfile = "Moderate";
   selectedMcProfile = "Moderate";
   monteCarloSeed = 100;
   selectedMcAssets = null;
@@ -2116,21 +2206,31 @@ function applySubAllocationPreset(name) {
 function refreshMvo() {
   if (!mvoDirty && frontierResult) {
     renderMvo();
+    renderClientPortfolio();
     return;
   }
   renderMvoSelectedStatus(selectedMvoProfile, null, "Checking ranges...");
-  document.querySelector("#frontierChart").innerHTML = `<p class="frontier-note">Calculating efficient frontier...</p>`;
-  document.querySelector("#mvoWeightCharts").innerHTML = `<p class="frontier-note">Calculating weights...</p>`;
-  document.querySelector("#mvoConstraints").innerHTML = "";
+  const advisorFrontier = document.querySelector("#frontierChart");
+  const advisorWeights = document.querySelector("#mvoWeightCharts");
+  const advisorConstraints = document.querySelector("#mvoConstraints");
+  const clientFrontier = document.querySelector("#clientFrontierChart");
+  const clientWeights = document.querySelector("#clientWeightCharts");
+  if (advisorFrontier) advisorFrontier.innerHTML = `<p class="frontier-note">Calculating efficient frontier...</p>`;
+  if (advisorWeights) advisorWeights.innerHTML = `<p class="frontier-note">Calculating weights...</p>`;
+  if (advisorConstraints) advisorConstraints.innerHTML = "";
+  if (clientFrontier) clientFrontier.innerHTML = `<p class="frontier-note">Calculating efficient frontier...</p>`;
+  if (clientWeights) clientWeights.innerHTML = `<p class="frontier-note">Calculating weights...</p>`;
   setTimeout(() => {
     try {
       frontierResult = calculateEfficientFrontier();
       mvoDirty = false;
       renderMvo();
+      renderClientPortfolio();
     } catch (error) {
       frontierResult = { error: error.message };
       mvoDirty = false;
       renderMvo();
+      renderClientPortfolio();
     }
   }, 25);
 }
@@ -2139,9 +2239,13 @@ function mvoIsActive() {
   return document.querySelector("#mvo")?.classList.contains("active");
 }
 
+function clientPortfolioIsActive() {
+  return document.querySelector("#clientPortfolio")?.classList.contains("active");
+}
+
 function scheduleMvoRefresh(force = false) {
   mvoDirty = true;
-  if (!force && !mvoIsActive()) return;
+  if (!force && !mvoIsActive() && !clientPortfolioIsActive()) return;
   window.clearTimeout(mvoTimer);
   mvoTimer = window.setTimeout(runOptimization, 90);
 }
@@ -2153,7 +2257,8 @@ function refreshLiveOutputs() {
   renderAllocationWeights();
   renderWeights();
   renderFundModels();
-  if (mvoIsActive()) refreshMvo();
+  renderClientPortfolio();
+  if (mvoIsActive() || clientPortfolioIsActive()) refreshMvo();
 }
 
 function scheduleLiveUpdate() {
@@ -2281,9 +2386,19 @@ document.addEventListener("change", (event) => {
     runOptimization();
     return;
   }
+  if (event.target.matches("#viewModeSelect")) {
+    setViewMode(event.target.value);
+    document.querySelector(".view-mode-control")?.classList.remove("open");
+    return;
+  }
   if (event.target.matches("#mvoProfileSelect")) {
     selectedMvoProfile = event.target.value;
     renderMvo();
+    return;
+  }
+  if (event.target.matches("#clientProfileSelect")) {
+    selectedClientProfile = event.target.value;
+    renderClientPortfolio();
     return;
   }
   if (event.target.matches("#mcProfileSelect")) {
@@ -2326,13 +2441,22 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("click", (event) => {
+  const settingsButton = event.target.closest(".settings-button");
+  if (settingsButton) {
+    settingsButton.closest(".view-mode-control")?.classList.toggle("open");
+    return;
+  }
+  if (!event.target.closest(".view-mode-control")) {
+    document.querySelector(".view-mode-control")?.classList.remove("open");
+  }
+
   const tab = event.target.closest(".tab");
   if (tab) {
     document.querySelectorAll(".tab").forEach((x) => x.classList.remove("active"));
     document.querySelectorAll(".page").forEach((x) => x.classList.remove("active"));
     tab.classList.add("active");
     document.querySelector(`#${tab.dataset.tab}`).classList.add("active");
-    if (tab.dataset.tab === "mvo") refreshMvo();
+    if (tab.dataset.tab === "mvo" || tab.dataset.tab === "clientPortfolio") refreshMvo();
   }
 
   const dashboardTab = event.target.closest(".dashboard-tab");
@@ -2375,7 +2499,7 @@ window.addEventListener("afterprint", () => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260729-overview-rounding", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260730-flat-tabs", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
@@ -2386,6 +2510,7 @@ async function init() {
     ensureVolatilityModel();
     applyVolatilityCase(selectedVolatilityCase);
     runOptimization();
+    setViewMode(viewMode);
   } catch (error) {
     const message = `Model data did not load: ${error.message}`;
     renderMvoSelectedStatus(selectedMvoProfile, null, "Out of range");
