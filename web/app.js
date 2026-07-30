@@ -920,7 +920,6 @@ function renderAssets() {
     </tr>`).join("")}</tbody>`;
 
   renderAssetComparison("#assetComparisonTable");
-  renderAssetComparison("#clientAssetComparisonTable");
 }
 
 function providerShortName(name) {
@@ -1524,11 +1523,19 @@ function renderMvo() {
 
 function renderClientPortfolioControls() {
   const select = document.querySelector("#clientProfileSelect");
-  if (!select) return;
   const profileNames = Object.keys(state.profiles);
-  if (!profileNames.includes(selectedClientProfile)) selectedClientProfile = profileNames[0];
-  select.innerHTML = profileNames.map((name) => `<option value="${name}" ${name === selectedClientProfile ? "selected" : ""}>${name}</option>`).join("");
-  select.value = selectedClientProfile;
+  if (select) {
+    if (!profileNames.includes(selectedClientProfile)) selectedClientProfile = profileNames[0];
+    select.innerHTML = profileNames.map((name) => `<option value="${name}" ${name === selectedClientProfile ? "selected" : ""}>${name}</option>`).join("");
+    select.value = selectedClientProfile;
+  }
+  const marketViewSelect = document.querySelector("#clientVolatilityCaseSelect");
+  if (marketViewSelect) {
+    marketViewSelect.innerHTML = Object.keys(volatilityCases)
+      .map((name) => `<option value="${name}" ${name === selectedVolatilityCase ? "selected" : ""}>${name}</option>`)
+      .join("");
+    marketViewSelect.value = selectedVolatilityCase;
+  }
 }
 
 function renderClientPortfolio() {
@@ -2015,7 +2022,7 @@ function renderFrontierChart(selected, frontier, assetPoints, profile, options =
   box.innerHTML = `<div class="frontier-chart-grid">
   <div class="asset-color-legend side-legend">
     <div class="legend-heading">Asset Legend</div>
-    ${state.assets.map((asset, index) => `<span><i style="--asset-color:${assetColor(asset, index)}"></i>${asset.name}</span>`).join("")}
+    ${state.assets.map((asset, index) => `<span tabindex="0" role="button" data-frontier-asset="${escapeHtml(asset.name)}"><i style="--asset-color:${assetColor(asset, index)}"></i>${asset.name}</span>`).join("")}
   </div>
   <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Efficient frontier chart showing MVO portfolio volatility and expected return">
     <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
@@ -2043,7 +2050,7 @@ function renderFrontierChart(selected, frontier, assetPoints, profile, options =
       const tooltipW = 190;
       const tooltipH = 48;
       const tooltip = tooltipPosition(x, y, tooltipW, tooltipH);
-      return `<g class="asset-point" tabindex="0" role="button" aria-label="${p.asset.name}: return ${pct(p.stats.expectedReturn)}, volatility ${pct(p.stats.volatility)}" data-tooltip-title="${escapeHtml(p.asset.name)}" data-tooltip-body="Return ${pct(p.stats.expectedReturn)} | Vol ${pct(p.stats.volatility)}">
+      return `<g class="asset-point" tabindex="0" role="button" aria-label="${p.asset.name}: return ${pct(p.stats.expectedReturn)}, volatility ${pct(p.stats.volatility)}" data-asset-name="${escapeHtml(p.asset.name)}" data-tooltip-title="${escapeHtml(p.asset.name)}" data-tooltip-body="Return ${pct(p.stats.expectedReturn)} | Vol ${pct(p.stats.volatility)}">
         <polygon points="${trianglePoints(x, y, 6)}" fill="${assetColor(p.asset, index)}" stroke="#101820" stroke-width="1.1"></polygon>
         <g class="asset-tooltip" transform="translate(${tooltip.x.toFixed(1)}, ${tooltip.y.toFixed(1)})">
           <rect x="0" y="0" width="${tooltipW}" height="${tooltipH}" rx="3"></rect>
@@ -2345,6 +2352,18 @@ function hideHoverTooltip() {
   document.querySelector("#hoverTooltip")?.classList.remove("visible");
 }
 
+function focusFrontierAssetFromLegend(legendItem) {
+  const assetName = legendItem?.dataset?.frontierAsset;
+  if (!assetName) return false;
+  const chart = legendItem.closest(".frontier-chart-grid");
+  const point = Array.from(chart?.querySelectorAll(".asset-point[data-asset-name]") || [])
+    .find((item) => item.dataset.assetName === assetName);
+  if (!point) return false;
+  hideHoverTooltip();
+  point.focus();
+  return true;
+}
+
 document.addEventListener("mouseover", (event) => {
   const target = event.target.closest("[data-tooltip-title]");
   if (target) showHoverTooltip(target, event);
@@ -2366,6 +2385,13 @@ document.addEventListener("focusin", (event) => {
 
 document.addEventListener("focusout", (event) => {
   if (event.target.closest("[data-tooltip-title]")) hideHoverTooltip();
+});
+
+document.addEventListener("keydown", (event) => {
+  const legendItem = event.target.closest("[data-frontier-asset]");
+  if (!legendItem || (event.key !== "Enter" && event.key !== " ")) return;
+  event.preventDefault();
+  focusFrontierAssetFromLegend(legendItem);
 });
 
 document.addEventListener("input", (event) => {
@@ -2399,6 +2425,11 @@ document.addEventListener("change", (event) => {
   if (event.target.matches("#clientProfileSelect")) {
     selectedClientProfile = event.target.value;
     renderClientPortfolio();
+    return;
+  }
+  if (event.target.matches("#clientVolatilityCaseSelect")) {
+    applyVolatilityCase(event.target.value);
+    runOptimization();
     return;
   }
   if (event.target.matches("#mcProfileSelect")) {
@@ -2441,6 +2472,12 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("click", (event) => {
+  const legendItem = event.target.closest("[data-frontier-asset]");
+  if (legendItem) {
+    focusFrontierAssetFromLegend(legendItem);
+    return;
+  }
+
   const settingsButton = event.target.closest(".settings-button");
   if (settingsButton) {
     settingsButton.closest(".view-mode-control")?.classList.toggle("open");
@@ -2499,7 +2536,7 @@ window.addEventListener("afterprint", () => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260730-flat-tabs", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260730-client-controls", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });

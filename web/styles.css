@@ -120,6 +120,7 @@ body {
 .settings-button {
   width: 22px;
   min-height: 22px;
+  border: 0;
   border-radius: 50%;
   background: transparent;
   color: #fff;
@@ -194,6 +195,7 @@ button:hover {
 .model-actions .settings-button {
   width: 22px;
   min-height: 22px;
+  border: 0;
   border-radius: 50%;
   background: transparent;
   color: #fff;
@@ -248,8 +250,41 @@ body[data-view-mode="client"] [data-view-tab="advisor"] {
   margin-bottom: 6px;
 }
 
+.select-control .stacked-control-label {
+  margin-top: 12px;
+}
+
 .select-control select {
   text-align: left;
+}
+
+.client-portfolio-controls {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(150px, 0.75fr);
+  gap: 14px;
+  min-width: min(440px, 100%);
+  padding: 10px 12px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--core-blue-dark);
+}
+
+.client-portfolio-controls .control-field {
+  min-width: 0;
+}
+
+.client-portfolio-controls label {
+  color: var(--core-blue-dark);
+  font-size: 12px;
+}
+
+#clientPortfolio {
+  padding-top: 18px;
+}
+
+#clientPortfolio .toolbar {
+  align-items: center;
+  margin-bottom: 16px;
 }
 
 .mvo-selector-row {
@@ -409,6 +444,7 @@ p {
 
 .dashboard-tab,
 .fund-tab {
+  border: 0;
   border-radius: 0;
   background: transparent;
   color: #607485;
@@ -1282,6 +1318,14 @@ p {
   font-size: 11px;
   line-height: 1.2;
   white-space: normal;
+  cursor: pointer;
+}
+
+.asset-color-legend span:hover,
+.asset-color-legend span:focus {
+  color: var(--core-blue-dark);
+  text-decoration: underline;
+  outline: none;
 }
 
 .asset-color-legend i {
@@ -1522,6 +1566,11 @@ footer {
   .toolbar {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .client-portfolio-controls {
+    grid-template-columns: 1fr;
+    min-width: 0;
   }
 
   .mvo-selector-row {

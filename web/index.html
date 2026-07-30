@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Paul Asset Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260730-flat-tabs" />
+    <link rel="stylesheet" href="./styles.css?v=20260730-client-controls" />
   </head>
   <body data-view-mode="client">
     <div class="shell">
@@ -41,7 +41,6 @@
           <button class="tab" data-tab="fundModels" data-view-tab="advisor">ETF/Fund Models</button>
           <button class="tab active" data-tab="clientPortfolio" data-view-tab="client">Portfolio</button>
           <button class="tab" data-tab="monteCarlo" data-view-tab="client">Monte Carlo</button>
-          <button class="tab" data-tab="clientAssets" data-view-tab="client">Asset Assumptions</button>
         </nav>
       </div>
 
@@ -231,9 +230,15 @@
               <h2>Portfolio</h2>
               <p>Portfolio allocation and optimized asset mix by risk profile.</p>
             </div>
-            <div class="select-control">
-              <label for="clientProfileSelect">Portfolio</label>
-              <select id="clientProfileSelect"></select>
+            <div class="select-control client-portfolio-controls">
+              <div class="control-field">
+                <label for="clientProfileSelect">Portfolio</label>
+                <select id="clientProfileSelect"></select>
+              </div>
+              <div class="control-field">
+                <label for="clientVolatilityCaseSelect">Market View</label>
+                <select id="clientVolatilityCaseSelect"></select>
+              </div>
             </div>
           </div>
           <div class="panel">
@@ -250,21 +255,6 @@
           </div>
         </section>
 
-        <section id="clientAssets" class="page">
-          <div class="toolbar">
-            <div>
-              <h2>Asset Assumptions</h2>
-              <p>Comparison of source assumptions used in the allocation model.</p>
-            </div>
-          </div>
-          <div class="panel">
-            <div class="panel-title">Asset Assumption Comparison</div>
-            <div class="table-wrap assumption-comparison-wrap">
-              <table id="clientAssetComparisonTable" class="assumption-comparison-table"></table>
-            </div>
-          </div>
-        </section>
-
       </main>
 
       <footer>
@@ -272,6 +262,6 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260730-flat-tabs"></script>
+    <script src="./app.js?v=20260730-client-controls"></script>
   </body>
 </html>
