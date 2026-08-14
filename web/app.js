@@ -866,6 +866,18 @@ function renderProfiles() {
   if (subAllocationPreset) subAllocationPreset.value = selectedSubAllocationPreset;
 
 
+  const table = document.querySelector("#profilesTable");
+  if (table) {
+    table.innerHTML = `<thead><tr><th>Portfolio</th><th>Target Vol Min</th><th>Target Vol Max</th><th>Volatility Percentile</th>
+      ${state.categories.flatMap((c) => [`<th>${c} Min</th>`, `<th>${c} Max</th>`]).join("")}
+    </tr></thead><tbody>${Object.entries(state.profiles).map(([name, profile]) => `<tr>
+      <td>${name}</td>
+      <td>${pct(profile.targetVolMin)}</td>
+      <td>${pct(profile.targetVolMax)}</td>
+      <td>${(state.volatilityModel.profiles[name].percentile || 0).toFixed(1)}%</td>
+      ${state.categories.map((c) => `<td>${editableCell(profile.categoryBounds[c].min, `profiles.${name}.categoryBounds.${c}.min`)}</td><td>${editableCell(profile.categoryBounds[c].max, `profiles.${name}.categoryBounds.${c}.max`)}</td>`).join("")}
+    </tr>`).join("")}</tbody>`;
+  }
   const subTable = document.querySelector("#subConstraintsTable");
   subTable.innerHTML = `<thead><tr><th>Asset</th><th>Category</th><th>Min Weight</th><th>Max Weight</th></tr></thead>
   <tbody>${state.assets.map((asset, i) => `<tr>
@@ -2493,7 +2505,7 @@ window.addEventListener("afterprint", () => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260814-hide-fund-tab", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260814-overall-constraints", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });

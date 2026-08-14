@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Portfolio Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260814-hide-fund-tab" />
+    <link rel="stylesheet" href="./styles.css?v=20260814-overall-constraints" />
   </head>
   <body data-view-mode="client">
     <div class="shell">
@@ -95,6 +95,21 @@
               </div>
               <div class="table-wrap">
                 <table id="subConstraintsTable"></table>
+              </div>
+            </div>
+            <div id="allocationConstraints" class="profile-panel active">
+              <div class="constraint-panel-header">
+                <div class="panel-title">Overall Allocation Constraints</div>
+                <div class="select-control compact">
+                  <label for="allocationPresetSelect">Allocation Set</label>
+                  <select id="allocationPresetSelect">
+                    <option value="CORE">CORE</option>
+                    <option value="Unconstrained">Unconstrained</option>
+                  </select>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table id="profilesTable"></table>
               </div>
             </div>
           </div>
@@ -242,6 +257,6 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260814-hide-fund-tab"></script>
+    <script src="./app.js?v=20260814-overall-constraints"></script>
   </body>
 </html>
