@@ -260,9 +260,9 @@ body[data-view-mode="client"] [data-view-tab="advisor"] {
 
 .client-portfolio-controls {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(150px, 0.75fr);
+  grid-template-columns: minmax(220px, 1fr);
   gap: 14px;
-  min-width: min(440px, 100%);
+  min-width: min(280px, 100%);
   padding: 10px 12px;
   background: var(--surface-soft);
   border: 1px solid var(--border);

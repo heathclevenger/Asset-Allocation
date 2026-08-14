@@ -25,7 +25,7 @@ let selectedAllocationPreset = "CORE";
 let selectedSubAllocationPreset = "CORE";
 let selectedAssumptionSet = "CORE";
 let selectedFundProvider = "Fidelity";
-let selectedVolatilityCase = "Base";
+let selectedVolatilityCase = "+/- 20 P/E";
 let prePdfAssumptionSet = null;
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -43,9 +43,9 @@ const defaultVolatilityPercentiles = {
 };
 
 const volatilityCases = {
-  Bear: -5,
-  Base: 0,
-  Bull: 5,
+  "+/- 20 P/E": 0,
+  "Under 19 P/E": 5,
+  "Over 21 P/E": -5,
 };
 
 const chartTheme = {
@@ -145,7 +145,7 @@ function applyAssumptionSet(name) {
 }
 
 function applyVolatilityCase(caseName) {
-  selectedVolatilityCase = volatilityCases[caseName] === undefined ? "Base" : caseName;
+  selectedVolatilityCase = volatilityCases[caseName] === undefined ? "+/- 20 P/E" : caseName;
   ensureVolatilityModel();
   const shift = volatilityCases[selectedVolatilityCase];
   Object.entries(defaultVolatilityPercentiles).forEach(([profileName, basePercentile]) => {
@@ -793,18 +793,10 @@ function constraintStatus(actual, min, max) {
 }
 
 function selectedRangeStatus(selected, profileName) {
-  const displayProfile = state.profiles[profileName];
-  if (!displayProfile) return "Out of range";
-  const categoryOk = state.categories.every((category) => {
-    const bounds = displayProfile.categoryBounds?.[category];
-    if (!bounds) return true;
-    const actual = selected.categoryWeights?.[category] || 0;
-    return constraintStatus(actual, bounds.min, bounds.max) === "In range";
-  });
   const assetsOk = state.assets.every((asset, index) => (
     constraintStatus(selected.weights[index] || 0, asset.minWeight, asset.maxWeight) === "In range"
   ));
-  return categoryOk && assetsOk ? "In range" : "Out of range";
+  return assetsOk ? "In range" : "Out of range";
 }
 
 function renderMvoSelectedStatus(profileName, selected = null, status = "Checking ranges...") {
@@ -855,7 +847,7 @@ function renderProfiles() {
   const model = state.volatilityModel;
   control.innerHTML = `<div class="volatility-case-layout">
     <div class="volatility-case-control">
-      <label for="volatilityCaseSelect">Market View</label>
+      <label for="volatilityCaseSelect">Market P/E</label>
       <select id="volatilityCaseSelect">
         ${Object.keys(volatilityCases).map((name) => `<option value="${name}" ${name === selectedVolatilityCase ? "selected" : ""}>${name}</option>`).join("")}
       </select>
@@ -873,16 +865,6 @@ function renderProfiles() {
   const subAllocationPreset = document.querySelector("#subAllocationPresetSelect");
   if (subAllocationPreset) subAllocationPreset.value = selectedSubAllocationPreset;
 
-  const table = document.querySelector("#profilesTable");
-  table.innerHTML = `<thead><tr><th>Portfolio</th><th>Target Vol Min</th><th>Target Vol Max</th><th>Volatility Percentile</th>
-    ${state.categories.flatMap((c) => [`<th>${c} Min</th>`, `<th>${c} Max</th>`]).join("")}
-  </tr></thead><tbody>${Object.entries(state.profiles).map(([name, profile]) => `<tr>
-    <td>${name}</td>
-    <td>${pct(profile.targetVolMin)}</td>
-    <td>${pct(profile.targetVolMax)}</td>
-    <td>${(state.volatilityModel.profiles[name].percentile || 0).toFixed(1)}%</td>
-    ${state.categories.map((c) => `<td>${editableCell(profile.categoryBounds[c].min, `profiles.${name}.categoryBounds.${c}.min`)}</td><td>${editableCell(profile.categoryBounds[c].max, `profiles.${name}.categoryBounds.${c}.max`)}</td>`).join("")}
-  </tr>`).join("")}</tbody>`;
 
   const subTable = document.querySelector("#subConstraintsTable");
   subTable.innerHTML = `<thead><tr><th>Asset</th><th>Category</th><th>Min Weight</th><th>Max Weight</th></tr></thead>
@@ -1526,15 +1508,9 @@ function renderClientPortfolioControls() {
   const profileNames = Object.keys(state.profiles);
   if (select) {
     if (!profileNames.includes(selectedClientProfile)) selectedClientProfile = profileNames[0];
+    selectedMcProfile = selectedClientProfile;
     select.innerHTML = profileNames.map((name) => `<option value="${name}" ${name === selectedClientProfile ? "selected" : ""}>${name}</option>`).join("");
     select.value = selectedClientProfile;
-  }
-  const marketViewSelect = document.querySelector("#clientVolatilityCaseSelect");
-  if (marketViewSelect) {
-    marketViewSelect.innerHTML = Object.keys(volatilityCases)
-      .map((name) => `<option value="${name}" ${name === selectedVolatilityCase ? "selected" : ""}>${name}</option>`)
-      .join("");
-    marketViewSelect.value = selectedVolatilityCase;
   }
 }
 
@@ -1661,7 +1637,8 @@ function renderMonteCarloControls() {
   const seedInput = document.querySelector("#mcScenarioSeed");
   if (!select) return;
   const profileNames = Object.keys(state.profiles);
-  if (!profileNames.includes(selectedMcProfile)) selectedMcProfile = profileNames[0];
+  if (!profileNames.includes(selectedMcProfile)) selectedMcProfile = profileNames.includes(selectedClientProfile) ? selectedClientProfile : profileNames[0];
+  selectedClientProfile = selectedMcProfile;
   select.innerHTML = profileNames.map((name) => `<option value="${name}" ${name === selectedMcProfile ? "selected" : ""}>${name}</option>`).join("");
   select.value = selectedMcProfile;
   if (seedInput) seedInput.value = monteCarloSeed;
@@ -1975,18 +1952,6 @@ function renderFrontierChart(selected, frontier, assetPoints, profile, options =
       ? `<line x1="${xScale(region.hull[0].x).toFixed(1)}" y1="${yScale(region.hull[0].y).toFixed(1)}" x2="${xScale(region.hull[1].x).toFixed(1)}" y2="${yScale(region.hull[1].y).toFixed(1)}" stroke="#8ecae6" stroke-width="14" stroke-linecap="round" opacity="0.42"></line>
         <line x1="${xScale(region.hull[0].x).toFixed(1)}" y1="${yScale(region.hull[0].y).toFixed(1)}" x2="${xScale(region.hull[1].x).toFixed(1)}" y2="${yScale(region.hull[1].y).toFixed(1)}" stroke="#2f80b7" stroke-width="2.2" stroke-linecap="round"></line>`
       : "";
-  const displayConstraintProfile = state.profiles[selected.profileName || selectedMvoProfile] || profile;
-  const categoryRows = state.categories.map((category) => {
-    const bounds = displayConstraintProfile.categoryBounds[category];
-    const actual = selected.categoryWeights?.[category] || 0;
-    return `<tr>
-      <td>${category}</td>
-      <td>${pct(actual)}</td>
-      <td>${pct(bounds.min)}</td>
-      <td>${pct(bounds.max)}</td>
-      <td class="${constraintStatus(actual, bounds.min, bounds.max) === "In range" ? "pos" : "warn"}">${constraintStatus(actual, bounds.min, bounds.max)}</td>
-    </tr>`;
-  }).join("");
   const subRows = state.assets.map((asset, index) => {
     const actual = selected.weights[index] || 0;
     return `<tr>
@@ -2106,13 +2071,6 @@ function renderFrontierChart(selected, frontier, assetPoints, profile, options =
       <div>
         <div class="constraint-title">Allocation Constraints</div>
         <table class="constraint-table">
-          <thead><tr><th>Allocation</th><th>Actual</th><th>Min</th><th>Max</th><th>Status</th></tr></thead>
-          <tbody>${categoryRows}</tbody>
-        </table>
-      </div>
-      <div>
-        <div class="constraint-title">Sub Allocation Constraints</div>
-        <table class="constraint-table">
           <thead><tr><th>Asset</th><th>Category</th><th>Actual</th><th>Min</th><th>Max</th><th>Status</th></tr></thead>
           <tbody>${subRows}</tbody>
         </table>
@@ -2170,7 +2128,7 @@ function resetModel() {
   state = clone(baseData);
   selectedAssumptionSet = state.selectedAssumptionSet || "CORE";
   applyAssumptionSet(selectedAssumptionSet);
-  selectedVolatilityCase = "Base";
+  selectedVolatilityCase = "+/- 20 P/E";
   selectedClientProfile = "Moderate";
   selectedMcProfile = "Moderate";
   monteCarloSeed = 100;
@@ -2424,17 +2382,16 @@ document.addEventListener("change", (event) => {
   }
   if (event.target.matches("#clientProfileSelect")) {
     selectedClientProfile = event.target.value;
+    selectedMcProfile = selectedClientProfile;
     renderClientPortfolio();
-    return;
-  }
-  if (event.target.matches("#clientVolatilityCaseSelect")) {
-    applyVolatilityCase(event.target.value);
-    runOptimization();
+    renderMonteCarloControls();
     return;
   }
   if (event.target.matches("#mcProfileSelect")) {
     selectedMcProfile = event.target.value;
+    selectedClientProfile = selectedMcProfile;
     renderMonteCarlo();
+    renderClientPortfolioControls();
     return;
   }
   if (event.target.matches("input[data-mc-asset]")) {
@@ -2536,7 +2493,7 @@ window.addEventListener("afterprint", () => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260730-client-controls", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260814-hide-fund-tab", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });

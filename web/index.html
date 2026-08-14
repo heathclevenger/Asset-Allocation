@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Portfolio Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260730-client-controls" />
+    <link rel="stylesheet" href="./styles.css?v=20260814-hide-fund-tab" />
   </head>
   <body data-view-mode="client">
     <div class="shell">
@@ -38,7 +38,6 @@
           <button class="tab" data-tab="profiles" data-view-tab="advisor">Model Constraints</button>
           <button class="tab" data-tab="mvo" data-view-tab="advisor">Portfolio Optimization</button>
           <button class="tab" data-tab="monteCarlo" data-view-tab="advisor">Monte Carlo</button>
-          <button class="tab" data-tab="fundModels" data-view-tab="advisor">ETF/Fund Models</button>
           <button class="tab active" data-tab="clientPortfolio" data-view-tab="client">Portfolio</button>
           <button class="tab" data-tab="monteCarlo" data-view-tab="client">Monte Carlo</button>
         </nav>
@@ -78,31 +77,16 @@
           <div class="toolbar">
             <div>
               <h2>Model Constraints</h2>
-              <p>Select the volatility case and review allocation and sub-allocation constraints.</p>
+              <p>Select the volatility case and review allocation constraints.</p>
             </div>
           </div>
           <div id="volatilityControl" class="anchor-control"></div>
           <div class="panel">
-            <div id="allocationConstraints" class="profile-panel active">
+            <div id="subAllocationConstraints" class="profile-panel active">
               <div class="constraint-panel-header">
                 <div class="panel-title">Allocation Constraints</div>
                 <div class="select-control compact">
-                  <label for="allocationPresetSelect">Allocation Set</label>
-                  <select id="allocationPresetSelect">
-                    <option value="CORE">CORE</option>
-                    <option value="Unconstrained">Unconstrained</option>
-                  </select>
-                </div>
-              </div>
-              <div class="table-wrap">
-                <table id="profilesTable"></table>
-              </div>
-            </div>
-            <div id="subAllocationConstraints" class="profile-panel active">
-              <div class="constraint-panel-header">
-                <div class="panel-title">Sub Allocation Constraints</div>
-                <div class="select-control compact">
-                  <label for="subAllocationPresetSelect">Sub Allocation Set</label>
+                  <label for="subAllocationPresetSelect">Allocation Set</label>
                   <select id="subAllocationPresetSelect">
                     <option value="CORE">CORE</option>
                     <option value="Unconstrained">Unconstrained</option>
@@ -235,10 +219,6 @@
                 <label for="clientProfileSelect">Portfolio</label>
                 <select id="clientProfileSelect"></select>
               </div>
-              <div class="control-field">
-                <label for="clientVolatilityCaseSelect">Market View</label>
-                <select id="clientVolatilityCaseSelect"></select>
-              </div>
             </div>
           </div>
           <div class="panel">
@@ -262,6 +242,6 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260730-client-controls"></script>
+    <script src="./app.js?v=20260814-hide-fund-tab"></script>
   </body>
 </html>
