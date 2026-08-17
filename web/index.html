@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Portfolio Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260817-pe-screenshot" />
+    <link rel="stylesheet" href="./styles.css?v=20260817-rate-pe" />
   </head>
   <body data-view-mode="client">
     <div class="shell">
@@ -78,15 +78,21 @@
           <div class="toolbar">
             <div>
               <h2>Overall Allocation</h2>
-              <p>This page looks only at the broad stock and bond decision. It uses blended equity and fixed income assumptions to estimate the closest mix to each benchmark volatility target. The Market P/E setting adjusts those benchmark volatility targets higher or lower based on whether valuations are below, near, or above the long-term range.</p>
+              <p>This page looks only at the broad stock and bond decision. It uses blended equity and fixed income assumptions to estimate the closest mix to each benchmark volatility target. The Market P/E and Interest Rate Prediction settings adjust those benchmark volatility targets higher or lower before the optimizer finds the closest stock and bond mix.</p>
             </div>
-            <div class="select-control compact market-pe-control">
-              <div class="market-pe-label-row">
-                <label for="overallVolatilityCaseSelect">Market P/E</label>
-                <button type="button" id="togglePeChart" class="icon-toggle" aria-expanded="false" aria-label="Show Market P/E chart">+</button>
+            <div class="overall-adjustment-controls">
+              <div class="select-control compact market-pe-control">
+                <div class="market-pe-label-row">
+                  <label for="overallVolatilityCaseSelect">Market P/E</label>
+                  <button type="button" id="togglePeChart" class="icon-toggle" aria-expanded="false" aria-label="Show Market P/E chart">+</button>
+                </div>
+                <div class="market-pe-row">
+                  <select id="overallVolatilityCaseSelect"></select>
+                </div>
               </div>
-              <div class="market-pe-row">
-                <select id="overallVolatilityCaseSelect"></select>
+              <div class="select-control compact">
+                <label for="overallInterestRateSelect">Interest Rate Prediction</label>
+                <select id="overallInterestRateSelect"></select>
               </div>
             </div>
           </div>
@@ -288,7 +294,7 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260817-pe-screenshot"></script>
+    <script src="./app.js?v=20260817-rate-pe"></script>
   </body>
 </html>
 

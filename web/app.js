@@ -26,6 +26,7 @@ let selectedSubAllocationPreset = "CORE";
 let selectedAssumptionSet = "CORE";
 let selectedFundProvider = "Fidelity";
 let selectedVolatilityCase = "Within 1 Std. Dev.: 17.2x P/E";
+let selectedInterestRateCase = "Unchanged";
 let prePdfAssumptionSet = null;
 let showPeValuationChart = false;
 
@@ -51,8 +52,14 @@ const volatilityCases = {
 
 const overallVolatilityMultipliers = {
   "Within 1 Std. Dev.: 17.2x P/E": 1,
-  "-1 Std. Dev.: 13.9x P/E": 1.1,
-  "+1 Std. Dev.: 20.5x P/E": 0.9,
+  "-1 Std. Dev.: 13.9x P/E": 1.05,
+  "+1 Std. Dev.: 20.5x P/E": 0.95,
+};
+
+const interestRateMultipliers = {
+  "Unchanged": 1,
+  "Falling": 1.05,
+  "Rising": 0.95,
 };
 
 const chartTheme = {
@@ -1651,7 +1658,9 @@ function calculateOverallAllocation() {
     const equityWeight = index / 200;
     return broadPortfolioStats(equityWeight, equity, fixedIncome, correlation);
   });
-  const volatilityMultiplier = overallVolatilityMultipliers[selectedVolatilityCase] || 1;
+  const peVolatilityMultiplier = overallVolatilityMultipliers[selectedVolatilityCase] || 1;
+  const rateVolatilityMultiplier = interestRateMultipliers[selectedInterestRateCase] || 1;
+  const volatilityMultiplier = peVolatilityMultiplier * rateVolatilityMultiplier;
   const rows = targetMap.map((target) => {
     const blend = benchmarkBlendStats(target.spWeight, sp, agg);
     const targetVolatility = blend.volatility * volatilityMultiplier;
@@ -1663,7 +1672,7 @@ function calculateOverallAllocation() {
       if (Math.abs(pointGap - bestGap) <= 1e-10 && point.expectedReturn > best.expectedReturn) return point;
       return best;
     }, null);
-    return { ...target, targetVolatility, unadjustedTargetVolatility: blend.volatility, volatilityMultiplier, blend, chosen };
+    return { ...target, targetVolatility, unadjustedTargetVolatility: blend.volatility, volatilityMultiplier, peVolatilityMultiplier, rateVolatilityMultiplier, blend, chosen };
   });
   return { equity, fixedIncome, correlation, sp, agg, blendPoints, broadCurve, rows };
 }
@@ -1705,7 +1714,7 @@ function renderOverallAllocationCards(model) {
           ${items.map((item) => `<span><i style="--pie-color:${item.color}"></i>${item.label}<strong>${item.displayPct}</strong></span>`).join("")}
         </div>
       </div>
-      <div class="overall-benchmark-note">Volatility benchmark: ${broadBenchmarkLabel(row.spWeight)} at ${pct(row.unadjustedTargetVolatility)}<br />Market P/E adjusted target: ${pct(row.targetVolatility)}</div>
+      <div class="overall-benchmark-note">Volatility benchmark: ${broadBenchmarkLabel(row.spWeight)} at ${pct(row.unadjustedTargetVolatility)}<br />Adjusted target: ${pct(row.targetVolatility)}</div>
     </div>`;
   }).join("");
 }
@@ -1724,15 +1733,20 @@ function renderPeValuationChart() {
     chart.innerHTML = "";
     return;
   }
-  chart.innerHTML = `<img class="pe-valuation-image" src="./assets/sp-pe.png?v=20260817-pe-screenshot" alt="S&P 500 valuation measures showing forward P/E ratio, valuation bands, and latest valuation table" />`;
+  chart.innerHTML = `<img class="pe-valuation-image" src="./assets/sp-pe.png?v=20260817-rate-pe" alt="S&P 500 valuation measures showing forward P/E ratio, valuation bands, and latest valuation table" />`;
 }
 function renderOverallAllocation() {
   const cards = document.querySelector("#overallAllocationCards");
   const chart = document.querySelector("#overallAllocationChart");
   const peSelect = document.querySelector("#overallVolatilityCaseSelect");
+  const rateSelect = document.querySelector("#overallInterestRateSelect");
   if (peSelect) {
     peSelect.innerHTML = Object.keys(volatilityCases).map((name) => `<option value="${name}" ${name === selectedVolatilityCase ? "selected" : ""}>${name}</option>`).join("");
     peSelect.value = selectedVolatilityCase;
+  }
+  if (rateSelect) {
+    rateSelect.innerHTML = Object.keys(interestRateMultipliers).map((name) => `<option value="${name}" ${name === selectedInterestRateCase ? "selected" : ""}>${name}</option>`).join("");
+    rateSelect.value = selectedInterestRateCase;
   }
   renderPeValuationChart();
   if (!cards || !chart) return;
@@ -2368,6 +2382,7 @@ function resetModel() {
   selectedAssumptionSet = state.selectedAssumptionSet || "CORE";
   applyAssumptionSet(selectedAssumptionSet);
   selectedVolatilityCase = "Within 1 Std. Dev.: 17.2x P/E";
+  selectedInterestRateCase = "Unchanged";
   selectedClientProfile = "Moderate";
   selectedMcProfile = "Moderate";
   monteCarloSeed = 100;
@@ -2666,6 +2681,11 @@ document.addEventListener("change", (event) => {
   if (event.target.matches("#volatilityCaseSelect") || event.target.matches("#overallVolatilityCaseSelect")) {
     applyVolatilityCase(event.target.value);
     runOptimization();
+    return;
+  }
+  if (event.target.matches("#overallInterestRateSelect")) {
+    selectedInterestRateCase = interestRateMultipliers[event.target.value] === undefined ? "Unchanged" : event.target.value;
+    renderOverallAllocation();
     return;
   }
   if (!event.target.matches("input[data-path]")) return;

@@ -1987,6 +1987,14 @@ footer {
   }
 }
 
+.overall-adjustment-controls {
+  display: grid;
+  grid-template-columns: minmax(210px, 1fr) minmax(210px, 1fr);
+  gap: 14px;
+  align-items: end;
+  min-width: min(480px, 100%);
+}
+
 .market-pe-label-row {
   display: flex;
   align-items: center;
@@ -2075,4 +2083,11 @@ footer {
   fill: var(--ink);
   font-size: 13px;
   font-weight: 700;
+}
+
+@media (max-width: 680px) {
+  .overall-adjustment-controls {
+    grid-template-columns: 1fr;
+    min-width: 0;
+  }
 }
