@@ -25,14 +25,9 @@ let selectedAllocationPreset = "CORE";
 let selectedSubAllocationPreset = "CORE";
 let selectedAssumptionSet = "CORE";
 let selectedFundProvider = "Fidelity";
-<<<<<<< HEAD
-let selectedVolatilityCase = "+/- 20 P/E";
-let prePdfAssumptionSet = null;
-=======
 let selectedVolatilityCase = "Within 1 Std. Dev.: 17.2x P/E";
 let prePdfAssumptionSet = null;
 let showPeValuationChart = false;
->>>>>>> 8616234 (Update overall allocation valuation chart)
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const escapeHtml = (value) => String(value)
@@ -48,12 +43,6 @@ const defaultVolatilityPercentiles = {
   "Aggressive Growth": 90,
 };
 
-<<<<<<< HEAD
-const volatilityCases = {
-  "+/- 20 P/E": 0,
-  "Under 19 P/E": 5,
-  "Over 21 P/E": -5,
-=======
 const volatilityCases = {
   "Within 1 Std. Dev.: 17.2x P/E": 0,
   "-1 Std. Dev.: 13.9x P/E": 5,
@@ -64,7 +53,6 @@ const overallVolatilityMultipliers = {
   "Within 1 Std. Dev.: 17.2x P/E": 1,
   "-1 Std. Dev.: 13.9x P/E": 1.1,
   "+1 Std. Dev.: 20.5x P/E": 0.9,
->>>>>>> 8616234 (Update overall allocation valuation chart)
 };
 
 const chartTheme = {
@@ -164,11 +152,7 @@ function applyAssumptionSet(name) {
 }
 
 function applyVolatilityCase(caseName) {
-<<<<<<< HEAD
-  selectedVolatilityCase = volatilityCases[caseName] === undefined ? "+/- 20 P/E" : caseName;
-=======
   selectedVolatilityCase = volatilityCases[caseName] === undefined ? "Within 1 Std. Dev.: 17.2x P/E" : caseName;
->>>>>>> 8616234 (Update overall allocation valuation chart)
   ensureVolatilityModel();
   const shift = volatilityCases[selectedVolatilityCase];
   Object.entries(defaultVolatilityPercentiles).forEach(([profileName, basePercentile]) => {
@@ -887,10 +871,6 @@ function renderProfiles() {
   if (allocationPreset) allocationPreset.value = selectedAllocationPreset;
   const subAllocationPreset = document.querySelector("#subAllocationPresetSelect");
   if (subAllocationPreset) subAllocationPreset.value = selectedSubAllocationPreset;
-<<<<<<< HEAD
-
-
-=======
 
 
   const table = document.querySelector("#profilesTable");
@@ -905,7 +885,6 @@ function renderProfiles() {
       ${state.categories.map((c) => `<td>${editableCell(profile.categoryBounds[c].min, `profiles.${name}.categoryBounds.${c}.min`)}</td><td>${editableCell(profile.categoryBounds[c].max, `profiles.${name}.categoryBounds.${c}.max`)}</td>`).join("")}
     </tr>`).join("")}</tbody>`;
   }
->>>>>>> 8616234 (Update overall allocation valuation chart)
   const subTable = document.querySelector("#subConstraintsTable");
   subTable.innerHTML = `<thead><tr><th>Asset</th><th>Category</th><th>Min Weight</th><th>Max Weight</th></tr></thead>
   <tbody>${state.assets.map((asset, i) => `<tr>
@@ -1600,8 +1579,6 @@ function renderClientPortfolio() {
   });
 }
 
-<<<<<<< HEAD
-=======
 function averageForCategory(category) {
   const rows = state.assets.filter((asset) => asset.category === category);
   if (!rows.length) return null;
@@ -1818,7 +1795,6 @@ function renderOverallAllocation() {
     <text x="16" y="${height / 2}" text-anchor="middle" transform="rotate(-90 16 ${height / 2})" class="frontier-axis">Compound return</text>
   </svg>`;
 }
->>>>>>> 8616234 (Update overall allocation valuation chart)
 function normalSample(rand) {
   const u1 = Math.max(rand(), 1e-12);
   const u2 = Math.max(rand(), 1e-12);
@@ -2350,11 +2326,7 @@ function renderAll() {
   renderFundModels();
   renderMvo();
   renderClientPortfolio();
-<<<<<<< HEAD
-  renderMonteCarlo();
-=======
   if (monteCarloIsActive()) renderMonteCarlo();
->>>>>>> 8616234 (Update overall allocation valuation chart)
 }
 
 function activateTab(tabName) {
@@ -2366,11 +2338,8 @@ function activateTab(tabName) {
   if (tab) tab.classList.add("active");
   if (page) page.classList.add("active");
   if (tabName === "mvo" || tabName === "clientPortfolio") refreshMvo();
-<<<<<<< HEAD
-=======
   if (tabName === "overallAllocation") renderOverallAllocation();
   if (tabName === "monteCarlo") renderMonteCarlo();
->>>>>>> 8616234 (Update overall allocation valuation chart)
 }
 
 function setViewMode(mode) {
@@ -2378,11 +2347,7 @@ function setViewMode(mode) {
   document.body.dataset.viewMode = viewMode;
   const select = document.querySelector("#viewModeSelect");
   if (select) select.value = viewMode;
-<<<<<<< HEAD
-  activateTab(viewMode === "client" ? "clientPortfolio" : "results");
-=======
   activateTab(viewMode === "client" ? "clientPortfolio" : "overallAllocation");
->>>>>>> 8616234 (Update overall allocation valuation chart)
 }
 
 function renderEditableInputs() {
@@ -2402,11 +2367,7 @@ function resetModel() {
   state = clone(baseData);
   selectedAssumptionSet = state.selectedAssumptionSet || "CORE";
   applyAssumptionSet(selectedAssumptionSet);
-<<<<<<< HEAD
-  selectedVolatilityCase = "+/- 20 P/E";
-=======
   selectedVolatilityCase = "Within 1 Std. Dev.: 17.2x P/E";
->>>>>>> 8616234 (Update overall allocation valuation chart)
   selectedClientProfile = "Moderate";
   selectedMcProfile = "Moderate";
   monteCarloSeed = 100;
@@ -2486,13 +2447,10 @@ function clientPortfolioIsActive() {
   return document.querySelector("#clientPortfolio")?.classList.contains("active");
 }
 
-<<<<<<< HEAD
-=======
 function monteCarloIsActive() {
   return document.querySelector("#monteCarlo")?.classList.contains("active");
 }
 
->>>>>>> 8616234 (Update overall allocation valuation chart)
 function scheduleMvoRefresh(force = false) {
   mvoDirty = true;
   if (!force && !mvoIsActive() && !clientPortfolioIsActive()) return;
@@ -2506,10 +2464,7 @@ function refreshLiveOutputs() {
   mvoDirty = true;
   renderAllocationWeights();
   renderWeights();
-<<<<<<< HEAD
-=======
   renderOverallAllocation();
->>>>>>> 8616234 (Update overall allocation valuation chart)
   renderFundModels();
   renderClientPortfolio();
   if (mvoIsActive() || clientPortfolioIsActive()) refreshMvo();
@@ -2708,11 +2663,7 @@ document.addEventListener("change", (event) => {
     runOptimization();
     return;
   }
-<<<<<<< HEAD
-  if (event.target.matches("#volatilityCaseSelect")) {
-=======
   if (event.target.matches("#volatilityCaseSelect") || event.target.matches("#overallVolatilityCaseSelect")) {
->>>>>>> 8616234 (Update overall allocation valuation chart)
     applyVolatilityCase(event.target.value);
     runOptimization();
     return;
@@ -2722,15 +2673,12 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("click", (event) => {
-<<<<<<< HEAD
-=======
   if (event.target.closest("#togglePeChart")) {
     showPeValuationChart = !showPeValuationChart;
     renderPeValuationChart();
     return;
   }
 
->>>>>>> 8616234 (Update overall allocation valuation chart)
   const legendItem = event.target.closest("[data-frontier-asset]");
   if (legendItem) {
     focusFrontierAssetFromLegend(legendItem);
@@ -2753,11 +2701,8 @@ document.addEventListener("click", (event) => {
     tab.classList.add("active");
     document.querySelector(`#${tab.dataset.tab}`).classList.add("active");
     if (tab.dataset.tab === "mvo" || tab.dataset.tab === "clientPortfolio") refreshMvo();
-<<<<<<< HEAD
-=======
     if (tab.dataset.tab === "overallAllocation") renderOverallAllocation();
     if (tab.dataset.tab === "monteCarlo") renderMonteCarlo();
->>>>>>> 8616234 (Update overall allocation valuation chart)
   }
 
   const dashboardTab = event.target.closest(".dashboard-tab");
@@ -2800,11 +2745,7 @@ window.addEventListener("afterprint", () => {
 
 async function init() {
   try {
-<<<<<<< HEAD
-    baseData = await fetch("./data/model-data.json?v=20260814-hide-fund-tab", { cache: "no-store" }).then((r) => {
-=======
     baseData = await fetch("./data/model-data.json?v=20260817-overall-desc-pe-chart", { cache: "no-store" }).then((r) => {
->>>>>>> 8616234 (Update overall allocation valuation chart)
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
