@@ -25,8 +25,9 @@ let selectedAllocationPreset = "CORE";
 let selectedSubAllocationPreset = "CORE";
 let selectedAssumptionSet = "CORE";
 let selectedFundProvider = "Fidelity";
-let selectedVolatilityCase = "+/- 20 P/E";
+let selectedVolatilityCase = "Within 1 Std. Dev.: 17.2x P/E";
 let prePdfAssumptionSet = null;
+let showPeValuationChart = false;
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const escapeHtml = (value) => String(value)
@@ -43,9 +44,15 @@ const defaultVolatilityPercentiles = {
 };
 
 const volatilityCases = {
-  "+/- 20 P/E": 0,
-  "Under 19 P/E": 5,
-  "Over 21 P/E": -5,
+  "Within 1 Std. Dev.: 17.2x P/E": 0,
+  "-1 Std. Dev.: 13.9x P/E": 5,
+  "+1 Std. Dev.: 20.5x P/E": -5,
+};
+
+const overallVolatilityMultipliers = {
+  "Within 1 Std. Dev.: 17.2x P/E": 1,
+  "-1 Std. Dev.: 13.9x P/E": 1.1,
+  "+1 Std. Dev.: 20.5x P/E": 0.9,
 };
 
 const chartTheme = {
@@ -145,7 +152,7 @@ function applyAssumptionSet(name) {
 }
 
 function applyVolatilityCase(caseName) {
-  selectedVolatilityCase = volatilityCases[caseName] === undefined ? "+/- 20 P/E" : caseName;
+  selectedVolatilityCase = volatilityCases[caseName] === undefined ? "Within 1 Std. Dev.: 17.2x P/E" : caseName;
   ensureVolatilityModel();
   const shift = volatilityCases[selectedVolatilityCase];
   Object.entries(defaultVolatilityPercentiles).forEach(([profileName, basePercentile]) => {
@@ -1572,6 +1579,222 @@ function renderClientPortfolio() {
   });
 }
 
+function averageForCategory(category) {
+  const rows = state.assets.filter((asset) => asset.category === category);
+  if (!rows.length) return null;
+  return {
+    name: category,
+    return: rows.reduce((sum, asset) => sum + asset.return, 0) / rows.length,
+    volatility: rows.reduce((sum, asset) => sum + asset.volatility, 0) / rows.length,
+    count: rows.length,
+  };
+}
+
+function averageCorrelationBetweenCategories(leftCategory, rightCategory) {
+  const left = state.assets
+    .map((asset, index) => ({ asset, index }))
+    .filter((row) => row.asset.category === leftCategory);
+  const right = state.assets
+    .map((asset, index) => ({ asset, index }))
+    .filter((row) => row.asset.category === rightCategory);
+  const values = [];
+  left.forEach((leftRow) => {
+    right.forEach((rightRow) => values.push(state.correlation[leftRow.index][rightRow.index]));
+  });
+  return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+}
+
+function broadPortfolioStats(equityWeight, equity, fixedIncome, correlation) {
+  const fixedWeight = 1 - equityWeight;
+  const expectedReturn = equityWeight * equity.return + fixedWeight * fixedIncome.return;
+  const variance = Math.max(
+    equityWeight * equityWeight * equity.volatility * equity.volatility
+      + fixedWeight * fixedWeight * fixedIncome.volatility * fixedIncome.volatility
+      + 2 * equityWeight * fixedWeight * equity.volatility * fixedIncome.volatility * correlation,
+    0
+  );
+  return { expectedReturn, volatility: Math.sqrt(variance), equityWeight, fixedWeight };
+}
+
+function benchmarkBlendStats(spWeight, sp, agg) {
+  const aggWeight = 1 - spWeight;
+  return {
+    spWeight,
+    aggWeight,
+    expectedReturn: spWeight * sp.return + aggWeight * agg.return,
+    volatility: spWeight * sp.volatility + aggWeight * agg.volatility,
+  };
+}
+
+
+
+function calculateOverallAllocation() {
+  const equity = averageForCategory("Equity");
+  const fixedIncome = averageForCategory("Fixed Income");
+  const sp = benchmarkByName("S&P 500");
+  const agg = benchmarkByName("AGG");
+  if (!equity || !fixedIncome || !sp || !agg) return null;
+
+  const correlation = averageCorrelationBetweenCategories("Equity", "Fixed Income");
+  const targetMap = [
+    { profile: "Conservative", spWeight: 0.40 },
+    { profile: "Balanced", spWeight: 0.55 },
+    { profile: "Moderate", spWeight: 0.70 },
+    { profile: "Growth", spWeight: 0.85 },
+    { profile: "Aggressive Growth", spWeight: 1.00 },
+  ];
+  const blendPoints = [0, 0.4, 0.55, 0.7, 0.85, 1].map((spWeight) => ({
+    label: spWeight === 0 ? "AGG" : spWeight === 1 ? "S&P 500" : `${Math.round(spWeight * 100)}/${Math.round((1 - spWeight) * 100)}`,
+    ...benchmarkBlendStats(spWeight, sp, agg),
+  }));
+  const broadCurve = Array.from({ length: 201 }, (_, index) => {
+    const equityWeight = index / 200;
+    return broadPortfolioStats(equityWeight, equity, fixedIncome, correlation);
+  });
+  const volatilityMultiplier = overallVolatilityMultipliers[selectedVolatilityCase] || 1;
+  const rows = targetMap.map((target) => {
+    const blend = benchmarkBlendStats(target.spWeight, sp, agg);
+    const targetVolatility = blend.volatility * volatilityMultiplier;
+    const chosen = broadCurve.reduce((best, point) => {
+      if (!best) return point;
+      const bestGap = Math.abs(best.volatility - targetVolatility);
+      const pointGap = Math.abs(point.volatility - targetVolatility);
+      if (pointGap < bestGap - 1e-10) return point;
+      if (Math.abs(pointGap - bestGap) <= 1e-10 && point.expectedReturn > best.expectedReturn) return point;
+      return best;
+    }, null);
+    return { ...target, targetVolatility, unadjustedTargetVolatility: blend.volatility, volatilityMultiplier, blend, chosen };
+  });
+  return { equity, fixedIncome, correlation, sp, agg, blendPoints, broadCurve, rows };
+}
+
+function roundedBroadMix(point) {
+  const equityPct = Math.max(0, Math.min(100, Math.round(point.equityWeight * 100)));
+  return { equityPct, fixedIncomePct: 100 - equityPct };
+}
+
+function broadBenchmarkLabel(spWeight) {
+  if (spWeight >= 0.999) return "100% S&P 500";
+  if (spWeight <= 0.001) return "100% AGG";
+  return `${Math.round(spWeight * 100)}/${Math.round((1 - spWeight) * 100)} S&P 500/AGG`;
+}
+
+function renderOverallAllocationCards(model) {
+  return model.rows.map((row) => {
+    const mix = roundedBroadMix(row.chosen);
+    const items = [
+      { label: "Equity", value: mix.equityPct / 100, color: categoryColor("Equity"), displayPct: `${mix.equityPct}%` },
+      { label: "Fixed Income", value: mix.fixedIncomePct / 100, color: categoryColor("Fixed Income"), displayPct: `${mix.fixedIncomePct}%` },
+    ];
+    let angle = -Math.PI / 2;
+    const total = 1;
+    const slices = items.map((item) => {
+      const nextAngle = angle + item.value * Math.PI * 2;
+      const path = pieSliceMarkup(item, total, angle, nextAngle);
+      angle = nextAngle;
+      return path;
+    }).join("");
+    return `<div class="overall-allocation-card">
+      <h3>${row.profile}</h3>
+      <div class="overall-card-body">
+        <svg viewBox="0 0 124 124" role="img" aria-label="${row.profile} broad allocation pie chart">
+          ${slices}
+          <circle cx="62" cy="62" r="48" fill="none" stroke="${chartTheme.surface}" stroke-width="1.5"></circle>
+        </svg>
+        <div class="overall-card-legend">
+          ${items.map((item) => `<span><i style="--pie-color:${item.color}"></i>${item.label}<strong>${item.displayPct}</strong></span>`).join("")}
+        </div>
+      </div>
+      <div class="overall-benchmark-note">Volatility benchmark: ${broadBenchmarkLabel(row.spWeight)} at ${pct(row.unadjustedTargetVolatility)}<br />Market P/E adjusted target: ${pct(row.targetVolatility)}</div>
+    </div>`;
+  }).join("");
+}
+
+
+function renderPeValuationChart() {
+  const panel = document.querySelector("#peValuationPanel");
+  const chart = document.querySelector("#peValuationChart");
+  const toggle = document.querySelector("#togglePeChart");
+  if (!panel || !chart || !toggle) return;
+  panel.classList.toggle("collapsed", !showPeValuationChart);
+  toggle.textContent = showPeValuationChart ? "-" : "+";
+  toggle.setAttribute("aria-expanded", String(showPeValuationChart));
+  toggle.setAttribute("aria-label", showPeValuationChart ? "Hide Market P/E chart" : "Show Market P/E chart");
+  if (!showPeValuationChart) {
+    chart.innerHTML = "";
+    return;
+  }
+  chart.innerHTML = `<img class="pe-valuation-image" src="./assets/sp-pe.png?v=20260817-pe-screenshot" alt="S&P 500 valuation measures showing forward P/E ratio, valuation bands, and latest valuation table" />`;
+}
+function renderOverallAllocation() {
+  const cards = document.querySelector("#overallAllocationCards");
+  const chart = document.querySelector("#overallAllocationChart");
+  const peSelect = document.querySelector("#overallVolatilityCaseSelect");
+  if (peSelect) {
+    peSelect.innerHTML = Object.keys(volatilityCases).map((name) => `<option value="${name}" ${name === selectedVolatilityCase ? "selected" : ""}>${name}</option>`).join("");
+    peSelect.value = selectedVolatilityCase;
+  }
+  renderPeValuationChart();
+  if (!cards || !chart) return;
+  const model = calculateOverallAllocation();
+  if (!model) {
+    cards.innerHTML = "";
+    chart.innerHTML = `<p class="frontier-note">Broad allocation needs Equity, Fixed Income, S&amp;P 500, and AGG assumptions.</p>`;
+    return;
+  }
+
+  cards.innerHTML = renderOverallAllocationCards(model);
+
+  const width = 860;
+  const height = 430;
+  const pad = { left: 66, right: 36, top: 38, bottom: 62 };
+  const plotW = width - pad.left - pad.right;
+  const plotH = height - pad.top - pad.bottom;
+  const plotted = [
+    ...model.broadCurve.map((point) => ({ x: point.volatility, y: point.expectedReturn })),
+    ...model.blendPoints.map((point) => ({ x: point.volatility, y: point.expectedReturn })),
+    ...model.rows.map((row) => ({ x: row.chosen.volatility, y: row.chosen.expectedReturn })),
+  ];
+  const minVol = Math.min(...plotted.map((point) => point.x));
+  const maxVol = Math.max(...plotted.map((point) => point.x));
+  const minReturn = Math.min(...plotted.map((point) => point.y));
+  const maxReturn = Math.max(...plotted.map((point) => point.y));
+  const xMin = Math.max(0, minVol - (maxVol - minVol) * 0.04);
+  const xMax = maxVol + (maxVol - minVol) * 0.05;
+  const yMin = Math.max(0, minReturn - (maxReturn - minReturn) * 0.12);
+  const yMax = maxReturn + (maxReturn - minReturn) * 0.14;
+  const xScale = (value) => pad.left + ((value - xMin) / Math.max(xMax - xMin, 1e-8)) * plotW;
+  const yScale = (value) => pad.top + (1 - ((value - yMin) / Math.max(yMax - yMin, 1e-8))) * plotH;
+  const xTicks = Array.from({ length: 6 }, (_, i) => xMin + ((xMax - xMin) * i) / 5);
+  const yTicks = Array.from({ length: 6 }, (_, i) => yMin + ((yMax - yMin) * i) / 5);
+  const pathFor = (points) => points.map((point, index) => `${index ? "L" : "M"} ${xScale(point.volatility).toFixed(1)} ${yScale(point.expectedReturn).toFixed(1)}`).join(" ");
+  const broadPath = pathFor(model.broadCurve);
+  const blendPath = pathFor(model.blendPoints);
+  const trianglePoints = (x, y, size = 7) => `${x.toFixed(1)},${(y - size).toFixed(1)} ${(x - size).toFixed(1)},${(y + size).toFixed(1)} ${(x + size).toFixed(1)},${(y + size).toFixed(1)}`;
+
+  chart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Overall allocation risk return chart">
+    <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
+    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
+    ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line><text x="${pad.left - 12}" y="${yScale(tick) + 4}" text-anchor="end" class="frontier-axis">${pct(tick)}</text>`).join("")}
+    ${xTicks.map((tick) => `<line x1="${xScale(tick)}" y1="${pad.top}" x2="${xScale(tick)}" y2="${height - pad.bottom}" stroke="${chartTheme.gridLight}"></line><text x="${xScale(tick)}" y="${height - 26}" text-anchor="middle" class="frontier-axis">${pct(tick)}</text>`).join("")}
+    <path d="${broadPath}" fill="none" stroke="#3d5568" stroke-width="2.4" stroke-linecap="round"></path>
+    <path d="${blendPath}" fill="none" stroke="#b98256" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round"></path>
+    ${model.blendPoints.map((point) => `<g class="benchmark-point" tabindex="0" role="button" data-tooltip-title="${point.label}" data-tooltip-body="S&amp;P ${pct(point.spWeight)} | AGG ${pct(point.aggWeight)}"><circle cx="${xScale(point.volatility).toFixed(1)}" cy="${yScale(point.expectedReturn).toFixed(1)}" r="4.8" fill="${chartTheme.surface}" stroke="#b98256" stroke-width="2"></circle></g>`).join("")}
+    <polygon points="${trianglePoints(xScale(model.fixedIncome.volatility), yScale(model.fixedIncome.return))}" fill="#457b9d" stroke="#101820" stroke-width="1.2"></polygon>
+    <polygon points="${trianglePoints(xScale(model.equity.volatility), yScale(model.equity.return))}" fill="#005f73" stroke="#101820" stroke-width="1.2"></polygon>
+    <rect x="${(xScale(model.agg.volatility) - 6).toFixed(1)}" y="${(yScale(model.agg.return) - 6).toFixed(1)}" width="12" height="12" fill="#8a8f98" stroke="#101820" stroke-width="1.2"></rect>
+    <rect x="${(xScale(model.sp.volatility) - 6).toFixed(1)}" y="${(yScale(model.sp.return) - 6).toFixed(1)}" width="12" height="12" fill="#101820" stroke="#101820" stroke-width="1.2"></rect>
+    ${model.rows.map((row) => `<g class="selected-point" tabindex="0" role="button" data-tooltip-title="${row.profile}" data-tooltip-body="Equity ${roundedBroadMix(row.chosen).equityPct}% | Fixed Income ${roundedBroadMix(row.chosen).fixedIncomePct}%"><circle cx="${xScale(row.chosen.volatility).toFixed(1)}" cy="${yScale(row.chosen.expectedReturn).toFixed(1)}" r="6.2" fill="#00a95a" stroke="#101820" stroke-width="1.8"></circle></g>`).join("")}
+    <g transform="translate(${pad.left + 4}, 16)">
+      <line x1="0" y1="0" x2="26" y2="0" stroke="#3d5568" stroke-width="2.4"></line><text x="34" y="4" class="frontier-axis">Broad equity/fixed mix</text>
+      <line x1="206" y1="0" x2="232" y2="0" stroke="#b98256" stroke-width="2" stroke-dasharray="5 5"></line><text x="240" y="4" class="frontier-axis">S&amp;P/AGG blend</text>
+      <circle cx="392" cy="0" r="6" fill="#00a95a" stroke="#101820" stroke-width="1.5"></circle><text x="406" y="4" class="frontier-axis">Optimized targets</text>
+      <polygon points="560,-7 553,7 567,7" fill="#005f73" stroke="#101820" stroke-width="1.1"></polygon><text x="574" y="4" class="frontier-axis">Equity/FI points</text>
+    </g>
+    <text x="${width / 2}" y="${height - 6}" text-anchor="middle" class="frontier-axis">Annualized volatility</text>
+    <text x="16" y="${height / 2}" text-anchor="middle" transform="rotate(-90 16 ${height / 2})" class="frontier-axis">Compound return</text>
+  </svg>`;
+}
 function normalSample(rand) {
   const u1 = Math.max(rand(), 1e-12);
   const u2 = Math.max(rand(), 1e-12);
@@ -2097,12 +2320,13 @@ function renderAll() {
   renderSummary();
   renderProfiles();
   renderAssets();
+  renderOverallAllocation();
   renderAllocationWeights();
   renderWeights();
   renderFundModels();
   renderMvo();
   renderClientPortfolio();
-  renderMonteCarlo();
+  if (monteCarloIsActive()) renderMonteCarlo();
 }
 
 function activateTab(tabName) {
@@ -2114,6 +2338,8 @@ function activateTab(tabName) {
   if (tab) tab.classList.add("active");
   if (page) page.classList.add("active");
   if (tabName === "mvo" || tabName === "clientPortfolio") refreshMvo();
+  if (tabName === "overallAllocation") renderOverallAllocation();
+  if (tabName === "monteCarlo") renderMonteCarlo();
 }
 
 function setViewMode(mode) {
@@ -2121,12 +2347,13 @@ function setViewMode(mode) {
   document.body.dataset.viewMode = viewMode;
   const select = document.querySelector("#viewModeSelect");
   if (select) select.value = viewMode;
-  activateTab(viewMode === "client" ? "clientPortfolio" : "results");
+  activateTab(viewMode === "client" ? "clientPortfolio" : "overallAllocation");
 }
 
 function renderEditableInputs() {
   renderProfiles();
   renderAssets();
+  renderOverallAllocation();
 }
 
 function setPath(path, value) {
@@ -2140,7 +2367,7 @@ function resetModel() {
   state = clone(baseData);
   selectedAssumptionSet = state.selectedAssumptionSet || "CORE";
   applyAssumptionSet(selectedAssumptionSet);
-  selectedVolatilityCase = "+/- 20 P/E";
+  selectedVolatilityCase = "Within 1 Std. Dev.: 17.2x P/E";
   selectedClientProfile = "Moderate";
   selectedMcProfile = "Moderate";
   monteCarloSeed = 100;
@@ -2220,6 +2447,10 @@ function clientPortfolioIsActive() {
   return document.querySelector("#clientPortfolio")?.classList.contains("active");
 }
 
+function monteCarloIsActive() {
+  return document.querySelector("#monteCarlo")?.classList.contains("active");
+}
+
 function scheduleMvoRefresh(force = false) {
   mvoDirty = true;
   if (!force && !mvoIsActive() && !clientPortfolioIsActive()) return;
@@ -2233,6 +2464,7 @@ function refreshLiveOutputs() {
   mvoDirty = true;
   renderAllocationWeights();
   renderWeights();
+  renderOverallAllocation();
   renderFundModels();
   renderClientPortfolio();
   if (mvoIsActive() || clientPortfolioIsActive()) refreshMvo();
@@ -2431,7 +2663,7 @@ document.addEventListener("change", (event) => {
     runOptimization();
     return;
   }
-  if (event.target.matches("#volatilityCaseSelect")) {
+  if (event.target.matches("#volatilityCaseSelect") || event.target.matches("#overallVolatilityCaseSelect")) {
     applyVolatilityCase(event.target.value);
     runOptimization();
     return;
@@ -2441,6 +2673,12 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("click", (event) => {
+  if (event.target.closest("#togglePeChart")) {
+    showPeValuationChart = !showPeValuationChart;
+    renderPeValuationChart();
+    return;
+  }
+
   const legendItem = event.target.closest("[data-frontier-asset]");
   if (legendItem) {
     focusFrontierAssetFromLegend(legendItem);
@@ -2463,6 +2701,8 @@ document.addEventListener("click", (event) => {
     tab.classList.add("active");
     document.querySelector(`#${tab.dataset.tab}`).classList.add("active");
     if (tab.dataset.tab === "mvo" || tab.dataset.tab === "clientPortfolio") refreshMvo();
+    if (tab.dataset.tab === "overallAllocation") renderOverallAllocation();
+    if (tab.dataset.tab === "monteCarlo") renderMonteCarlo();
   }
 
   const dashboardTab = event.target.closest(".dashboard-tab");
@@ -2505,7 +2745,7 @@ window.addEventListener("afterprint", () => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260814-overall-constraints", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260817-overall-desc-pe-chart", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
@@ -2525,3 +2765,23 @@ async function init() {
 }
 
 init();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

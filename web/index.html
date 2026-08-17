@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Portfolio Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260814-overall-constraints" />
+    <link rel="stylesheet" href="./styles.css?v=20260817-pe-screenshot" />
   </head>
   <body data-view-mode="client">
     <div class="shell">
@@ -33,7 +33,7 @@
 
       <div class="nav-row">
         <nav class="tabs" aria-label="Model pages">
-          <button class="tab" data-tab="results" data-view-tab="advisor">Overview</button>
+          <button class="tab" data-tab="overallAllocation" data-view-tab="advisor">Overall Allocation</button>
           <button class="tab" data-tab="assets" data-view-tab="advisor">Asset Assumptions</button>
           <button class="tab" data-tab="profiles" data-view-tab="advisor">Model Constraints</button>
           <button class="tab" data-tab="mvo" data-view-tab="advisor">Portfolio Optimization</button>
@@ -48,7 +48,7 @@
           <div class="toolbar">
             <div>
               <h2>Overview</h2>
-              <p>Category allocation and sub-sleeve allocation by profile.</p>
+              <p>Review the model allocations across each risk profile. The allocation view shows the broad equity, fixed income, alternatives, and cash split. The sub-sleeve view shows how each portfolio is allocated across the underlying asset categories.</p>
             </div>
           </div>
           <div class="dashboard-tabs" aria-label="Dashboard tables">
@@ -73,11 +73,42 @@
           </div>
         </section>
 
+
+        <section id="overallAllocation" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>Overall Allocation</h2>
+              <p>This page looks only at the broad stock and bond decision. It uses blended equity and fixed income assumptions to estimate the closest mix to each benchmark volatility target. The Market P/E setting adjusts those benchmark volatility targets higher or lower based on whether valuations are below, near, or above the long-term range.</p>
+            </div>
+            <div class="select-control compact market-pe-control">
+              <div class="market-pe-label-row">
+                <label for="overallVolatilityCaseSelect">Market P/E</label>
+                <button type="button" id="togglePeChart" class="icon-toggle" aria-expanded="false" aria-label="Show Market P/E chart">+</button>
+              </div>
+              <div class="market-pe-row">
+                <select id="overallVolatilityCaseSelect"></select>
+              </div>
+            </div>
+          </div>
+          <div id="peValuationPanel" class="panel pe-valuation-panel collapsed">
+            <div class="panel-title">S&amp;P 500 Valuation Measures</div>
+            <div id="peValuationChart" class="pe-valuation-chart"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Broad Risk/Return Map</div>
+            <div id="overallAllocationChart" class="frontier-chart"><p class="frontier-note">Calculating broad allocation...</p></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Allocation Weights</div>
+            <div id="overallAllocationCards" class="overall-allocation-cards"></div>
+          </div>
+        </section>
+
         <section id="profiles" class="page">
           <div class="toolbar">
             <div>
               <h2>Model Constraints</h2>
-              <p>Select the volatility case and review allocation constraints.</p>
+              <p>Use this page to review the market case and the allocation ranges used by the model. These constraints define the allowable universe the optimizer can choose from. Changing these settings will affect the optimized portfolios and the allowable region shown in the charts.</p>
             </div>
           </div>
           <div id="volatilityControl" class="anchor-control"></div>
@@ -119,7 +150,7 @@
           <div class="toolbar">
             <div>
               <h2>Asset Assumptions</h2>
-              <p>Review return and volatility assumptions. Sleeve range constraints are managed on the Model Constraints page.</p>
+              <p>Use this page to review the capital market assumptions used by the model. The selected assumption set changes the return and volatility inputs across the app. The comparison table shows how each provider differs before the CORE average is applied.</p>
             </div>
             <div class="select-control">
               <label for="assumptionSetSelect">Assumption Set</label>
@@ -143,7 +174,7 @@
           <div class="toolbar">
             <div>
               <h2>ETF/Fund Models</h2>
-              <p>Fund-level portfolio weights translated from the optimized allocation and sub-sleeve outputs.</p>
+              <p>This page translates model allocations into fund-level weights. It uses the fund mapping file to connect each ETF or mutual fund to the model asset categories. The output is intended to show how an optimized portfolio could be implemented with actual positions.</p>
             </div>
           </div>
           <div class="dashboard-tabs" aria-label="ETF and fund providers">
@@ -160,7 +191,7 @@
           <div class="toolbar">
             <div>
               <h2>Portfolio Optimization</h2>
-              <p>Constrained mean-variance optimization by portfolio, shown against the no-shorting efficient frontier.</p>
+              <p>This page shows the full portfolio optimization using the current assumptions and constraints. The chart compares the selected portfolio to the efficient frontier, benchmark points, and allowable region. The portfolio weights below the chart show the optimized allocation and sub-sleeve mix.</p>
             </div>
             <div class="select-control">
               <label for="mvoProfileSelect">Portfolio</label>
@@ -193,7 +224,7 @@
           <div class="toolbar">
             <div>
               <h2>Monte Carlo</h2>
-              <p>Five-year simulated portfolio performance compared with S&amp;P 500 and AGG reference benchmarks.</p>
+              <p>This page shows one hypothetical five-year return path based on the selected scenario number. The simulation uses the current return, volatility, and correlation assumptions. You can change the portfolio or scenario to compare how different risk profiles behave under the same market path.</p>
             </div>
             <div class="select-control">
               <label for="mcProfileSelect">Portfolio</label>
@@ -227,7 +258,7 @@
           <div class="toolbar">
             <div>
               <h2>Portfolio</h2>
-              <p>Portfolio allocation and optimized asset mix by risk profile.</p>
+              <p>This page gives a simplified view of the model portfolio. The top section shows the broad allocation across risk profiles. Select a portfolio to review its detailed weights and where it sits on the risk and return chart.</p>
             </div>
             <div class="select-control client-portfolio-controls">
               <div class="control-field">
@@ -257,6 +288,21 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260814-overall-constraints"></script>
+    <script src="./app.js?v=20260817-pe-screenshot"></script>
   </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
