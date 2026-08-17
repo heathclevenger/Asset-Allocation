@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portfolio Allocation</title>
+    <link rel="stylesheet" href="./styles.css?v=20260817-pe-screenshot" />
+  </head>
+  <body data-view-mode="client">
+    <div class="shell">
+      <header class="masthead">
+        <div class="brand">
+          <div class="core-mark">CORE</div>
+          <div class="brand-sub">WEALTH<br />ADVISORS</div>
+        </div>
+        <div class="title-block">
+          <h1>Asset Allocation</h1>
+          <div class="model-actions">
+            <div class="view-mode-control">
+              <button type="button" class="settings-button" aria-label="View settings">&#9881;</button>
+              <label>
+                View
+                <select id="viewModeSelect">
+                  <option value="advisor">Advisor</option>
+                  <option value="client" selected>Client</option>
+                </select>
+              </label>
+            </div>
+            <button id="resetModel" class="secondary">Reset</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="nav-row">
+        <nav class="tabs" aria-label="Model pages">
+          <button class="tab" data-tab="overallAllocation" data-view-tab="advisor">Overall Allocation</button>
+          <button class="tab" data-tab="assets" data-view-tab="advisor">Asset Assumptions</button>
+          <button class="tab" data-tab="profiles" data-view-tab="advisor">Model Constraints</button>
+          <button class="tab" data-tab="mvo" data-view-tab="advisor">Portfolio Optimization</button>
+          <button class="tab" data-tab="monteCarlo" data-view-tab="advisor">Monte Carlo</button>
+          <button class="tab active" data-tab="clientPortfolio" data-view-tab="client">Portfolio</button>
+          <button class="tab" data-tab="monteCarlo" data-view-tab="client">Monte Carlo</button>
+        </nav>
+      </div>
+
+      <main>
+        <section id="results" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>Overview</h2>
+              <p>Review the model allocations across each risk profile. The allocation view shows the broad equity, fixed income, alternatives, and cash split. The sub-sleeve view shows how each portfolio is allocated across the underlying asset categories.</p>
+            </div>
+          </div>
+          <div class="dashboard-tabs" aria-label="Dashboard tables">
+            <button class="dashboard-tab active" data-dashboard-tab="allocationWeights">Allocation Weights</button>
+            <button class="dashboard-tab" data-dashboard-tab="subSleeveWeights">Sub-Sleeve Weights</button>
+          </div>
+          <div class="panel">
+            <div id="allocationWeights" class="dashboard-panel active">
+              <div class="panel-title">Allocation Weights</div>
+              <div id="allocationPieCharts" class="pie-grid allocation-pie-grid"></div>
+              <div class="table-wrap">
+                <table id="allocationWeightsTable"></table>
+              </div>
+            </div>
+            <div id="subSleeveWeights" class="dashboard-panel">
+              <div class="panel-title">Sub-Sleeve Weights</div>
+              <div id="sleevePieCharts" class="pie-grid sleeve-pie-grid"></div>
+              <div class="table-wrap">
+                <table id="weightsTable"></table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <section id="overallAllocation" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>Overall Allocation</h2>
+              <p>This page looks only at the broad stock and bond decision. It uses blended equity and fixed income assumptions to estimate the closest mix to each benchmark volatility target. The Market P/E setting adjusts those benchmark volatility targets higher or lower based on whether valuations are below, near, or above the long-term range.</p>
+            </div>
+            <div class="select-control compact market-pe-control">
+              <div class="market-pe-label-row">
+                <label for="overallVolatilityCaseSelect">Market P/E</label>
+                <button type="button" id="togglePeChart" class="icon-toggle" aria-expanded="false" aria-label="Show Market P/E chart">+</button>
+              </div>
+              <div class="market-pe-row">
+                <select id="overallVolatilityCaseSelect"></select>
+              </div>
+            </div>
+          </div>
+          <div id="peValuationPanel" class="panel pe-valuation-panel collapsed">
+            <div class="panel-title">S&amp;P 500 Valuation Measures</div>
+            <div id="peValuationChart" class="pe-valuation-chart"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Broad Risk/Return Map</div>
+            <div id="overallAllocationChart" class="frontier-chart"><p class="frontier-note">Calculating broad allocation...</p></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Allocation Weights</div>
+            <div id="overallAllocationCards" class="overall-allocation-cards"></div>
+          </div>
+        </section>
+
+        <section id="profiles" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>Model Constraints</h2>
+              <p>Use this page to review the market case and the allocation ranges used by the model. These constraints define the allowable universe the optimizer can choose from. Changing these settings will affect the optimized portfolios and the allowable region shown in the charts.</p>
+            </div>
+          </div>
+          <div id="volatilityControl" class="anchor-control"></div>
+          <div class="panel">
+            <div id="subAllocationConstraints" class="profile-panel active">
+              <div class="constraint-panel-header">
+                <div class="panel-title">Allocation Constraints</div>
+                <div class="select-control compact">
+                  <label for="subAllocationPresetSelect">Allocation Set</label>
+                  <select id="subAllocationPresetSelect">
+                    <option value="CORE">CORE</option>
+                    <option value="Unconstrained">Unconstrained</option>
+                  </select>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table id="subConstraintsTable"></table>
+              </div>
+            </div>
+            <div id="allocationConstraints" class="profile-panel active">
+              <div class="constraint-panel-header">
+                <div class="panel-title">Overall Allocation Constraints</div>
+                <div class="select-control compact">
+                  <label for="allocationPresetSelect">Allocation Set</label>
+                  <select id="allocationPresetSelect">
+                    <option value="CORE">CORE</option>
+                    <option value="Unconstrained">Unconstrained</option>
+                  </select>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table id="profilesTable"></table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="assets" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>Asset Assumptions</h2>
+              <p>Use this page to review the capital market assumptions used by the model. The selected assumption set changes the return and volatility inputs across the app. The comparison table shows how each provider differs before the CORE average is applied.</p>
+            </div>
+            <div class="select-control">
+              <label for="assumptionSetSelect">Assumption Set</label>
+              <select id="assumptionSetSelect">
+                <option value="CORE" selected>CORE</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="assetsTable"></table>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Asset Assumption Comparison</div>
+            <div class="table-wrap assumption-comparison-wrap">
+              <table id="assetComparisonTable" class="assumption-comparison-table"></table>
+            </div>
+          </div>
+        </section>
+
+        <section id="fundModels" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>ETF/Fund Models</h2>
+              <p>This page translates model allocations into fund-level weights. It uses the fund mapping file to connect each ETF or mutual fund to the model asset categories. The output is intended to show how an optimized portfolio could be implemented with actual positions.</p>
+            </div>
+          </div>
+          <div class="dashboard-tabs" aria-label="ETF and fund providers">
+            <button class="fund-tab active" data-fund-provider="Fidelity">Fidelity</button>
+            <button class="fund-tab" data-fund-provider="Schwab">Schwab</button>
+          </div>
+          <div class="panel">
+            <div id="fundModelContent"></div>
+            <div id="fundModelPrintContent" class="print-only"></div>
+          </div>
+        </section>
+
+        <section id="mvo" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>Portfolio Optimization</h2>
+              <p>This page shows the full portfolio optimization using the current assumptions and constraints. The chart compares the selected portfolio to the efficient frontier, benchmark points, and allowable region. The portfolio weights below the chart show the optimized allocation and sub-sleeve mix.</p>
+            </div>
+            <div class="select-control">
+              <label for="mvoProfileSelect">Portfolio</label>
+              <select id="mvoProfileSelect"></select>
+            </div>
+          </div>
+          <div class="mvo-selector-row">
+            <div class="mvo-selected-card" id="mvoSelectedStatus">
+              <span>Selected:</span>
+              <strong>Loading</strong>
+              <em>Checking ranges...</em>
+            </div>
+          </div>
+          <div class="frontier-layout">
+            <div class="panel">
+              <div class="panel-title">Efficient Frontier</div>
+              <div id="frontierChart" class="frontier-chart"><p class="frontier-note">Calculating efficient frontier...</p></div>
+            </div>
+            <div class="panel">
+              <div class="panel-title">Portfolio Weights</div>
+              <div id="mvoWeightCharts" class="mvo-weight-charts">
+                <p class="frontier-note">Calculating weights...</p>
+              </div>
+            </div>
+            <div id="mvoConstraints"></div>
+          </div>
+        </section>
+
+        <section id="monteCarlo" class="page">
+          <div class="toolbar">
+            <div>
+              <h2>Monte Carlo</h2>
+              <p>This page shows one hypothetical five-year return path based on the selected scenario number. The simulation uses the current return, volatility, and correlation assumptions. You can change the portfolio or scenario to compare how different risk profiles behave under the same market path.</p>
+            </div>
+            <div class="select-control">
+              <label for="mcProfileSelect">Portfolio</label>
+              <select id="mcProfileSelect"></select>
+            </div>
+            <div class="select-control compact">
+              <label for="mcScenarioSeed">Scenario</label>
+              <input id="mcScenarioSeed" type="number" min="1" step="1" value="100" />
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Hypothetical Annual Return Scenario</div>
+            <div id="monteCarloChart" class="monte-carlo-chart"><p class="frontier-note">Calculating simulation...</p></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Sub-Sleeve Annual Time-Weighted Return Path</div>
+            <div class="asset-toggle-actions">
+              <button type="button" id="selectAllMcAssets">Select All</button>
+              <button type="button" id="deselectAllMcAssets">Deselect All</button>
+            </div>
+            <div id="monteCarloAssetToggles" class="asset-toggle-grid"></div>
+            <div id="monteCarloAssetsChart" class="monte-carlo-chart"><p class="frontier-note">Calculating simulation...</p></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Sub-Sleeve Five-Year CAGR</div>
+            <div id="monteCarloAssetBarsChart" class="monte-carlo-chart"><p class="frontier-note">Calculating simulation...</p></div>
+          </div>
+        </section>
+
+        <section id="clientPortfolio" class="page active">
+          <div class="toolbar">
+            <div>
+              <h2>Portfolio</h2>
+              <p>This page gives a simplified view of the model portfolio. The top section shows the broad allocation across risk profiles. Select a portfolio to review its detailed weights and where it sits on the risk and return chart.</p>
+            </div>
+            <div class="select-control client-portfolio-controls">
+              <div class="control-field">
+                <label for="clientProfileSelect">Portfolio</label>
+                <select id="clientProfileSelect"></select>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Allocation Weights</div>
+            <div id="clientAllocationPieCharts" class="pie-grid allocation-pie-grid"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Portfolio Weights</div>
+            <div id="clientWeightCharts" class="mvo-weight-charts"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Efficient Frontier</div>
+            <div id="clientFrontierChart" class="frontier-chart"><p class="frontier-note">Calculating efficient frontier...</p></div>
+          </div>
+        </section>
+
+      </main>
+
+      <footer>
+        <span>For Internal Use Only</span>
+        <span>Do Not Distribute</span>
+      </footer>
+    </div>
+    <script src="./app.js?v=20260817-pe-screenshot"></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,5 @@
+Model Asset,Provider Asset,Return,Volatility,Source Note
+U.S. Income,MSCI USA High Dividend Yield,6.60%,14.50%,MSCI U.S. equity category assumption
+U.S. Quality,MSCI USA Quality,6.40%,14.80%,MSCI U.S. equity category assumption
+U.S. Growth,Russell 1000 Growth,4.80%,18.50%,MSCI U.S. equity category assumption using suggested benchmark
+U.S. Value,Russell 1000 Value,7.20%,16.00%,MSCI U.S. equity category assumption using suggested benchmark
