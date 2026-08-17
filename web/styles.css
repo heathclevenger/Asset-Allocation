@@ -1860,6 +1860,8 @@ footer {
     font-size: 10px;
   }
 }
+<<<<<<< HEAD
+=======
 
 .overall-allocation-summary {
   display: grid;
@@ -2076,3 +2078,4 @@ footer {
   font-size: 13px;
   font-weight: 700;
 }
+>>>>>>> 8616234 (Update overall allocation valuation chart)
