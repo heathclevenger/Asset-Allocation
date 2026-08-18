@@ -18,17 +18,19 @@ let liveUpdateTimer = null;
 let selectedMvoProfile = "Moderate";
 let selectedClientProfile = "Moderate";
 let selectedMcProfile = "Moderate";
-let monteCarloSeed = 100;
+let monteCarloSeed = 75;
 let selectedMcAssets = null;
 let viewMode = "client";
 let selectedAllocationPreset = "CORE";
 let selectedSubAllocationPreset = "CORE";
 let selectedAssumptionSet = "CORE";
 let selectedFundProvider = "Fidelity";
-let selectedVolatilityCase = "Within 1 Std. Dev.: 17.2x P/E";
-let selectedInterestRateCase = "Unchanged";
+let selectedVolatilityCase = "Neutral";
+let selectedInterestRateCase = "Neutral";
 let prePdfAssumptionSet = null;
 let showPeValuationChart = false;
+let overallFrontierCache = null;
+let clientOverallFrontierCache = null;
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const escapeHtml = (value) => String(value)
@@ -37,29 +39,35 @@ const escapeHtml = (value) => String(value)
   .replace(/>/g, "&gt;")
   .replace(/"/g, "&quot;");
 const defaultVolatilityPercentiles = {
-  "Conservative": 20,
-  "Balanced": 35,
+  "Conservative": 25,
+  "Balanced": 40,
   "Moderate": 55,
   "Growth": 75,
   "Aggressive Growth": 90,
 };
 
 const volatilityCases = {
-  "Within 1 Std. Dev.: 17.2x P/E": 0,
-  "-1 Std. Dev.: 13.9x P/E": 5,
-  "+1 Std. Dev.: 20.5x P/E": -5,
+  "Neutral": 0,
+  "Undervalued": 5,
+  "Overvalued": -5,
 };
 
 const overallVolatilityMultipliers = {
-  "Within 1 Std. Dev.: 17.2x P/E": 1,
-  "-1 Std. Dev.: 13.9x P/E": 1.05,
-  "+1 Std. Dev.: 20.5x P/E": 0.95,
+  "Neutral": 1,
+  "Undervalued": 1.05,
+  "Overvalued": 0.95,
 };
 
 const interestRateMultipliers = {
-  "Unchanged": 1,
-  "Falling": 1.05,
-  "Rising": 0.95,
+  "Neutral": 1,
+  "Loose": 1.05,
+  "Restrictive": 0.95,
+};
+
+const clientInterestRatePercentileShifts = {
+  "Neutral": 0,
+  "Loose": 2.5,
+  "Restrictive": -2.5,
 };
 
 const chartTheme = {
@@ -159,7 +167,7 @@ function applyAssumptionSet(name) {
 }
 
 function applyVolatilityCase(caseName) {
-  selectedVolatilityCase = volatilityCases[caseName] === undefined ? "Within 1 Std. Dev.: 17.2x P/E" : caseName;
+  selectedVolatilityCase = volatilityCases[caseName] === undefined ? "Neutral" : caseName;
   ensureVolatilityModel();
   const shift = volatilityCases[selectedVolatilityCase];
   Object.entries(defaultVolatilityPercentiles).forEach(([profileName, basePercentile]) => {
@@ -450,11 +458,13 @@ function concaveUpperFrontier(portfolios) {
   return hull.length >= 4 ? hull : increasing;
 }
 
-function calculateEfficientFrontier() {
-  const assets = state.assets;
+function calculateEfficientFrontier(assetIndexes = null) {
+  const sourceIndexes = assetIndexes || state.assets.map((_, index) => index);
+  const assets = sourceIndexes.map((index) => state.assets[index]);
   const returns = assets.map((asset) => asset.return);
   const excessReturns = returns.map((value) => value - 0.031);
-  const cov = covarianceMatrix(assets, state.correlation);
+  const correlation = sourceIndexes.map((i) => sourceIndexes.map((j) => state.correlation[i][j]));
+  const cov = covarianceMatrix(assets, correlation);
   const count = assets.length;
   const equal = Array(count).fill(1 / count);
   const starts = [equal];
@@ -485,7 +495,7 @@ function calculateEfficientFrontier() {
 
   const candidates = starts.map((start) => {
     const weights = optimizeProjected(start, sharpeGradient, 90, 0.08);
-    return { weights, stats: portfolioStats(weights, assets, state.correlation) };
+    return { weights, stats: portfolioStats(weights, assets, correlation) };
   });
 
   let best = candidates.reduce((winner, candidate) => (candidate.stats.sharpe > winner.stats.sharpe ? candidate : winner), candidates[0]);
@@ -496,7 +506,7 @@ function calculateEfficientFrontier() {
     return covW.map((value) => -2 * value);
   };
   let warmStart = optimizeProjected(equal, minVarianceGradient, 180, 0.35);
-  frontier.push({ weights: warmStart, stats: portfolioStats(warmStart, assets, state.correlation) });
+  frontier.push({ weights: warmStart, stats: portfolioStats(warmStart, assets, correlation) });
 
   for (let i = 0; i < 140; i += 1) {
     const riskPenalty = Math.pow(10, 4.4 - (i / 139) * 7.0);
@@ -507,21 +517,169 @@ function calculateEfficientFrontier() {
     const primary = optimizeProjected(warmStart, gradientFn, 85, 0.16);
     const secondary = optimizeProjected(i % 4 === 0 ? starts[(i / 4) % starts.length] : best.weights, gradientFn, 65, 0.12);
     warmStart = primary;
-    frontier.push({ weights: primary, stats: portfolioStats(primary, assets, state.correlation) });
-    if (i % 3 === 0) frontier.push({ weights: secondary, stats: portfolioStats(secondary, assets, state.correlation) });
+    frontier.push({ weights: primary, stats: portfolioStats(primary, assets, correlation) });
+    if (i % 3 === 0) frontier.push({ weights: secondary, stats: portfolioStats(secondary, assets, correlation) });
   }
 
   const assetPoints = assets.map((asset, index) => {
     const weights = Array(count).fill(0);
     weights[index] = 1;
-    return { asset, weights, stats: portfolioStats(weights, assets, state.correlation) };
+    return { asset, weights, stats: portfolioStats(weights, assets, correlation) };
   });
 
   const cleanFrontier = concaveUpperFrontier([...frontier, ...assetPoints, best]);
+  const expand = (portfolio) => {
+    const fullWeights = Array(state.assets.length).fill(0);
+    portfolio.weights.forEach((weight, index) => {
+      fullWeights[sourceIndexes[index]] = weight;
+    });
+    return { weights: fullWeights, stats: portfolioStats(fullWeights, state.assets, state.correlation) };
+  };
+  const expandedFrontier = cleanFrontier.map(expand);
+  const expandedBest = expand(best);
+  const expandedAssetPoints = assetPoints.map((point) => ({
+    asset: point.asset,
+    weights: expand(point).weights,
+    stats: point.stats,
+  }));
 
-  return { best, frontier: cleanFrontier, assetPoints };
+  return { best: expandedBest, frontier: expandedFrontier, assetPoints: expandedAssetPoints };
 }
 
+function boundedFrontierSignature(assetIndexes) {
+  return JSON.stringify({
+    assets: assetIndexes.map((index) => {
+      const asset = state.assets[index];
+      return [asset.name, asset.category, asset.return, asset.volatility, asset.minWeight, asset.maxWeight];
+    }),
+    correlation: assetIndexes.map((i) => assetIndexes.map((j) => state.correlation[i][j])),
+  });
+}
+
+function expandSubsetPortfolio(portfolio, sourceIndexes) {
+  const fullWeights = Array(state.assets.length).fill(0);
+  portfolio.weights.forEach((weight, index) => {
+    fullWeights[sourceIndexes[index]] = weight;
+  });
+  return { weights: fullWeights, stats: portfolioStats(fullWeights, state.assets, state.correlation) };
+}
+
+function calculateBoundedEfficientFrontier(assetIndexes) {
+  const sourceIndexes = assetIndexes || state.assets.map((_, index) => index);
+  const assets = sourceIndexes.map((index) => state.assets[index]);
+  const returns = assets.map((asset) => asset.return);
+  const excessReturns = returns.map((value) => value - 0.031);
+  const correlation = sourceIndexes.map((i) => sourceIndexes.map((j) => state.correlation[i][j]));
+  const cov = covarianceMatrix(assets, correlation);
+  const count = assets.length;
+  const mins = sourceIndexes.map((index) => Math.max(0, state.assets[index].minWeight || 0));
+  const caps = sourceIndexes.map((index, i) => Math.max(mins[i] || 0, state.assets[index].maxWeight || 0));
+  const equal = projectToCappedSimplex(Array(count).fill(1 / count), caps, mins);
+  const starts = [equal];
+
+  assets.forEach((_, index) => {
+    const weights = Array(count).fill(0);
+    weights[index] = 1;
+    starts.push(projectToCappedSimplex(weights, caps, mins));
+  });
+
+  returns.forEach((_, index) => {
+    const anchor = Array(count).fill(0);
+    anchor[index] = 0.72;
+    const rest = (1 - anchor[index]) / Math.max(count - 1, 1);
+    for (let j = 0; j < count; j += 1) {
+      if (j !== index) anchor[j] = rest;
+    }
+    starts.push(projectToCappedSimplex(anchor, caps, mins));
+  });
+
+  const sharpeGradient = (weights) => {
+    const covW = matVec(cov, weights);
+    const variance = Math.max(weights.reduce((sum, weight, index) => sum + weight * covW[index], 0), 1e-10);
+    const volatility = Math.sqrt(variance);
+    const excessReturn = weights.reduce((sum, weight, index) => sum + weight * excessReturns[index], 0);
+    return excessReturns.map((value, index) => value / volatility - (excessReturn * covW[index]) / Math.pow(volatility, 3));
+  };
+
+  const candidates = starts.map((start) => {
+    const weights = optimizeCappedProjected(start, sharpeGradient, caps, mins, 90, 0.08);
+    return { weights, stats: portfolioStats(weights, assets, correlation) };
+  });
+  let best = candidates.reduce((winner, candidate) => (candidate.stats.sharpe > winner.stats.sharpe ? candidate : winner), candidates[0]);
+
+  const frontier = [];
+  const minVarianceGradient = (weights) => {
+    const covW = matVec(cov, weights);
+    return covW.map((value) => -2 * value);
+  };
+  let warmStart = optimizeCappedProjected(equal, minVarianceGradient, caps, mins, 180, 0.35);
+  frontier.push({ weights: warmStart, stats: portfolioStats(warmStart, assets, correlation) });
+
+  for (let i = 0; i < 140; i += 1) {
+    const riskPenalty = Math.pow(10, 4.4 - (i / 139) * 7.0);
+    const gradientFn = (weights) => {
+      const covW = matVec(cov, weights);
+      return returns.map((value, index) => value - 2 * riskPenalty * covW[index]);
+    };
+    const primary = optimizeCappedProjected(warmStart, gradientFn, caps, mins, 85, 0.16);
+    const secondary = optimizeCappedProjected(i % 4 === 0 ? starts[(i / 4) % starts.length] : best.weights, gradientFn, caps, mins, 65, 0.12);
+    warmStart = primary;
+    frontier.push({ weights: primary, stats: portfolioStats(primary, assets, correlation) });
+    if (i % 3 === 0) frontier.push({ weights: secondary, stats: portfolioStats(secondary, assets, correlation) });
+  }
+
+  const cleanFrontier = concaveUpperFrontier([...frontier, best]);
+  return {
+    best: expandSubsetPortfolio(best, sourceIndexes),
+    frontier: cleanFrontier.map((point) => expandSubsetPortfolio(point, sourceIndexes)),
+  };
+}
+
+function randomSubsetWeightsWithinBounds(sourceIndexes, rand) {
+  const mins = sourceIndexes.map((index) => Math.max(0, state.assets[index].minWeight || 0));
+  const caps = sourceIndexes.map((index, i) => Math.max(mins[i] || 0, state.assets[index].maxWeight || 0));
+  const minTotal = mins.reduce((sum, value) => sum + value, 0);
+  const capTotal = caps.reduce((sum, value) => sum + value, 0);
+  if (minTotal > 1 + 1e-9 || capTotal < 1 - 1e-9) return null;
+  const values = [...mins];
+  let remaining = 1 - minTotal;
+  for (let pass = 0; pass < 40 && remaining > 1e-10; pass += 1) {
+    const active = values
+      .map((value, i) => ({ i, capacity: caps[i] - value }))
+      .filter((row) => row.capacity > 1e-10);
+    if (!active.length) break;
+    const draws = active.map((row) => row.capacity * (0.15 + rand()));
+    const drawTotal = draws.reduce((sum, value) => sum + value, 0) || 1;
+    active.forEach((row, i) => {
+      const add = Math.min(row.capacity, remaining * draws[i] / drawTotal);
+      values[row.i] += add;
+    });
+    remaining = 1 - values.reduce((sum, value) => sum + value, 0);
+  }
+  if (Math.abs(remaining) > 1e-7) return null;
+  const fullWeights = Array(state.assets.length).fill(0);
+  values.forEach((weight, index) => {
+    fullWeights[sourceIndexes[index]] = weight;
+  });
+  return fullWeights;
+}
+
+function clientOverallFeasibleRegion(sourceIndexes, frontier) {
+  const rand = seededRandom(seedFromString(boundedFrontierSignature(sourceIndexes), 9221));
+  const points = [];
+  const seen = new Set();
+  const add = (weights) => {
+    if (!weights) return;
+    const stats = portfolioStats(weights, state.assets, state.correlation);
+    const key = `${stats.volatility.toFixed(5)}|${stats.expectedReturn.toFixed(5)}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    points.push({ x: stats.volatility, y: stats.expectedReturn, stats, weights });
+  };
+  for (let i = 0; i < 2600; i += 1) add(randomSubsetWeightsWithinBounds(sourceIndexes, rand));
+  frontier.forEach((point) => add(point.weights));
+  return { points, hull: convexHull(points) };
+}
 function convexHull(points) {
   if (points.length <= 2) return points;
   const sorted = [...points].sort((a, b) => (a.x === b.x ? a.y - b.y : a.x - b.x));
@@ -792,7 +950,7 @@ function runOptimization() {
   results = calculateConstrainedResults();
   renderAll();
   mvoDirty = true;
-  if (mvoIsActive() || clientPortfolioIsActive()) refreshMvo();
+  if (mvoIsActive()) refreshMvo();
 }
 
 function statusFor(profileName, vol) {
@@ -1530,99 +1688,122 @@ function renderMvo() {
 }
 
 function renderClientPortfolioControls() {
-  const select = document.querySelector("#clientProfileSelect");
-  const profileNames = Object.keys(state.profiles);
-  if (select) {
-    if (!profileNames.includes(selectedClientProfile)) selectedClientProfile = profileNames[0];
-    selectedMcProfile = selectedClientProfile;
-    select.innerHTML = profileNames.map((name) => `<option value="${name}" ${name === selectedClientProfile ? "selected" : ""}>${name}</option>`).join("");
-    select.value = selectedClientProfile;
+  const peSelect = document.querySelector("#clientOverallVolatilityCaseSelect");
+  const rateSelect = document.querySelector("#clientOverallInterestRateSelect");
+  if (peSelect) {
+    peSelect.innerHTML = Object.keys(volatilityCases).map((name) => `<option value="${name}" ${name === selectedVolatilityCase ? "selected" : ""}>${name}</option>`).join("");
+    peSelect.value = selectedVolatilityCase;
+  }
+  if (rateSelect) {
+    rateSelect.innerHTML = Object.keys(interestRateMultipliers).map((name) => `<option value="${name}" ${name === selectedInterestRateCase ? "selected" : ""}>${name}</option>`).join("");
+    rateSelect.value = selectedInterestRateCase;
   }
 }
 
+function renderBenchmarkVolatilityStrip(targetSelector, model) {
+  const target = document.querySelector(targetSelector);
+  if (!target) return;
+  if (!model?.sp || !model?.agg) {
+    target.innerHTML = "";
+    return;
+  }
+  target.innerHTML = `
+    <div class="benchmark-vol-card compact">
+      <span>10yr Volatility Assumption</span>
+      <div class="benchmark-vol-values">
+        <strong>S&amp;P 500: ${pct(model.sp.volatility)}</strong>
+        <strong>AGG: ${pct(model.agg.volatility)}</strong>
+      </div>
+    </div>`;
+}
 function renderClientPortfolio() {
   renderClientPortfolioControls();
-  const allocationCharts = document.querySelector("#clientAllocationPieCharts");
-  const weightCharts = document.querySelector("#clientWeightCharts");
-  const frontierBox = document.querySelector("#clientFrontierChart");
-  if (!allocationCharts || !weightCharts || !frontierBox) return;
-
-  allocationCharts.innerHTML = Object.entries(results).map(([profile, result]) => renderPieCard(
-    profile,
-    state.categories.map((category) => ({
-      label: category,
-      value: result.categoryWeights[category] || 0,
-      color: categoryColor(category),
-      displayPct: displayAllocationPct(category, result.categoryWeights[category] || 0),
-    }))
-  )).join("");
-
-  if (!frontierResult) return;
-  if (frontierResult.error) {
-    weightCharts.innerHTML = "";
-    frontierBox.innerHTML = `<p class="frontier-note">The chart could not run. Check that assumptions have valid return and volatility numbers.</p>`;
+  renderPeValuationChart();
+  const cards = document.querySelector("#clientAllocationPieCharts");
+  const chart = document.querySelector("#clientFrontierChart");
+  if (!cards || !chart) return;
+  const model = calculateClientOverallAllocation();
+  if (!model) {
+    cards.innerHTML = "";
+    chart.innerHTML = `<p class="frontier-note">Broad allocation needs Equity, Fixed Income, S&amp;P 500, and AGG assumptions.</p>`;
     return;
   }
 
-  const baseSelected = results[selectedClientProfile];
-  if (!baseSelected) return;
-  const profile = state.profiles[selectedClientProfile];
-  const selected = selectedMvoDisplayResult(selectedClientProfile, baseSelected, frontierResult.frontier);
-  weightCharts.innerHTML = [
-    renderAllocationSummaryCard(selectedClientProfile, selected, profile, { variant: "client" }),
-    renderPieCard(
-      "Sub-Sleeve Weights",
-      state.assets.map((asset, index) => ({
-        label: asset.name,
-        value: selected.weights[index] || 0,
-        color: assetColor(asset, index),
-      })),
-      { variant: "sleeve" }
-    ),
-  ].join("");
-  renderFrontierChart(selected, frontierResult.frontier, frontierResult.assetPoints, profile, {
-    chartSelector: "#clientFrontierChart",
-    constraintsSelector: null,
+  renderBenchmarkVolatilityStrip("#clientBenchmarkVolatilityAssumptions", model);
+  cards.innerHTML = renderOverallAllocationCards(model);
+
+  const width = 860;
+  const height = 430;
+  const pad = { left: 66, right: 36, top: 38, bottom: 62 };
+  const plotW = width - pad.left - pad.right;
+  const plotH = height - pad.top - pad.bottom;
+  const subAssetPoints = state.assets.map((asset, index) => ({ asset, index, volatility: asset.volatility, expectedReturn: asset.return }));
+  const plotted = [
+    ...model.broadCurve.map((point) => ({ x: point.volatility, y: point.expectedReturn })),
+    ...model.blendPoints.map((point) => ({ x: point.volatility, y: point.expectedReturn })),
+    ...model.rows.map((row) => ({ x: row.chosen.stats.volatility, y: row.chosen.stats.expectedReturn })),
+    ...subAssetPoints.map((point) => ({ x: point.volatility, y: point.expectedReturn })),
+  ];
+  const minVol = Math.min(...plotted.map((point) => point.x));
+  const maxVol = Math.max(...plotted.map((point) => point.x));
+  const minReturn = Math.min(...plotted.map((point) => point.y));
+  const maxReturn = Math.max(...plotted.map((point) => point.y));
+  const xMin = Math.max(0, minVol - (maxVol - minVol) * 0.04);
+  const xMax = maxVol + (maxVol - minVol) * 0.05;
+  const yMin = Math.max(0, minReturn - (maxReturn - minReturn) * 0.12);
+  const yMax = maxReturn + (maxReturn - minReturn) * 0.14;
+  const xScale = (value) => pad.left + ((value - xMin) / Math.max(xMax - xMin, 1e-8)) * plotW;
+  const yScale = (value) => pad.top + (1 - ((value - yMin) / Math.max(yMax - yMin, 1e-8))) * plotH;
+  const xTicks = Array.from({ length: 6 }, (_, i) => xMin + ((xMax - xMin) * i) / 5);
+  const yTicks = Array.from({ length: 6 }, (_, i) => yMin + ((yMax - yMin) * i) / 5);
+  const pathFor = (points) => points.map((point, index) => `${index ? "L" : "M"} ${xScale(point.volatility).toFixed(1)} ${yScale(point.expectedReturn).toFixed(1)}`).join(" ");
+  const broadPath = pathFor(model.broadCurve);
+  const blendPath = pathFor(model.blendPoints);
+  const trianglePoints = (x, y, size = 7) => `${x.toFixed(1)},${(y - size).toFixed(1)} ${(x - size).toFixed(1)},${(y + size).toFixed(1)} ${(x + size).toFixed(1)},${(y + size).toFixed(1)}`;
+  const tooltipPosition = (x, y, tooltipW = 190, tooltipH = 48) => ({
+    x: x + tooltipW + 16 > width - pad.right ? x - tooltipW - 14 : x + 12,
+    y: Math.max(pad.top + 8, Math.min(y - 34, height - pad.bottom - tooltipH - 8)),
   });
-}
 
-function averageForCategory(category) {
-  const rows = state.assets.filter((asset) => asset.category === category);
-  if (!rows.length) return null;
-  return {
-    name: category,
-    return: rows.reduce((sum, asset) => sum + asset.return, 0) / rows.length,
-    volatility: rows.reduce((sum, asset) => sum + asset.volatility, 0) / rows.length,
-    count: rows.length,
-  };
+  chart.innerHTML = `<div class="frontier-chart-grid">
+  <div class="asset-color-legend side-legend">
+    <div class="legend-heading">Asset Legend</div>
+    ${state.assets.map((asset, index) => `<span tabindex="0" role="button" data-frontier-asset="${escapeHtml(asset.name)}"><i style="--asset-color:${assetColor(asset, index)}"></i>${asset.name}</span>`).join("")}
+  </div>
+  <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Client overall allocation risk return chart">
+    <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
+    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
+    ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line><text x="${pad.left - 12}" y="${yScale(tick) + 4}" text-anchor="end" class="frontier-axis">${pct(tick)}</text>`).join("")}
+    ${xTicks.map((tick) => `<line x1="${xScale(tick)}" y1="${pad.top}" x2="${xScale(tick)}" y2="${height - pad.bottom}" stroke="${chartTheme.gridLight}"></line><text x="${xScale(tick)}" y="${height - 26}" text-anchor="middle" class="frontier-axis">${pct(tick)}</text>`).join("")}
+    <path d="${broadPath}" fill="none" stroke="#3d5568" stroke-width="2.4" stroke-linecap="round"></path>
+    <path d="${blendPath}" fill="none" stroke="#b98256" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round"></path>
+    ${model.blendPoints.map((point) => `<g class="benchmark-point" tabindex="0" role="button" data-tooltip-title="${point.label}" data-tooltip-body="S&amp;P ${pct(point.spWeight)} | AGG ${pct(point.aggWeight)}"><circle cx="${xScale(point.volatility).toFixed(1)}" cy="${yScale(point.expectedReturn).toFixed(1)}" r="4.8" fill="${chartTheme.surface}" stroke="#b98256" stroke-width="2"></circle></g>`).join("")}
+    ${subAssetPoints.map((point) => {
+      const x = xScale(point.volatility);
+      const y = yScale(point.expectedReturn);
+      const tooltip = tooltipPosition(x, y);
+      return `<g class="asset-point" tabindex="0" role="button" data-asset-name="${escapeHtml(point.asset.name)}" data-tooltip-title="${escapeHtml(point.asset.name)}" data-tooltip-body="Return ${pct(point.expectedReturn)} | Vol ${pct(point.volatility)}">
+        <polygon points="${trianglePoints(x, y, 6)}" fill="${assetColor(point.asset, point.index)}" stroke="#101820" stroke-width="1.1"></polygon>
+        <g class="asset-tooltip" transform="translate(${tooltip.x.toFixed(1)}, ${tooltip.y.toFixed(1)})">
+          <rect x="0" y="0" width="190" height="48" rx="3"></rect>
+          <text x="10" y="18">${escapeHtml(point.asset.name)}</text>
+          <text x="10" y="36">Return ${pct(point.expectedReturn)} | Vol ${pct(point.volatility)}</text>
+        </g>
+      </g>`;
+    }).join("")}
+    <rect x="${(xScale(model.agg.volatility) - 6).toFixed(1)}" y="${(yScale(model.agg.return) - 6).toFixed(1)}" width="12" height="12" fill="#8a8f98" stroke="#101820" stroke-width="1.2"></rect>
+    <rect x="${(xScale(model.sp.volatility) - 6).toFixed(1)}" y="${(yScale(model.sp.return) - 6).toFixed(1)}" width="12" height="12" fill="#101820" stroke="#101820" stroke-width="1.2"></rect>
+    ${model.rows.map((row) => `<g class="selected-point" tabindex="0" role="button" data-tooltip-title="${row.profile}" data-tooltip-body="${overallCategoryTooltip(row.categoryWeights)}"><circle cx="${xScale(row.chosen.stats.volatility).toFixed(1)}" cy="${yScale(row.chosen.stats.expectedReturn).toFixed(1)}" r="6.2" fill="#00a95a" stroke="#101820" stroke-width="1.8"></circle></g>`).join("")}
+    <g transform="translate(${pad.left + 4}, 16)">
+      <line x1="0" y1="0" x2="26" y2="0" stroke="#3d5568" stroke-width="2.4"></line><text x="34" y="4" class="frontier-axis">Efficient Frontier</text>
+      <line x1="206" y1="0" x2="232" y2="0" stroke="#b98256" stroke-width="2" stroke-dasharray="5 5"></line><text x="240" y="4" class="frontier-axis">S&amp;P/AGG blend</text>
+      <circle cx="398" cy="0" r="6" fill="#00a95a" stroke="#101820" stroke-width="1.5"></circle><text x="412" y="4" class="frontier-axis">Targets</text>
+      <polygon points="548,-7 541,7 555,7" fill="#3d5568" stroke="#101820" stroke-width="1"></polygon><text x="564" y="4" class="frontier-axis">Sub-assets</text>
+    </g>
+    <text x="${width / 2}" y="${height - 6}" text-anchor="middle" class="frontier-axis">Annualized volatility</text>
+    <text x="16" y="${height / 2}" text-anchor="middle" transform="rotate(-90 16 ${height / 2})" class="frontier-axis">Compound return</text>
+  </svg></div>`;
 }
-
-function averageCorrelationBetweenCategories(leftCategory, rightCategory) {
-  const left = state.assets
-    .map((asset, index) => ({ asset, index }))
-    .filter((row) => row.asset.category === leftCategory);
-  const right = state.assets
-    .map((asset, index) => ({ asset, index }))
-    .filter((row) => row.asset.category === rightCategory);
-  const values = [];
-  left.forEach((leftRow) => {
-    right.forEach((rightRow) => values.push(state.correlation[leftRow.index][rightRow.index]));
-  });
-  return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
-}
-
-function broadPortfolioStats(equityWeight, equity, fixedIncome, correlation) {
-  const fixedWeight = 1 - equityWeight;
-  const expectedReturn = equityWeight * equity.return + fixedWeight * fixedIncome.return;
-  const variance = Math.max(
-    equityWeight * equityWeight * equity.volatility * equity.volatility
-      + fixedWeight * fixedWeight * fixedIncome.volatility * fixedIncome.volatility
-      + 2 * equityWeight * fixedWeight * equity.volatility * fixedIncome.volatility * correlation,
-    0
-  );
-  return { expectedReturn, volatility: Math.sqrt(variance), equityWeight, fixedWeight };
-}
-
 function benchmarkBlendStats(spWeight, sp, agg) {
   const aggWeight = 1 - spWeight;
   return {
@@ -1633,16 +1814,72 @@ function benchmarkBlendStats(spWeight, sp, agg) {
   };
 }
 
+function overallEligibleAssetIndexes() {
+  return state.assets
+    .map((asset, index) => ({ asset, index }))
+    .filter((row) => ["Equity", "Fixed Income"].includes(row.asset.category))
+    .map((row) => row.index);
+}
 
+function overallDisplayAssetPoints() {
+  return state.assets.map((asset, index) => {
+    const weights = Array(state.assets.length).fill(0);
+    weights[index] = 1;
+    return { asset, weights, stats: portfolioStats(weights, state.assets, state.correlation) };
+  });
+}
+
+function overallFrontierSignature() {
+  const indexes = overallEligibleAssetIndexes();
+  return JSON.stringify({
+    assets: indexes.map((index) => {
+      const asset = state.assets[index];
+      return [asset.name, asset.category, asset.return, asset.volatility];
+    }),
+    correlation: indexes.map((i) => indexes.map((j) => state.correlation[i][j])),
+  });
+}
+
+function getOverallSubAssetFrontier() {
+  const indexes = overallEligibleAssetIndexes();
+  const signature = overallFrontierSignature();
+  if (overallFrontierCache?.signature === signature) return overallFrontierCache.value;
+  const value = calculateEfficientFrontier(indexes);
+  overallFrontierCache = { signature, value };
+  return value;
+}
+function selectedPortfolioAtTargetVolatility(frontier, targetVolatility) {
+  const rows = frontier
+    .filter((point) => point?.weights && point?.stats)
+    .sort((a, b) => a.stats.volatility - b.stats.volatility);
+  if (!rows.length) return null;
+  if (targetVolatility <= rows[0].stats.volatility) return rows[0];
+  if (targetVolatility >= rows.at(-1).stats.volatility) return rows.at(-1);
+
+  for (let i = 0; i < rows.length - 1; i += 1) {
+    const left = rows[i];
+    const right = rows[i + 1];
+    if (targetVolatility < left.stats.volatility || targetVolatility > right.stats.volatility) continue;
+    const span = Math.max(right.stats.volatility - left.stats.volatility, 1e-10);
+    const mix = Math.max(0, Math.min(1, (targetVolatility - left.stats.volatility) / span));
+    const weights = left.weights.map((weight, index) => weight * (1 - mix) + right.weights[index] * mix);
+    const total = weights.reduce((sum, weight) => sum + weight, 0) || 1;
+    const normalized = weights.map((weight) => weight / total);
+    return { weights: normalized, stats: portfolioStats(normalized, state.assets, state.correlation) };
+  }
+
+  return rows.reduce((best, point) => (
+    Math.abs(point.stats.volatility - targetVolatility) < Math.abs(best.stats.volatility - targetVolatility) ? point : best
+  ), rows[0]);
+}
 
 function calculateOverallAllocation() {
-  const equity = averageForCategory("Equity");
-  const fixedIncome = averageForCategory("Fixed Income");
   const sp = benchmarkByName("S&P 500");
   const agg = benchmarkByName("AGG");
-  if (!equity || !fixedIncome || !sp || !agg) return null;
+  if (!sp || !agg) return null;
 
-  const correlation = averageCorrelationBetweenCategories("Equity", "Fixed Income");
+  const frontierSource = getOverallSubAssetFrontier();
+  if (!frontierSource?.frontier?.length) return null;
   const targetMap = [
     { profile: "Conservative", spWeight: 0.40 },
     { profile: "Balanced", spWeight: 0.55 },
@@ -1654,32 +1891,158 @@ function calculateOverallAllocation() {
     label: spWeight === 0 ? "AGG" : spWeight === 1 ? "S&P 500" : `${Math.round(spWeight * 100)}/${Math.round((1 - spWeight) * 100)}`,
     ...benchmarkBlendStats(spWeight, sp, agg),
   }));
-  const broadCurve = Array.from({ length: 201 }, (_, index) => {
-    const equityWeight = index / 200;
-    return broadPortfolioStats(equityWeight, equity, fixedIncome, correlation);
-  });
+  const broadCurve = frontierSource.frontier.map((point) => ({
+    ...point.stats,
+    weights: point.weights,
+    stats: point.stats,
+  }));
   const peVolatilityMultiplier = overallVolatilityMultipliers[selectedVolatilityCase] || 1;
   const rateVolatilityMultiplier = interestRateMultipliers[selectedInterestRateCase] || 1;
   const volatilityMultiplier = peVolatilityMultiplier * rateVolatilityMultiplier;
   const rows = targetMap.map((target) => {
     const blend = benchmarkBlendStats(target.spWeight, sp, agg);
     const targetVolatility = blend.volatility * volatilityMultiplier;
-    const chosen = broadCurve.reduce((best, point) => {
-      if (!best) return point;
-      const bestGap = Math.abs(best.volatility - targetVolatility);
-      const pointGap = Math.abs(point.volatility - targetVolatility);
-      if (pointGap < bestGap - 1e-10) return point;
-      if (Math.abs(pointGap - bestGap) <= 1e-10 && point.expectedReturn > best.expectedReturn) return point;
-      return best;
-    }, null);
-    return { ...target, targetVolatility, unadjustedTargetVolatility: blend.volatility, volatilityMultiplier, peVolatilityMultiplier, rateVolatilityMultiplier, blend, chosen };
+    const chosen = selectedPortfolioAtTargetVolatility(frontierSource.frontier, targetVolatility);
+    const categoryWeights = chosen?.weights ? categoryWeightsFromWeights(chosen.weights) : {};
+    return { ...target, targetVolatility, unadjustedTargetVolatility: blend.volatility, volatilityMultiplier, peVolatilityMultiplier, rateVolatilityMultiplier, blend, chosen, categoryWeights };
   });
-  return { equity, fixedIncome, correlation, sp, agg, blendPoints, broadCurve, rows };
+  return { sp, agg, blendPoints, broadCurve, assetPoints: overallDisplayAssetPoints(), rows };
+}
+
+
+function getClientOverallBoundedFrontier() {
+  const indexes = overallEligibleAssetIndexes();
+  const signature = boundedFrontierSignature(indexes);
+  if (clientOverallFrontierCache?.signature === signature) return clientOverallFrontierCache.value;
+  const frontier = calculateBoundedEfficientFrontier(indexes);
+  const value = { ...frontier, assetPoints: overallDisplayAssetPoints() };
+  clientOverallFrontierCache = { signature, value };
+  return value;
+}
+
+function clientAllocationPercentile(profileName) {
+  ensureVolatilityModel();
+  const displayedPercentile = state.volatilityModel?.profiles?.[profileName]?.percentile ?? defaultVolatilityPercentiles[profileName] ?? 50;
+  const advisorPeShift = volatilityCases[selectedVolatilityCase] || 0;
+  const basePercentile = displayedPercentile - advisorPeShift;
+  const peShift = advisorPeShift / 2;
+  const rateShift = clientInterestRatePercentileShifts[selectedInterestRateCase] || 0;
+  return Math.max(1, Math.min(99, basePercentile + peShift + rateShift));
+}
+
+function selectedConstrainedPortfolioAtPercentile(profileName, frontier, percentile) {
+  const feasible = feasibleVolatilities(profileName);
+  if (!feasible.length) return null;
+  ensureVolatilityModel();
+  const targetVolatility = percentileValue(feasible, percentile);
+  const halfWidth = state.volatilityModel?.profiles?.[profileName]?.halfWidth ?? state.volatilityModel?.halfWidth ?? 0.005;
+  const profile = {
+    ...sharedConstraintProfile(profileName),
+    targetVolMin: Math.max(0, targetVolatility - halfWidth),
+    targetVolMax: targetVolatility + halfWidth,
+  };
+  const rand = seededRandom(seedFromString(constraintSignature(profile), 17));
+  let best = null;
+  let fallback = null;
+  for (let i = 0; i < 900; i += 1) {
+    const weights = randomAssetWeights(profile, rand);
+    if (!weights) continue;
+    const stats = portfolioStats(weights, state.assets, state.correlation);
+    const categoryWeights = categoryWeightsFromWeights(weights);
+    const inTarget = stats.volatility >= profile.targetVolMin && stats.volatility <= profile.targetVolMax;
+    const candidate = { profileName, categoryWeights, weights, stats };
+    if (inTarget && (!best || stats.expectedReturn > best.stats.expectedReturn)) best = candidate;
+    const gap = stats.volatility < profile.targetVolMin
+      ? profile.targetVolMin - stats.volatility
+      : stats.volatility > profile.targetVolMax
+        ? stats.volatility - profile.targetVolMax
+        : 0;
+    const fallbackScore = -gap + stats.expectedReturn * 0.001;
+    if (!fallback || fallbackScore > fallback.score) fallback = { ...candidate, score: fallbackScore };
+  }
+  const chosen = best || fallback || selectedPortfolioAtTargetVolatility(frontier, targetVolatility);
+  return chosen ? { chosen, targetVolatility } : null;
+}
+
+function calculateClientOverallAllocation() {
+  const sp = benchmarkByName("S&P 500");
+  const agg = benchmarkByName("AGG");
+  if (!sp || !agg) return null;
+
+  const displayFrontierSource = getOverallSubAssetFrontier();
+  const constrainedFrontierSource = getClientOverallBoundedFrontier();
+  if (!displayFrontierSource?.frontier?.length || !constrainedFrontierSource?.frontier?.length) return null;
+  const targetMap = [
+    { profile: "Conservative", spWeight: 0.40 },
+    { profile: "Balanced", spWeight: 0.55 },
+    { profile: "Moderate", spWeight: 0.70 },
+    { profile: "Growth", spWeight: 0.85 },
+    { profile: "Aggressive Growth", spWeight: 1.00 },
+  ];
+  const blendPoints = [0, 0.4, 0.55, 0.7, 0.85, 1].map((spWeight) => ({
+    label: spWeight === 0 ? "AGG" : spWeight === 1 ? "S&P 500" : `${Math.round(spWeight * 100)}/${Math.round((1 - spWeight) * 100)}`,
+    ...benchmarkBlendStats(spWeight, sp, agg),
+  }));
+  const broadCurve = displayFrontierSource.frontier.map((point) => ({
+    ...point.stats,
+    weights: point.weights,
+    stats: point.stats,
+  }));
+  const peVolatilityMultiplier = overallVolatilityMultipliers[selectedVolatilityCase] || 1;
+  const rateVolatilityMultiplier = interestRateMultipliers[selectedInterestRateCase] || 1;
+  const volatilityMultiplier = peVolatilityMultiplier * rateVolatilityMultiplier;
+  const rows = targetMap.map((target) => {
+    const blend = benchmarkBlendStats(target.spWeight, sp, agg);
+    const targetVolatility = blend.volatility * volatilityMultiplier;
+    const displayChoice = selectedPortfolioAtTargetVolatility(displayFrontierSource.frontier, targetVolatility);
+    const allocationPercentile = clientAllocationPercentile(target.profile);
+    const allocationChoice = selectedConstrainedPortfolioAtPercentile(target.profile, constrainedFrontierSource.frontier, allocationPercentile);
+    const neutralChoice = selectedConstrainedPortfolioAtPercentile(target.profile, constrainedFrontierSource.frontier, defaultVolatilityPercentiles[target.profile] ?? allocationPercentile);
+    const categoryWeights = allocationChoice?.chosen?.weights ? categoryWeightsFromWeights(allocationChoice.chosen.weights) : {};
+    const neutralCategoryWeights = neutralChoice?.chosen?.weights ? categoryWeightsFromWeights(neutralChoice.chosen.weights) : null;
+    return { ...target, targetVolatility, unadjustedTargetVolatility: blend.volatility, volatilityMultiplier, peVolatilityMultiplier, rateVolatilityMultiplier, blend, chosen: displayChoice || allocationChoice?.chosen, allocationChoice: allocationChoice?.chosen, allocationPercentile, allocationTargetVolatility: allocationChoice?.targetVolatility, categoryWeights, neutralCategoryWeights };
+  });
+  return { sp, agg, blendPoints, broadCurve, assetPoints: displayFrontierSource.assetPoints, rows };
+}
+function roundedCategoryMix(categoryWeights) {
+  const rawItems = state.categories
+    .map((category) => ({ category, value: Math.max(0, categoryWeights?.[category] || 0) }))
+    .filter((item) => item.value > 0.00001 || ["Equity", "Fixed Income"].includes(item.category));
+  const total = rawItems.reduce((sum, item) => sum + item.value, 0) || 1;
+  const scaled = rawItems.map((item) => {
+    const exact = item.value / total * 100;
+    return { ...item, exact, percent: Math.floor(exact), remainder: exact - Math.floor(exact) };
+  });
+  let remaining = 100 - scaled.reduce((sum, item) => sum + item.percent, 0);
+  [...scaled].sort((a, b) => b.remainder - a.remainder).forEach((item) => {
+    if (remaining <= 0) return;
+    item.percent += 1;
+    remaining -= 1;
+  });
+  return scaled.filter((item) => item.percent > 0 || ["Equity", "Fixed Income"].includes(item.category));
+}
+
+function overallDisplayCategoryWeights(row) {
+  const weights = { ...(row.categoryWeights || {}) };
+  const cash = Math.max(0, weights.Cash || 0);
+  if (cash > 0) {
+    if (row.profile === "Aggressive Growth") {
+      weights["Fixed Income"] = (weights["Fixed Income"] || 0) + cash;
+    } else {
+      weights.Equity = (weights.Equity || 0) + cash;
+    }
+    weights.Cash = 0;
+  }
+  return weights;
 }
 
 function roundedBroadMix(point) {
-  const equityPct = Math.max(0, Math.min(100, Math.round(point.equityWeight * 100)));
-  return { equityPct, fixedIncomePct: 100 - equityPct };
+  const categoryWeights = point?.weights ? categoryWeightsFromWeights(point.weights) : {};
+  const mix = roundedCategoryMix(categoryWeights).reduce((out, item) => {
+    out[item.category] = item.percent;
+    return out;
+  }, {});
+  return { equityPct: mix.Equity || 0, fixedIncomePct: mix["Fixed Income"] || 0 };
 }
 
 function broadBenchmarkLabel(spWeight) {
@@ -1688,13 +2051,32 @@ function broadBenchmarkLabel(spWeight) {
   return `${Math.round(spWeight * 100)}/${Math.round((1 - spWeight) * 100)} S&P 500/AGG`;
 }
 
+function overallCategoryTooltip(categoryWeights) {
+  return roundedCategoryMix(categoryWeights)
+    .map((item) => `${item.category} ${item.percent}%`)
+    .join(" | ");
+}
+
 function renderOverallAllocationCards(model) {
   return model.rows.map((row) => {
-    const mix = roundedBroadMix(row.chosen);
-    const items = [
-      { label: "Equity", value: mix.equityPct / 100, color: categoryColor("Equity"), displayPct: `${mix.equityPct}%` },
-      { label: "Fixed Income", value: mix.fixedIncomePct / 100, color: categoryColor("Fixed Income"), displayPct: `${mix.fixedIncomePct}%` },
-    ];
+    const currentMix = roundedCategoryMix(overallDisplayCategoryWeights(row));
+    const neutralMix = row.neutralCategoryWeights
+      ? roundedCategoryMix(overallDisplayCategoryWeights({ profile: row.profile, categoryWeights: row.neutralCategoryWeights }))
+      : null;
+    const neutralMap = neutralMix?.reduce((out, item) => {
+      out[item.category] = item.percent;
+      return out;
+    }, {}) || {};
+    const items = currentMix.map((item) => {
+      const delta = neutralMix ? item.percent - (neutralMap[item.category] || 0) : 0;
+      return {
+        label: item.category,
+        value: item.percent / 100,
+        color: categoryColor(item.category),
+        displayPct: `${item.percent}%`,
+        delta,
+      };
+    });
     let angle = -Math.PI / 2;
     const total = 1;
     const slices = items.map((item) => {
@@ -1711,7 +2093,7 @@ function renderOverallAllocationCards(model) {
           <circle cx="62" cy="62" r="48" fill="none" stroke="${chartTheme.surface}" stroke-width="1.5"></circle>
         </svg>
         <div class="overall-card-legend">
-          ${items.map((item) => `<span><i style="--pie-color:${item.color}"></i>${item.label}<strong>${item.displayPct}</strong></span>`).join("")}
+          ${items.map((item) => `<span><i style="--pie-color:${item.color}"></i>${item.label}<strong>${item.displayPct}${item.delta ? `<em class="allocation-delta ${item.delta > 0 ? "positive" : "negative"}">${item.delta > 0 ? "+" : ""}${item.delta}%</em>` : ""}</strong></span>`).join("")}
         </div>
       </div>
       <div class="overall-benchmark-note">Volatility benchmark: ${broadBenchmarkLabel(row.spWeight)} at ${pct(row.unadjustedTargetVolatility)}<br />Adjusted target: ${pct(row.targetVolatility)}</div>
@@ -1719,21 +2101,24 @@ function renderOverallAllocationCards(model) {
   }).join("");
 }
 
-
 function renderPeValuationChart() {
-  const panel = document.querySelector("#peValuationPanel");
-  const chart = document.querySelector("#peValuationChart");
-  const toggle = document.querySelector("#togglePeChart");
-  if (!panel || !chart || !toggle) return;
-  panel.classList.toggle("collapsed", !showPeValuationChart);
-  toggle.textContent = showPeValuationChart ? "-" : "+";
-  toggle.setAttribute("aria-expanded", String(showPeValuationChart));
-  toggle.setAttribute("aria-label", showPeValuationChart ? "Hide Market P/E chart" : "Show Market P/E chart");
-  if (!showPeValuationChart) {
-    chart.innerHTML = "";
-    return;
-  }
-  chart.innerHTML = `<img class="pe-valuation-image" src="./assets/sp-pe.png?v=20260817-rate-pe" alt="S&P 500 valuation measures showing forward P/E ratio, valuation bands, and latest valuation table" />`;
+  const targets = [
+    { panel: "#peValuationPanel", chart: "#peValuationChart", toggle: "#togglePeChart" },
+    { panel: "#clientPeValuationPanel", chart: "#clientPeValuationChart", toggle: "#clientTogglePeChart" },
+  ];
+  targets.forEach((target) => {
+    const panel = document.querySelector(target.panel);
+    const chart = document.querySelector(target.chart);
+    const toggle = document.querySelector(target.toggle);
+    if (!panel || !chart || !toggle) return;
+    panel.classList.toggle("collapsed", !showPeValuationChart);
+    toggle.textContent = showPeValuationChart ? "-" : "+";
+    toggle.setAttribute("aria-expanded", String(showPeValuationChart));
+    toggle.setAttribute("aria-label", showPeValuationChart ? "Hide Market P/E chart" : "Show Market P/E chart");
+    chart.innerHTML = showPeValuationChart
+      ? `<img class="pe-valuation-image" src="./assets/sp-pe.png?v=20260818-mc-seed-75" alt="S&P 500 valuation measures showing forward P/E ratio, valuation bands, and latest valuation table" />`
+      : "";
+  });
 }
 function renderOverallAllocation() {
   const cards = document.querySelector("#overallAllocationCards");
@@ -1753,7 +2138,7 @@ function renderOverallAllocation() {
   const model = calculateOverallAllocation();
   if (!model) {
     cards.innerHTML = "";
-    chart.innerHTML = `<p class="frontier-note">Broad allocation needs Equity, Fixed Income, S&amp;P 500, and AGG assumptions.</p>`;
+    chart.innerHTML = `<p class="frontier-note">Overall allocation needs S&amp;P 500 and AGG benchmark assumptions.</p>`;
     return;
   }
 
@@ -1767,7 +2152,8 @@ function renderOverallAllocation() {
   const plotted = [
     ...model.broadCurve.map((point) => ({ x: point.volatility, y: point.expectedReturn })),
     ...model.blendPoints.map((point) => ({ x: point.volatility, y: point.expectedReturn })),
-    ...model.rows.map((row) => ({ x: row.chosen.volatility, y: row.chosen.expectedReturn })),
+    ...model.rows.map((row) => ({ x: row.chosen.stats.volatility, y: row.chosen.stats.expectedReturn })),
+    ...(model.assetPoints || []).map((point) => ({ x: point.stats.volatility, y: point.stats.expectedReturn })),
   ];
   const minVol = Math.min(...plotted.map((point) => point.x));
   const maxVol = Math.max(...plotted.map((point) => point.x));
@@ -1785,8 +2171,17 @@ function renderOverallAllocation() {
   const broadPath = pathFor(model.broadCurve);
   const blendPath = pathFor(model.blendPoints);
   const trianglePoints = (x, y, size = 7) => `${x.toFixed(1)},${(y - size).toFixed(1)} ${(x - size).toFixed(1)},${(y + size).toFixed(1)} ${(x + size).toFixed(1)},${(y + size).toFixed(1)}`;
+  const tooltipPosition = (x, y, tooltipW = 190, tooltipH = 48) => ({
+    x: x + tooltipW + 16 > width - pad.right ? x - tooltipW - 14 : x + 12,
+    y: Math.max(pad.top + 8, Math.min(y - 34, height - pad.bottom - tooltipH - 8)),
+  });
 
-  chart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Overall allocation risk return chart">
+  chart.innerHTML = `<div class="frontier-chart-grid">
+  <div class="asset-color-legend side-legend">
+    <div class="legend-heading">Asset Legend</div>
+    ${state.assets.map((asset, index) => `<span tabindex="0" role="button" data-frontier-asset="${escapeHtml(asset.name)}"><i style="--asset-color:${assetColor(asset, index)}"></i>${asset.name}</span>`).join("")}
+  </div>
+  <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Overall allocation risk return chart">
     <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
     <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
     ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line><text x="${pad.left - 12}" y="${yScale(tick) + 4}" text-anchor="end" class="frontier-axis">${pct(tick)}</text>`).join("")}
@@ -1794,20 +2189,31 @@ function renderOverallAllocation() {
     <path d="${broadPath}" fill="none" stroke="#3d5568" stroke-width="2.4" stroke-linecap="round"></path>
     <path d="${blendPath}" fill="none" stroke="#b98256" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round"></path>
     ${model.blendPoints.map((point) => `<g class="benchmark-point" tabindex="0" role="button" data-tooltip-title="${point.label}" data-tooltip-body="S&amp;P ${pct(point.spWeight)} | AGG ${pct(point.aggWeight)}"><circle cx="${xScale(point.volatility).toFixed(1)}" cy="${yScale(point.expectedReturn).toFixed(1)}" r="4.8" fill="${chartTheme.surface}" stroke="#b98256" stroke-width="2"></circle></g>`).join("")}
-    <polygon points="${trianglePoints(xScale(model.fixedIncome.volatility), yScale(model.fixedIncome.return))}" fill="#457b9d" stroke="#101820" stroke-width="1.2"></polygon>
-    <polygon points="${trianglePoints(xScale(model.equity.volatility), yScale(model.equity.return))}" fill="#005f73" stroke="#101820" stroke-width="1.2"></polygon>
+    ${(model.assetPoints || []).map((point, index) => {
+      const x = xScale(point.stats.volatility);
+      const y = yScale(point.stats.expectedReturn);
+      const tooltip = tooltipPosition(x, y);
+      return `<g class="asset-point" tabindex="0" role="button" data-asset-name="${escapeHtml(point.asset.name)}" data-tooltip-title="${escapeHtml(point.asset.name)}" data-tooltip-body="Return ${pct(point.stats.expectedReturn)} | Vol ${pct(point.stats.volatility)}">
+        <polygon points="${trianglePoints(x, y, 6)}" fill="${assetColor(point.asset, index)}" stroke="#101820" stroke-width="1.1"></polygon>
+        <g class="asset-tooltip" transform="translate(${tooltip.x.toFixed(1)}, ${tooltip.y.toFixed(1)})">
+          <rect x="0" y="0" width="190" height="48" rx="3"></rect>
+          <text x="10" y="18">${escapeHtml(point.asset.name)}</text>
+          <text x="10" y="36">Return ${pct(point.stats.expectedReturn)} | Vol ${pct(point.stats.volatility)}</text>
+        </g>
+      </g>`;
+    }).join("")}
     <rect x="${(xScale(model.agg.volatility) - 6).toFixed(1)}" y="${(yScale(model.agg.return) - 6).toFixed(1)}" width="12" height="12" fill="#8a8f98" stroke="#101820" stroke-width="1.2"></rect>
     <rect x="${(xScale(model.sp.volatility) - 6).toFixed(1)}" y="${(yScale(model.sp.return) - 6).toFixed(1)}" width="12" height="12" fill="#101820" stroke="#101820" stroke-width="1.2"></rect>
-    ${model.rows.map((row) => `<g class="selected-point" tabindex="0" role="button" data-tooltip-title="${row.profile}" data-tooltip-body="Equity ${roundedBroadMix(row.chosen).equityPct}% | Fixed Income ${roundedBroadMix(row.chosen).fixedIncomePct}%"><circle cx="${xScale(row.chosen.volatility).toFixed(1)}" cy="${yScale(row.chosen.expectedReturn).toFixed(1)}" r="6.2" fill="#00a95a" stroke="#101820" stroke-width="1.8"></circle></g>`).join("")}
+    ${model.rows.map((row) => `<g class="selected-point" tabindex="0" role="button" data-tooltip-title="${row.profile}" data-tooltip-body="${overallCategoryTooltip(row.categoryWeights)}"><circle cx="${xScale(row.chosen.stats.volatility).toFixed(1)}" cy="${yScale(row.chosen.stats.expectedReturn).toFixed(1)}" r="6.2" fill="#00a95a" stroke="#101820" stroke-width="1.8"></circle></g>`).join("")}
     <g transform="translate(${pad.left + 4}, 16)">
-      <line x1="0" y1="0" x2="26" y2="0" stroke="#3d5568" stroke-width="2.4"></line><text x="34" y="4" class="frontier-axis">Broad equity/fixed mix</text>
-      <line x1="206" y1="0" x2="232" y2="0" stroke="#b98256" stroke-width="2" stroke-dasharray="5 5"></line><text x="240" y="4" class="frontier-axis">S&amp;P/AGG blend</text>
-      <circle cx="392" cy="0" r="6" fill="#00a95a" stroke="#101820" stroke-width="1.5"></circle><text x="406" y="4" class="frontier-axis">Optimized targets</text>
-      <polygon points="560,-7 553,7 567,7" fill="#005f73" stroke="#101820" stroke-width="1.1"></polygon><text x="574" y="4" class="frontier-axis">Equity/FI points</text>
+      <line x1="0" y1="0" x2="26" y2="0" stroke="#3d5568" stroke-width="2.4"></line><text x="34" y="4" class="frontier-axis">Efficient Frontier</text>
+      <line x1="224" y1="0" x2="250" y2="0" stroke="#b98256" stroke-width="2" stroke-dasharray="5 5"></line><text x="258" y="4" class="frontier-axis">S&amp;P/AGG blend</text>
+      <circle cx="410" cy="0" r="6" fill="#00a95a" stroke="#101820" stroke-width="1.5"></circle><text x="424" y="4" class="frontier-axis">Optimized targets</text>
+      <polygon points="584,-7 577,7 591,7" fill="#005f73" stroke="#101820" stroke-width="1.1"></polygon><text x="598" y="4" class="frontier-axis">Sub-assets</text>
     </g>
     <text x="${width / 2}" y="${height - 6}" text-anchor="middle" class="frontier-axis">Annualized volatility</text>
     <text x="16" y="${height / 2}" text-anchor="middle" transform="rotate(-90 16 ${height / 2})" class="frontier-axis">Compound return</text>
-  </svg>`;
+  </svg></div>`;
 }
 function normalSample(rand) {
   const u1 = Math.max(rand(), 1e-12);
@@ -1881,6 +2287,21 @@ function simulateScenarioUniverse(portfolio, seed) {
   return paths;
 }
 
+function currentMonteCarloPortfolio() {
+  if (viewMode === "client") {
+    const model = calculateClientOverallAllocation();
+    const row = model?.rows?.find((item) => item.profile === selectedMcProfile);
+    const weights = row?.allocationChoice?.weights || row?.chosen?.weights;
+    if (!weights) return null;
+    return {
+      profileName: selectedMcProfile,
+      weights,
+      categoryWeights: row.categoryWeights || categoryWeightsFromWeights(weights),
+      stats: portfolioStats(weights, state.assets, state.correlation),
+    };
+  }
+  return results[selectedMcProfile] || null;
+}
 function renderMonteCarloControls() {
   const select = document.querySelector("#mcProfileSelect");
   const seedInput = document.querySelector("#mcScenarioSeed");
@@ -2034,9 +2455,10 @@ function renderMonteCarlo() {
   const chart = document.querySelector("#monteCarloChart");
   const assetChart = document.querySelector("#monteCarloAssetsChart");
   const assetBars = document.querySelector("#monteCarloAssetBarsChart");
-  if (!chart || !results[selectedMcProfile]) return;
+  if (!chart) return;
 
-  const portfolio = results[selectedMcProfile];
+  const portfolio = currentMonteCarloPortfolio();
+  if (!portfolio) return;
   const sp = benchmarkByName("S&P 500");
   const agg = benchmarkByName("AGG");
   if (!sp || !agg) {
@@ -2053,7 +2475,6 @@ function renderMonteCarlo() {
   const series = [
     { label: "S&P 500", expectedReturn: sp.return, volatility: sp.volatility, values: selectedPath["S&P 500"] },
     { label: selectedMcProfile, expectedReturn: portfolio.stats.expectedReturn, volatility: portfolio.stats.volatility, values: selectedPath[selectedMcProfile] },
-    { label: "AGG", expectedReturn: agg.return, volatility: agg.volatility, values: selectedPath.AGG },
   ];
   const years = [1, 2, 3, 4, 5];
   const annualSeries = series.map((row) => ({
@@ -2094,7 +2515,7 @@ function renderMonteCarlo() {
     <line x1="${pad.left}" y1="${zeroY}" x2="${width - pad.right}" y2="${zeroY}" stroke="#101820" stroke-width="1.2"></line>
     ${years.map((year, index) => `<text x="${xCenter(index)}" y="${height - 18}" text-anchor="middle" class="frontier-axis">Year ${year}</text>`).join("")}
     ${annualSeries.map((row, seriesIndex) => row.annualReturns.map((value, yearIndex) => {
-      const x = xCenter(yearIndex) - barW * 1.65 + seriesIndex * barW * 1.15;
+      const x = xCenter(yearIndex) - ((annualSeries.length - 1) * barW * 1.15) / 2 + seriesIndex * barW * 1.15 - barW / 2;
       const y = Math.min(yScale(value), zeroY);
       const h = Math.max(2, Math.abs(zeroY - yScale(value)));
       const labelY = value >= 0 ? y - 6 : y + h + 14;
@@ -2248,8 +2669,6 @@ function renderFrontierChart(selected, frontier, assetPoints, profile, options =
     <rect x="${bandX.toFixed(1)}" y="${pad.top}" width="${bandWidth.toFixed(1)}" height="${plotH}" fill="#00a95a" opacity="0.11"></rect>
     <line x1="${bandX.toFixed(1)}" y1="${pad.top}" x2="${bandX.toFixed(1)}" y2="${height - pad.bottom}" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="5 5"></line>
     <line x1="${(bandX + bandWidth).toFixed(1)}" y1="${pad.top}" x2="${(bandX + bandWidth).toFixed(1)}" y2="${height - pad.bottom}" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="5 5"></line>
-    ${regionShape}
-    ${visibleRegionPoints.map((point) => `<circle cx="${xScale(point.x).toFixed(1)}" cy="${yScale(point.y).toFixed(1)}" r="1.45" fill="#2f80b7" opacity="0.18"></circle>`).join("")}
     ${spBenchmark && aggBenchmark ? `<line x1="${xScale(aggBenchmark.stats.volatility).toFixed(1)}" y1="${yScale(aggBenchmark.stats.expectedReturn).toFixed(1)}" x2="${xScale(spBenchmark.stats.volatility).toFixed(1)}" y2="${yScale(spBenchmark.stats.expectedReturn).toFixed(1)}" stroke="#536575" stroke-width="1.6" stroke-dasharray="5 4" opacity="0.9"></line>` : ""}
     ${benchmarkBlendPoints.map((blend) => {
       const x = xScale(blend.stats.volatility);
@@ -2343,6 +2762,13 @@ function renderAll() {
   if (monteCarloIsActive()) renderMonteCarlo();
 }
 
+function hasConstrainedResults() {
+  return Object.keys(state?.profiles || {}).every((name) => results[name]);
+}
+
+function ensureConstrainedResults() {
+  if (!hasConstrainedResults()) runOptimization();
+}
 function activateTab(tabName) {
   document.querySelectorAll(".tab").forEach((x) => x.classList.remove("active"));
   document.querySelectorAll(".page").forEach((x) => x.classList.remove("active"));
@@ -2351,7 +2777,9 @@ function activateTab(tabName) {
   const page = document.querySelector(`#${tabName}`);
   if (tab) tab.classList.add("active");
   if (page) page.classList.add("active");
-  if (tabName === "mvo" || tabName === "clientPortfolio") refreshMvo();
+  if (tabName === "mvo" || tabName === "monteCarlo") ensureConstrainedResults();
+  if (tabName === "mvo") refreshMvo();
+  if (tabName === "clientPortfolio") renderClientPortfolio();
   if (tabName === "overallAllocation") renderOverallAllocation();
   if (tabName === "monteCarlo") renderMonteCarlo();
 }
@@ -2381,11 +2809,11 @@ function resetModel() {
   state = clone(baseData);
   selectedAssumptionSet = state.selectedAssumptionSet || "CORE";
   applyAssumptionSet(selectedAssumptionSet);
-  selectedVolatilityCase = "Within 1 Std. Dev.: 17.2x P/E";
-  selectedInterestRateCase = "Unchanged";
+  selectedVolatilityCase = "Neutral";
+  selectedInterestRateCase = "Neutral";
   selectedClientProfile = "Moderate";
   selectedMcProfile = "Moderate";
-  monteCarloSeed = 100;
+  monteCarloSeed = 75;
   selectedMcAssets = null;
   selectedAllocationPreset = "CORE";
   selectedSubAllocationPreset = "CORE";
@@ -2468,7 +2896,7 @@ function monteCarloIsActive() {
 
 function scheduleMvoRefresh(force = false) {
   mvoDirty = true;
-  if (!force && !mvoIsActive() && !clientPortfolioIsActive()) return;
+  if (!force && !mvoIsActive()) return;
   window.clearTimeout(mvoTimer);
   mvoTimer = window.setTimeout(runOptimization, 90);
 }
@@ -2482,7 +2910,7 @@ function refreshLiveOutputs() {
   renderOverallAllocation();
   renderFundModels();
   renderClientPortfolio();
-  if (mvoIsActive() || clientPortfolioIsActive()) refreshMvo();
+  if (mvoIsActive()) refreshMvo();
 }
 
 function scheduleLiveUpdate() {
@@ -2678,14 +3106,29 @@ document.addEventListener("change", (event) => {
     runOptimization();
     return;
   }
-  if (event.target.matches("#volatilityCaseSelect") || event.target.matches("#overallVolatilityCaseSelect")) {
+  if (event.target.matches("#volatilityCaseSelect")) {
     applyVolatilityCase(event.target.value);
-    runOptimization();
+    results = {};
+    renderProfiles();
+    renderOverallAllocation();
+    renderClientPortfolio();
+    if (mvoIsActive() || monteCarloIsActive()) ensureConstrainedResults();
     return;
   }
-  if (event.target.matches("#overallInterestRateSelect")) {
-    selectedInterestRateCase = interestRateMultipliers[event.target.value] === undefined ? "Unchanged" : event.target.value;
+  if (event.target.matches("#overallVolatilityCaseSelect") || event.target.matches("#clientOverallVolatilityCaseSelect")) {
+    applyVolatilityCase(event.target.value);
+    results = {};
+    renderProfiles();
     renderOverallAllocation();
+    renderClientPortfolio();
+    if (viewMode === "client" && monteCarloIsActive()) renderMonteCarlo();
+    return;
+  }
+  if (event.target.matches("#overallInterestRateSelect") || event.target.matches("#clientOverallInterestRateSelect")) {
+    selectedInterestRateCase = interestRateMultipliers[event.target.value] === undefined ? "Neutral" : event.target.value;
+    renderOverallAllocation();
+    renderClientPortfolio();
+    if (viewMode === "client" && monteCarloIsActive()) renderMonteCarlo();
     return;
   }
   if (!event.target.matches("input[data-path]")) return;
@@ -2693,7 +3136,7 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("click", (event) => {
-  if (event.target.closest("#togglePeChart")) {
+  if (event.target.closest("#togglePeChart") || event.target.closest("#clientTogglePeChart")) {
     showPeValuationChart = !showPeValuationChart;
     renderPeValuationChart();
     return;
@@ -2720,7 +3163,9 @@ document.addEventListener("click", (event) => {
     document.querySelectorAll(".page").forEach((x) => x.classList.remove("active"));
     tab.classList.add("active");
     document.querySelector(`#${tab.dataset.tab}`).classList.add("active");
-    if (tab.dataset.tab === "mvo" || tab.dataset.tab === "clientPortfolio") refreshMvo();
+    if (tab.dataset.tab === "mvo" || tab.dataset.tab === "monteCarlo") ensureConstrainedResults();
+    if (tab.dataset.tab === "mvo") refreshMvo();
+    if (tab.dataset.tab === "clientPortfolio") renderClientPortfolio();
     if (tab.dataset.tab === "overallAllocation") renderOverallAllocation();
     if (tab.dataset.tab === "monteCarlo") renderMonteCarlo();
   }
@@ -2765,7 +3210,7 @@ window.addEventListener("afterprint", () => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260817-overall-desc-pe-chart", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260818-mc-seed-75", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
@@ -2775,7 +3220,6 @@ async function init() {
     applySubAllocationPreset(selectedSubAllocationPreset);
     ensureVolatilityModel();
     applyVolatilityCase(selectedVolatilityCase);
-    runOptimization();
     setViewMode(viewMode);
   } catch (error) {
     const message = `Model data did not load: ${error.message}`;
@@ -2785,6 +3229,50 @@ async function init() {
 }
 
 init();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

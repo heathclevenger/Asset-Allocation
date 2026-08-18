@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Portfolio Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260817-rate-pe" />
+    <link rel="stylesheet" href="./styles.css?v=20260818-mc-seed-75" />
   </head>
   <body data-view-mode="client">
     <div class="shell">
@@ -78,7 +78,7 @@
           <div class="toolbar">
             <div>
               <h2>Overall Allocation</h2>
-              <p>This page looks only at the broad stock and bond decision. It uses blended equity and fixed income assumptions to estimate the closest mix to each benchmark volatility target. The Market P/E and Interest Rate Prediction settings adjust those benchmark volatility targets higher or lower before the optimizer finds the closest stock and bond mix.</p>
+              <p>This page looks only at the broad stock and bond decision. It uses blended equity and fixed income assumptions to estimate the closest mix to each benchmark volatility target. The Market P/E and Monetary Policy settings adjust those benchmark volatility targets higher or lower before the optimizer finds the closest stock and bond mix.</p>
             </div>
             <div class="overall-adjustment-controls">
               <div class="select-control compact market-pe-control">
@@ -91,7 +91,7 @@
                 </div>
               </div>
               <div class="select-control compact">
-                <label for="overallInterestRateSelect">Interest Rate Prediction</label>
+                <label for="overallInterestRateSelect">Monetary Policy</label>
                 <select id="overallInterestRateSelect"></select>
               </div>
             </div>
@@ -261,29 +261,41 @@
         </section>
 
         <section id="clientPortfolio" class="page active">
-          <div class="toolbar">
+          <div class="toolbar client-portfolio-heading">
             <div>
-              <h2>Portfolio</h2>
-              <p>This page gives a simplified view of the model portfolio. The top section shows the broad allocation across risk profiles. Select a portfolio to review its detailed weights and where it sits on the risk and return chart.</p>
-            </div>
-            <div class="select-control client-portfolio-controls">
-              <div class="control-field">
-                <label for="clientProfileSelect">Portfolio</label>
-                <select id="clientProfileSelect"></select>
-              </div>
+              <h2>Overall Allocation</h2>
+              <p>This page looks only at the broad stock and bond decision. It uses blended equity and fixed income assumptions to estimate the closest mix to each benchmark volatility target. The Market P/E and Monetary Policy settings adjust those benchmark volatility targets higher or lower before the optimizer finds the closest stock and bond mix.</p>
             </div>
           </div>
           <div class="panel">
             <div class="panel-title">Allocation Weights</div>
-            <div id="clientAllocationPieCharts" class="pie-grid allocation-pie-grid"></div>
+            <div id="clientBenchmarkVolatilityAssumptions" class="benchmark-volatility-strip"></div>
+            <div id="clientAllocationPieCharts" class="overall-allocation-cards"></div>
+          </div>
+          <div class="client-adjustment-row">
+            <div class="overall-adjustment-controls">
+              <div class="select-control compact market-pe-control">
+                <div class="market-pe-label-row">
+                  <label for="clientOverallVolatilityCaseSelect">Market P/E</label>
+                  <button type="button" id="clientTogglePeChart" class="icon-toggle" aria-expanded="false" aria-label="Show Market P/E chart">+</button>
+                </div>
+                <div class="market-pe-row">
+                  <select id="clientOverallVolatilityCaseSelect"></select>
+                </div>
+              </div>
+              <div class="select-control compact">
+                <label for="clientOverallInterestRateSelect">Monetary Policy</label>
+                <select id="clientOverallInterestRateSelect"></select>
+              </div>
+            </div>
+          </div>
+          <div id="clientPeValuationPanel" class="panel pe-valuation-panel collapsed">
+            <div class="panel-title">S&amp;P 500 Valuation Measures</div>
+            <div id="clientPeValuationChart" class="pe-valuation-chart"></div>
           </div>
           <div class="panel">
-            <div class="panel-title">Portfolio Weights</div>
-            <div id="clientWeightCharts" class="mvo-weight-charts"></div>
-          </div>
-          <div class="panel">
-            <div class="panel-title">Efficient Frontier</div>
-            <div id="clientFrontierChart" class="frontier-chart"><p class="frontier-note">Calculating efficient frontier...</p></div>
+            <div class="panel-title">Broad Risk/Return Map</div>
+            <div id="clientFrontierChart" class="frontier-chart"><p class="frontier-note">Calculating broad allocation...</p></div>
           </div>
         </section>
 
@@ -294,9 +306,33 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260817-rate-pe"></script>
+    <script src="./app.js?v=20260818-mc-seed-75"></script>
   </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
