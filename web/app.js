@@ -29,6 +29,7 @@ let selectedVolatilityCase = "Neutral";
 let selectedInterestRateCase = "Neutral";
 let prePdfAssumptionSet = null;
 let showPeValuationChart = false;
+let showProviderLogoPanel = false;
 let overallFrontierCache = null;
 let clientOverallFrontierCache = null;
 
@@ -1700,6 +1701,19 @@ function renderClientPortfolioControls() {
   }
 }
 
+function renderProviderLogoPanel() {
+  const providers = [
+    { name: "BlackRock", className: "blackrock", src: "./assets/logo-blackrock.png" },
+    { name: "Capital Group", className: "capital-group", src: "./assets/logo-capital-group.png" },
+    { name: "Invesco", className: "invesco", src: "./assets/logo-invesco.png" },
+    { name: "JPM", className: "jpm", src: "./assets/logo-jpm.png" },
+    { name: "Vanguard", className: "vanguard", src: "./assets/logo-vanguard.png" },
+  ];
+  return `<div class="provider-logo-panel ${showProviderLogoPanel ? "" : "collapsed"}" aria-hidden="${showProviderLogoPanel ? "false" : "true"}">
+    ${providers.map((provider) => `<div class="provider-logo-card ${provider.className}" aria-label="${provider.name} assumption provider logo"><img src="${provider.src}?v=20260819-clickable-benchmarks" alt="${provider.name}" loading="lazy" /></div>`).join("")}
+  </div>`;
+}
+
 function renderBenchmarkVolatilityStrip(targetSelector, model) {
   const target = document.querySelector(targetSelector);
   if (!target) return;
@@ -1707,13 +1721,20 @@ function renderBenchmarkVolatilityStrip(targetSelector, model) {
     target.innerHTML = "";
     return;
   }
+  const toggleId = targetSelector.includes("client") ? "clientToggleProviderLogos" : "toggleProviderLogos";
   target.innerHTML = `
-    <div class="benchmark-vol-card compact">
-      <span>10yr Volatility Assumption</span>
-      <div class="benchmark-vol-values">
-        <strong>S&amp;P 500: ${pct(model.sp.volatility)}</strong>
-        <strong>AGG: ${pct(model.agg.volatility)}</strong>
+    <div class="benchmark-vol-cluster">
+      <div class="benchmark-vol-row">
+        <div class="benchmark-vol-card compact">
+          <span>10yr Volatility Assumption</span>
+          <div class="benchmark-vol-values">
+            <strong>S&amp;P 500: ${pct(model.sp.volatility)}</strong>
+            <strong>AGG: ${pct(model.agg.volatility)}</strong>
+          </div>
+        </div>
+        <button type="button" id="${toggleId}" class="icon-toggle provider-toggle" aria-expanded="${showProviderLogoPanel}" aria-label="${showProviderLogoPanel ? "Hide assumption provider logos" : "Show assumption provider logos"}">${showProviderLogoPanel ? "-" : "+"}</button>
       </div>
+      ${renderProviderLogoPanel()}
     </div>`;
 }
 function renderClientPortfolio() {
@@ -1741,7 +1762,7 @@ function renderClientPortfolio() {
   const plotted = [
     ...model.broadCurve.map((point) => ({ x: point.volatility, y: point.expectedReturn })),
     ...model.blendPoints.map((point) => ({ x: point.volatility, y: point.expectedReturn })),
-    ...model.rows.map((row) => ({ x: row.chosen.stats.volatility, y: row.chosen.stats.expectedReturn })),
+    ...model.rows.map((row) => ({ x: (row.displayPoint || row.chosen.stats).volatility, y: (row.displayPoint || row.chosen.stats).expectedReturn })),
     ...subAssetPoints.map((point) => ({ x: point.volatility, y: point.expectedReturn })),
   ];
   const minVol = Math.min(...plotted.map((point) => point.x));
@@ -1791,9 +1812,12 @@ function renderClientPortfolio() {
         </g>
       </g>`;
     }).join("")}
-    <rect x="${(xScale(model.agg.volatility) - 6).toFixed(1)}" y="${(yScale(model.agg.return) - 6).toFixed(1)}" width="12" height="12" fill="#8a8f98" stroke="#101820" stroke-width="1.2"></rect>
-    <rect x="${(xScale(model.sp.volatility) - 6).toFixed(1)}" y="${(yScale(model.sp.return) - 6).toFixed(1)}" width="12" height="12" fill="#101820" stroke="#101820" stroke-width="1.2"></rect>
-    ${model.rows.map((row) => `<g class="selected-point" tabindex="0" role="button" data-tooltip-title="${row.profile}" data-tooltip-body="${overallCategoryTooltip(row.categoryWeights)}"><circle cx="${xScale(row.chosen.stats.volatility).toFixed(1)}" cy="${yScale(row.chosen.stats.expectedReturn).toFixed(1)}" r="6.2" fill="#00a95a" stroke="#101820" stroke-width="1.8"></circle></g>`).join("")}
+    <g class="benchmark-point" tabindex="0" role="button" data-tooltip-title="AGG" data-tooltip-body="Return ${pct(model.agg.return)} | Vol ${pct(model.agg.volatility)}"><rect x="${(xScale(model.agg.volatility) - 6).toFixed(1)}" y="${(yScale(model.agg.return) - 6).toFixed(1)}" width="12" height="12" fill="#8a8f98" stroke="#101820" stroke-width="1.2"></rect></g>
+    <g class="benchmark-point" tabindex="0" role="button" data-tooltip-title="S&amp;P 500" data-tooltip-body="Return ${pct(model.sp.return)} | Vol ${pct(model.sp.volatility)}"><rect x="${(xScale(model.sp.volatility) - 6).toFixed(1)}" y="${(yScale(model.sp.return) - 6).toFixed(1)}" width="12" height="12" fill="#101820" stroke="#101820" stroke-width="1.2"></rect></g>
+    ${model.rows.map((row) => {
+      const point = row.displayPoint || row.chosen.stats;
+      return `<g class="selected-point" tabindex="0" role="button" data-tooltip-title="${row.profile}" data-tooltip-body="${overallCategoryTooltip(row.categoryWeights)}"><circle cx="${xScale(point.volatility).toFixed(1)}" cy="${yScale(point.expectedReturn).toFixed(1)}" r="6.2" fill="#00a95a" stroke="#101820" stroke-width="1.8"></circle></g>`;
+    }).join("")}
     <g transform="translate(${pad.left + 4}, 16)">
       <line x1="0" y1="0" x2="26" y2="0" stroke="#3d5568" stroke-width="2.4"></line><text x="34" y="4" class="frontier-axis">Efficient Frontier</text>
       <line x1="206" y1="0" x2="232" y2="0" stroke="#b98256" stroke-width="2" stroke-dasharray="5 5"></line><text x="240" y="4" class="frontier-axis">S&amp;P/AGG blend</text>
@@ -1873,6 +1897,32 @@ function selectedPortfolioAtTargetVolatility(frontier, targetVolatility) {
   ), rows[0]);
 }
 
+function frontierDisplayPointAtVolatility(frontier, targetVolatility) {
+  const rows = frontier
+    .filter((point) => point?.stats)
+    .sort((a, b) => a.stats.volatility - b.stats.volatility);
+  if (!rows.length) return null;
+  if (targetVolatility <= rows[0].stats.volatility) return { volatility: rows[0].stats.volatility, expectedReturn: rows[0].stats.expectedReturn };
+  if (targetVolatility >= rows.at(-1).stats.volatility) return { volatility: rows.at(-1).stats.volatility, expectedReturn: rows.at(-1).stats.expectedReturn };
+
+  for (let i = 0; i < rows.length - 1; i += 1) {
+    const left = rows[i].stats;
+    const right = rows[i + 1].stats;
+    if (targetVolatility < left.volatility || targetVolatility > right.volatility) continue;
+    const span = Math.max(right.volatility - left.volatility, 1e-10);
+    const mix = Math.max(0, Math.min(1, (targetVolatility - left.volatility) / span));
+    return {
+      volatility: targetVolatility,
+      expectedReturn: left.expectedReturn * (1 - mix) + right.expectedReturn * mix,
+    };
+  }
+
+  const closest = rows.reduce((best, point) => (
+    Math.abs(point.stats.volatility - targetVolatility) < Math.abs(best.stats.volatility - targetVolatility) ? point : best
+  ), rows[0]);
+  return { volatility: closest.stats.volatility, expectedReturn: closest.stats.expectedReturn };
+}
+
 function calculateOverallAllocation() {
   const sp = benchmarkByName("S&P 500");
   const agg = benchmarkByName("AGG");
@@ -1904,7 +1954,8 @@ function calculateOverallAllocation() {
     const targetVolatility = blend.volatility * volatilityMultiplier;
     const chosen = selectedPortfolioAtTargetVolatility(frontierSource.frontier, targetVolatility);
     const categoryWeights = chosen?.weights ? categoryWeightsFromWeights(chosen.weights) : {};
-    return { ...target, targetVolatility, unadjustedTargetVolatility: blend.volatility, volatilityMultiplier, peVolatilityMultiplier, rateVolatilityMultiplier, blend, chosen, categoryWeights };
+    const displayPoint = frontierDisplayPointAtVolatility(frontierSource.frontier, targetVolatility);
+    return { ...target, targetVolatility, unadjustedTargetVolatility: blend.volatility, volatilityMultiplier, peVolatilityMultiplier, rateVolatilityMultiplier, blend, chosen, displayPoint, categoryWeights };
   });
   return { sp, agg, blendPoints, broadCurve, assetPoints: overallDisplayAssetPoints(), rows };
 }
@@ -2000,7 +2051,8 @@ function calculateClientOverallAllocation() {
     const neutralChoice = selectedConstrainedPortfolioAtPercentile(target.profile, constrainedFrontierSource.frontier, defaultVolatilityPercentiles[target.profile] ?? allocationPercentile);
     const categoryWeights = allocationChoice?.chosen?.weights ? categoryWeightsFromWeights(allocationChoice.chosen.weights) : {};
     const neutralCategoryWeights = neutralChoice?.chosen?.weights ? categoryWeightsFromWeights(neutralChoice.chosen.weights) : null;
-    return { ...target, targetVolatility, unadjustedTargetVolatility: blend.volatility, volatilityMultiplier, peVolatilityMultiplier, rateVolatilityMultiplier, blend, chosen: displayChoice || allocationChoice?.chosen, allocationChoice: allocationChoice?.chosen, allocationPercentile, allocationTargetVolatility: allocationChoice?.targetVolatility, categoryWeights, neutralCategoryWeights };
+    const displayPoint = frontierDisplayPointAtVolatility(displayFrontierSource.frontier, targetVolatility);
+    return { ...target, targetVolatility, unadjustedTargetVolatility: blend.volatility, volatilityMultiplier, peVolatilityMultiplier, rateVolatilityMultiplier, blend, chosen: displayChoice || allocationChoice?.chosen, displayPoint, allocationChoice: allocationChoice?.chosen, allocationPercentile, allocationTargetVolatility: allocationChoice?.targetVolatility, categoryWeights, neutralCategoryWeights };
   });
   return { sp, agg, blendPoints, broadCurve, assetPoints: displayFrontierSource.assetPoints, rows };
 }
@@ -2116,7 +2168,7 @@ function renderPeValuationChart() {
     toggle.setAttribute("aria-expanded", String(showPeValuationChart));
     toggle.setAttribute("aria-label", showPeValuationChart ? "Hide Market P/E chart" : "Show Market P/E chart");
     chart.innerHTML = showPeValuationChart
-      ? `<img class="pe-valuation-image" src="./assets/sp-pe.png?v=20260818-mc-seed-75" alt="S&P 500 valuation measures showing forward P/E ratio, valuation bands, and latest valuation table" />`
+      ? `<img class="pe-valuation-image" src="./assets/sp-pe.png?v=20260819-clickable-benchmarks" alt="S&P 500 valuation measures showing forward P/E ratio, valuation bands, and latest valuation table" />`
       : "";
   });
 }
@@ -2152,7 +2204,7 @@ function renderOverallAllocation() {
   const plotted = [
     ...model.broadCurve.map((point) => ({ x: point.volatility, y: point.expectedReturn })),
     ...model.blendPoints.map((point) => ({ x: point.volatility, y: point.expectedReturn })),
-    ...model.rows.map((row) => ({ x: row.chosen.stats.volatility, y: row.chosen.stats.expectedReturn })),
+    ...model.rows.map((row) => ({ x: (row.displayPoint || row.chosen.stats).volatility, y: (row.displayPoint || row.chosen.stats).expectedReturn })),
     ...(model.assetPoints || []).map((point) => ({ x: point.stats.volatility, y: point.stats.expectedReturn })),
   ];
   const minVol = Math.min(...plotted.map((point) => point.x));
@@ -2202,9 +2254,12 @@ function renderOverallAllocation() {
         </g>
       </g>`;
     }).join("")}
-    <rect x="${(xScale(model.agg.volatility) - 6).toFixed(1)}" y="${(yScale(model.agg.return) - 6).toFixed(1)}" width="12" height="12" fill="#8a8f98" stroke="#101820" stroke-width="1.2"></rect>
-    <rect x="${(xScale(model.sp.volatility) - 6).toFixed(1)}" y="${(yScale(model.sp.return) - 6).toFixed(1)}" width="12" height="12" fill="#101820" stroke="#101820" stroke-width="1.2"></rect>
-    ${model.rows.map((row) => `<g class="selected-point" tabindex="0" role="button" data-tooltip-title="${row.profile}" data-tooltip-body="${overallCategoryTooltip(row.categoryWeights)}"><circle cx="${xScale(row.chosen.stats.volatility).toFixed(1)}" cy="${yScale(row.chosen.stats.expectedReturn).toFixed(1)}" r="6.2" fill="#00a95a" stroke="#101820" stroke-width="1.8"></circle></g>`).join("")}
+    <g class="benchmark-point" tabindex="0" role="button" data-tooltip-title="AGG" data-tooltip-body="Return ${pct(model.agg.return)} | Vol ${pct(model.agg.volatility)}"><rect x="${(xScale(model.agg.volatility) - 6).toFixed(1)}" y="${(yScale(model.agg.return) - 6).toFixed(1)}" width="12" height="12" fill="#8a8f98" stroke="#101820" stroke-width="1.2"></rect></g>
+    <g class="benchmark-point" tabindex="0" role="button" data-tooltip-title="S&amp;P 500" data-tooltip-body="Return ${pct(model.sp.return)} | Vol ${pct(model.sp.volatility)}"><rect x="${(xScale(model.sp.volatility) - 6).toFixed(1)}" y="${(yScale(model.sp.return) - 6).toFixed(1)}" width="12" height="12" fill="#101820" stroke="#101820" stroke-width="1.2"></rect></g>
+    ${model.rows.map((row) => {
+      const point = row.displayPoint || row.chosen.stats;
+      return `<g class="selected-point" tabindex="0" role="button" data-tooltip-title="${row.profile}" data-tooltip-body="${overallCategoryTooltip(row.categoryWeights)}"><circle cx="${xScale(point.volatility).toFixed(1)}" cy="${yScale(point.expectedReturn).toFixed(1)}" r="6.2" fill="#00a95a" stroke="#101820" stroke-width="1.8"></circle></g>`;
+    }).join("")}
     <g transform="translate(${pad.left + 4}, 16)">
       <line x1="0" y1="0" x2="26" y2="0" stroke="#3d5568" stroke-width="2.4"></line><text x="34" y="4" class="frontier-axis">Efficient Frontier</text>
       <line x1="224" y1="0" x2="250" y2="0" stroke="#b98256" stroke-width="2" stroke-dasharray="5 5"></line><text x="258" y="4" class="frontier-axis">S&amp;P/AGG blend</text>
@@ -3136,6 +3191,12 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("click", (event) => {
+  if (event.target.closest("#toggleProviderLogos") || event.target.closest("#clientToggleProviderLogos")) {
+    showProviderLogoPanel = !showProviderLogoPanel;
+    renderOverallAllocation();
+    renderClientPortfolio();
+    return;
+  }
   if (event.target.closest("#togglePeChart") || event.target.closest("#clientTogglePeChart")) {
     showPeValuationChart = !showPeValuationChart;
     renderPeValuationChart();
@@ -3210,7 +3271,7 @@ window.addEventListener("afterprint", () => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260818-mc-seed-75", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260819-clickable-benchmarks", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });

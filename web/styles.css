@@ -1964,7 +1964,75 @@ footer {
   flex-wrap: wrap;
 }
 
-.overall-allocation-card {
+
+.benchmark-vol-cluster {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: min(760px, 100%);
+}
+
+.benchmark-vol-row {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.provider-toggle {
+  align-self: stretch;
+  width: 36px;
+  min-height: 100%;
+  border-color: rgba(61, 85, 104, 0.35);
+  background: var(--core-blue-dark);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.provider-logo-panel {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(96px, 1fr));
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  background: rgba(61, 85, 104, 0.06);
+  border: 1px solid rgba(61, 85, 104, 0.18);
+}
+
+.provider-logo-panel.collapsed {
+  display: none;
+}
+
+.provider-logo-card {
+  display: grid;
+  place-items: center;
+  min-height: 64px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid rgba(61, 85, 104, 0.18);
+  overflow: hidden;
+}
+
+.provider-logo-card img {
+  display: block;
+  width: 100%;
+  height: 48px;
+  object-fit: contain;
+}
+
+.provider-logo-card.capital-group img {
+  height: 54px;
+}
+
+.provider-logo-card.jpm img {
+  height: 56px;
+}
+
+.provider-logo-card.vanguard img {
+  height: 44px;
+}.overall-allocation-card {
   background: var(--row-alt);
   border: 1px solid rgba(61, 85, 104, 0.14);
   border-top: 5px solid var(--core-blue-dark);
