@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Portfolio Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260819-clickable-benchmarks" />
+    <link rel="stylesheet" href="./styles.css?v=20260828-mc-distribution-select-v1" />
   </head>
   <body data-view-mode="client">
     <div class="shell">
@@ -230,22 +230,32 @@
           <div class="toolbar">
             <div>
               <h2>Monte Carlo</h2>
-              <p>This page shows one hypothetical five-year return path based on the selected scenario number. The simulation uses the current return, volatility, and correlation assumptions. You can change the portfolio or scenario to compare how different risk profiles behave under the same market path.</p>
+              <p>This page shows a hypothetical ten-year range of outcomes based on the selected portfolio. The simulation uses the current return and volatility assumptions from the selected allocation. The percentile paths show weaker, median, and stronger potential outcomes across the simulated return paths.</p>
             </div>
             <div class="select-control">
               <label for="mcProfileSelect">Portfolio</label>
               <select id="mcProfileSelect"></select>
             </div>
-            <div class="select-control compact">
+            <div class="select-control compact scenario-control">
               <label for="mcScenarioSeed">Scenario</label>
               <input id="mcScenarioSeed" type="number" min="1" step="1" value="100" />
             </div>
           </div>
           <div class="panel">
-            <div class="panel-title">Hypothetical Annual Return Scenario</div>
+            <div class="panel-title">Hypothetical Return Range</div>
             <div id="monteCarloChart" class="monte-carlo-chart"><p class="frontier-note">Calculating simulation...</p></div>
           </div>
-          <div class="panel">
+          <div class="panel client-mc-distribution-panel">
+            <div class="panel-header-row">
+              <div class="panel-title">Return Distribution</div>
+              <div class="select-control compact panel-select-control">
+                <label for="mcDistributionProfileSelect">Portfolio</label>
+                <select id="mcDistributionProfileSelect"></select>
+              </div>
+            </div>
+            <div id="monteCarloDistributionChart" class="monte-carlo-chart"><p class="frontier-note">Calculating distribution...</p></div>
+          </div>
+          <div class="panel mc-sub-sleeve-panel">
             <div class="panel-title">Sub-Sleeve Annual Time-Weighted Return Path</div>
             <div class="asset-toggle-actions">
               <button type="button" id="selectAllMcAssets">Select All</button>
@@ -254,7 +264,7 @@
             <div id="monteCarloAssetToggles" class="asset-toggle-grid"></div>
             <div id="monteCarloAssetsChart" class="monte-carlo-chart"><p class="frontier-note">Calculating simulation...</p></div>
           </div>
-          <div class="panel">
+          <div class="panel mc-sub-sleeve-panel">
             <div class="panel-title">Sub-Sleeve Five-Year CAGR</div>
             <div id="monteCarloAssetBarsChart" class="monte-carlo-chart"><p class="frontier-note">Calculating simulation...</p></div>
           </div>
@@ -309,9 +319,17 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260819-clickable-benchmarks"></script>
+    <script src="./app.js?v=20260828-mc-distribution-select-v1"></script>
   </body>
 </html>
+
+
+
+
+
+
+
+
 
 
 

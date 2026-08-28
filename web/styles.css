@@ -2032,7 +2032,9 @@ footer {
 
 .provider-logo-card.vanguard img {
   height: 44px;
-}.overall-allocation-card {
+}
+
+.overall-allocation-card {
   background: var(--row-alt);
   border: 1px solid rgba(61, 85, 104, 0.14);
   border-top: 5px solid var(--core-blue-dark);
@@ -2237,3 +2239,225 @@ footer {
 
 
 
+
+@media print {
+  @page {
+    size: letter landscape;
+    margin: 0.22in;
+  }
+
+  html,
+  body {
+    width: 11in;
+    min-height: 0;
+    background: var(--surface) !important;
+    overflow: visible !important;
+  }
+
+  body {
+    font-size: 9px;
+  }
+
+  .shell {
+    width: 100%;
+    max-width: none;
+    padding: 0 !important;
+  }
+
+  .masthead,
+  .nav-row,
+  .tabs,
+  .model-actions,
+  .settings-button,
+  .view-mode-menu,
+  footer {
+    display: none !important;
+  }
+
+  main {
+    display: block !important;
+  }
+
+  .page,
+  .page.active,
+  .dashboard-panel,
+  .dashboard-panel.active {
+    display: none !important;
+    break-before: auto !important;
+    page-break-before: auto !important;
+  }
+
+  .page.active,
+  .page.active .dashboard-panel.active {
+    display: block !important;
+  }
+
+  .page.active {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .toolbar {
+    margin: 0 0 6px !important;
+  }
+
+  h2 {
+    font-size: 14px !important;
+    margin: 0 0 3px !important;
+  }
+
+  p {
+    font-size: 8.5px !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+  }
+
+  .panel {
+    margin-top: 6px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .panel-title {
+    font-size: 10px !important;
+    padding: 5px 8px !important;
+  }
+
+  #clientPortfolio .benchmark-volatility-strip {
+    margin: 0 !important;
+  }
+
+  #clientPortfolio .benchmark-vol-cluster {
+    width: 100% !important;
+    gap: 5px !important;
+  }
+
+  #clientPortfolio .benchmark-vol-card {
+    width: min(360px, 100%) !important;
+    padding: 7px 10px !important;
+    gap: 4px !important;
+  }
+
+  #clientPortfolio .provider-toggle,
+  #clientPortfolio .client-adjustment-row,
+  #clientPortfolio .pe-valuation-panel.collapsed {
+    display: none !important;
+  }
+
+  #clientPortfolio .provider-logo-panel {
+    grid-template-columns: repeat(5, 1fr) !important;
+    padding: 6px !important;
+    gap: 6px !important;
+  }
+
+  #clientPortfolio .provider-logo-card {
+    min-height: 38px !important;
+    padding: 5px 8px !important;
+  }
+
+  #clientPortfolio .provider-logo-card img {
+    height: 30px !important;
+  }
+
+  #clientPortfolio .overall-allocation-cards {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 6px !important;
+    margin-top: 6px !important;
+  }
+
+  #clientPortfolio .overall-allocation-card {
+    padding: 7px 6px !important;
+    border-top-width: 3px !important;
+  }
+
+  #clientPortfolio .overall-allocation-card h3 {
+    font-size: 10px !important;
+    margin-bottom: 5px !important;
+  }
+
+  #clientPortfolio .overall-card-body {
+    grid-template-columns: 58px 1fr !important;
+    gap: 5px !important;
+  }
+
+  #clientPortfolio .overall-card-body svg {
+    width: 58px !important;
+    height: 58px !important;
+  }
+
+  #clientPortfolio .overall-card-legend {
+    gap: 3px !important;
+    font-size: 7.5px !important;
+  }
+
+  #clientPortfolio .overall-card-legend strong {
+    font-size: 9px !important;
+  }
+
+  #clientPortfolio .allocation-delta {
+    font-size: 7px !important;
+  }
+
+  #clientPortfolio .overall-benchmark-note {
+    margin-top: 5px !important;
+    padding-top: 4px !important;
+    font-size: 7px !important;
+    line-height: 1.15 !important;
+  }
+
+  #clientPortfolio .frontier-chart {
+    padding-top: 0 !important;
+  }
+
+  #clientPortfolio .frontier-chart-grid {
+    grid-template-columns: 118px 1fr !important;
+    gap: 8px !important;
+    align-items: start !important;
+  }
+
+  #clientPortfolio .frontier-chart-grid svg {
+    width: 100% !important;
+    max-height: 3.35in !important;
+  }
+
+  #clientPortfolio .asset-color-legend {
+    font-size: 6.5px !important;
+    padding: 7px !important;
+  }
+
+  #clientPortfolio .asset-color-legend span {
+    gap: 3px !important;
+    margin-bottom: 2px !important;
+  }
+
+  #clientPortfolio .asset-color-legend i {
+    width: 7px !important;
+    height: 7px !important;
+  }
+}
+body[data-view-mode="client"] .scenario-control,
+body[data-view-mode="client"] .mc-sub-sleeve-panel {
+  display: none !important;
+}
+body[data-view-mode="advisor"] .client-mc-distribution-panel {
+  display: none !important;
+}
+
+.panel-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 2px solid var(--blue);
+  margin-bottom: 12px;
+}
+
+.panel-header-row .panel-title {
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+
+.panel-select-control {
+  min-width: 220px;
+  margin-top: 0;
+}

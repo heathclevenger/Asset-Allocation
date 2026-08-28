@@ -32,6 +32,7 @@ let showPeValuationChart = false;
 let showProviderLogoPanel = false;
 let overallFrontierCache = null;
 let clientOverallFrontierCache = null;
+let clientMonteCarloFanCache = null;
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const escapeHtml = (value) => String(value)
@@ -1710,7 +1711,7 @@ function renderProviderLogoPanel() {
     { name: "Vanguard", className: "vanguard", src: "./assets/logo-vanguard.png" },
   ];
   return `<div class="provider-logo-panel ${showProviderLogoPanel ? "" : "collapsed"}" aria-hidden="${showProviderLogoPanel ? "false" : "true"}">
-    ${providers.map((provider) => `<div class="provider-logo-card ${provider.className}" aria-label="${provider.name} assumption provider logo"><img src="${provider.src}?v=20260819-clickable-benchmarks" alt="${provider.name}" loading="lazy" /></div>`).join("")}
+    ${providers.map((provider) => `<div class="provider-logo-card ${provider.className}" aria-label="${provider.name} assumption provider logo"><img src="${provider.src}?v=20260828-mc-distribution-select-v1" alt="${provider.name}" loading="lazy" /></div>`).join("")}
   </div>`;
 }
 
@@ -1781,6 +1782,7 @@ function renderClientPortfolio() {
   const broadPath = pathFor(model.broadCurve);
   const blendPath = pathFor(model.blendPoints);
   const trianglePoints = (x, y, size = 7) => `${x.toFixed(1)},${(y - size).toFixed(1)} ${(x - size).toFixed(1)},${(y + size).toFixed(1)} ${(x + size).toFixed(1)},${(y + size).toFixed(1)}`;
+  const clipId = `client-frontier-clip-${Math.abs(seedFromString(`${selectedClientProfile}-${selectedVolatilityCase}-${selectedInterestRateCase}`, 1))}`;
   const tooltipPosition = (x, y, tooltipW = 190, tooltipH = 48) => ({
     x: x + tooltipW + 16 > width - pad.right ? x - tooltipW - 14 : x + 12,
     y: Math.max(pad.top + 8, Math.min(y - 34, height - pad.bottom - tooltipH - 8)),
@@ -1793,6 +1795,7 @@ function renderClientPortfolio() {
   </div>
   <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Client overall allocation risk return chart">
     <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
+    <defs><clipPath id="${clipId}"><rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}"></rect></clipPath></defs>
     <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
     ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line><text x="${pad.left - 12}" y="${yScale(tick) + 4}" text-anchor="end" class="frontier-axis">${pct(tick)}</text>`).join("")}
     ${xTicks.map((tick) => `<line x1="${xScale(tick)}" y1="${pad.top}" x2="${xScale(tick)}" y2="${height - pad.bottom}" stroke="${chartTheme.gridLight}"></line><text x="${xScale(tick)}" y="${height - 26}" text-anchor="middle" class="frontier-axis">${pct(tick)}</text>`).join("")}
@@ -2048,9 +2051,11 @@ function calculateClientOverallAllocation() {
     const displayChoice = selectedPortfolioAtTargetVolatility(displayFrontierSource.frontier, targetVolatility);
     const allocationPercentile = clientAllocationPercentile(target.profile);
     const allocationChoice = selectedConstrainedPortfolioAtPercentile(target.profile, constrainedFrontierSource.frontier, allocationPercentile);
-    const neutralChoice = selectedConstrainedPortfolioAtPercentile(target.profile, constrainedFrontierSource.frontier, defaultVolatilityPercentiles[target.profile] ?? allocationPercentile);
-    const categoryWeights = allocationChoice?.chosen?.weights ? categoryWeightsFromWeights(allocationChoice.chosen.weights) : {};
-    const neutralCategoryWeights = neutralChoice?.chosen?.weights ? categoryWeightsFromWeights(neutralChoice.chosen.weights) : null;
+    const neutralTargetVolatility = blend.volatility;
+    const neutralDisplayChoice = selectedPortfolioAtTargetVolatility(displayFrontierSource.frontier, neutralTargetVolatility);
+    const categorySourceWeights = displayChoice?.weights || allocationChoice?.chosen?.weights;
+    const categoryWeights = categorySourceWeights ? categoryWeightsFromWeights(categorySourceWeights) : {};
+    const neutralCategoryWeights = neutralDisplayChoice?.weights ? categoryWeightsFromWeights(neutralDisplayChoice.weights) : null;
     const displayPoint = frontierDisplayPointAtVolatility(displayFrontierSource.frontier, targetVolatility);
     return { ...target, targetVolatility, unadjustedTargetVolatility: blend.volatility, volatilityMultiplier, peVolatilityMultiplier, rateVolatilityMultiplier, blend, chosen: displayChoice || allocationChoice?.chosen, displayPoint, allocationChoice: allocationChoice?.chosen, allocationPercentile, allocationTargetVolatility: allocationChoice?.targetVolatility, categoryWeights, neutralCategoryWeights };
   });
@@ -2168,7 +2173,7 @@ function renderPeValuationChart() {
     toggle.setAttribute("aria-expanded", String(showPeValuationChart));
     toggle.setAttribute("aria-label", showPeValuationChart ? "Hide Market P/E chart" : "Show Market P/E chart");
     chart.innerHTML = showPeValuationChart
-      ? `<img class="pe-valuation-image" src="./assets/sp-pe.png?v=20260819-clickable-benchmarks" alt="S&P 500 valuation measures showing forward P/E ratio, valuation bands, and latest valuation table" />`
+      ? `<img class="pe-valuation-image" src="./assets/sp-pe.png?v=20260828-mc-distribution-select-v1" alt="S&P 500 valuation measures showing forward P/E ratio, valuation bands, and latest valuation table" />`
       : "";
   });
 }
@@ -2223,6 +2228,7 @@ function renderOverallAllocation() {
   const broadPath = pathFor(model.broadCurve);
   const blendPath = pathFor(model.blendPoints);
   const trianglePoints = (x, y, size = 7) => `${x.toFixed(1)},${(y - size).toFixed(1)} ${(x - size).toFixed(1)},${(y + size).toFixed(1)} ${(x + size).toFixed(1)},${(y + size).toFixed(1)}`;
+  const clipId = `client-frontier-clip-${Math.abs(seedFromString(`${selectedClientProfile}-${selectedVolatilityCase}-${selectedInterestRateCase}`, 1))}`;
   const tooltipPosition = (x, y, tooltipW = 190, tooltipH = 48) => ({
     x: x + tooltipW + 16 > width - pad.right ? x - tooltipW - 14 : x + 12,
     y: Math.max(pad.top + 8, Math.min(y - 34, height - pad.bottom - tooltipH - 8)),
@@ -2235,6 +2241,7 @@ function renderOverallAllocation() {
   </div>
   <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Overall allocation risk return chart">
     <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
+    <defs><clipPath id="${clipId}"><rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}"></rect></clipPath></defs>
     <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
     ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line><text x="${pad.left - 12}" y="${yScale(tick) + 4}" text-anchor="end" class="frontier-axis">${pct(tick)}</text>`).join("")}
     ${xTicks.map((tick) => `<line x1="${xScale(tick)}" y1="${pad.top}" x2="${xScale(tick)}" y2="${height - pad.bottom}" stroke="${chartTheme.gridLight}"></line><text x="${xScale(tick)}" y="${height - 26}" text-anchor="middle" class="frontier-axis">${pct(tick)}</text>`).join("")}
@@ -2346,7 +2353,7 @@ function currentMonteCarloPortfolio() {
   if (viewMode === "client") {
     const model = calculateClientOverallAllocation();
     const row = model?.rows?.find((item) => item.profile === selectedMcProfile);
-    const weights = row?.allocationChoice?.weights || row?.chosen?.weights;
+    const weights = row?.chosen?.weights || row?.allocationChoice?.weights;
     if (!weights) return null;
     return {
       profileName: selectedMcProfile,
@@ -2358,14 +2365,20 @@ function currentMonteCarloPortfolio() {
   return results[selectedMcProfile] || null;
 }
 function renderMonteCarloControls() {
-  const select = document.querySelector("#mcProfileSelect");
+  const selects = [
+    document.querySelector("#mcProfileSelect"),
+    document.querySelector("#mcDistributionProfileSelect"),
+  ].filter(Boolean);
   const seedInput = document.querySelector("#mcScenarioSeed");
-  if (!select) return;
+  if (!selects.length) return;
   const profileNames = Object.keys(state.profiles);
   if (!profileNames.includes(selectedMcProfile)) selectedMcProfile = profileNames.includes(selectedClientProfile) ? selectedClientProfile : profileNames[0];
   selectedClientProfile = selectedMcProfile;
-  select.innerHTML = profileNames.map((name) => `<option value="${name}" ${name === selectedMcProfile ? "selected" : ""}>${name}</option>`).join("");
-  select.value = selectedMcProfile;
+  const options = profileNames.map((name) => `<option value="${name}" ${name === selectedMcProfile ? "selected" : ""}>${name}</option>`).join("");
+  selects.forEach((select) => {
+    select.innerHTML = options;
+    select.value = selectedMcProfile;
+  });
   if (seedInput) seedInput.value = monteCarloSeed;
 }
 
@@ -2440,6 +2453,7 @@ function renderMonteCarloAssetsChart(selectedPath) {
 
   assetChart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monte Carlo sub-sleeve five-year time-weighted return path chart">
     <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
+    <defs><clipPath id="${clipId}"><rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}"></rect></clipPath></defs>
     <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
     ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line>
       <text x="${width - pad.right + 12}" y="${yScale(tick) + 4}" text-anchor="start" class="frontier-axis">${pct(tick)}</text>`).join("")}
@@ -2505,11 +2519,216 @@ function renderMonteCarloAssetBarsChart(selectedPath) {
   </svg>`;
 }
 
+
+function clientMonteCarloSignature(seed, rows) {
+  const assetPart = state.assets.map((asset) => `${asset.return.toFixed(6)},${asset.volatility.toFixed(6)}`).join("|");
+  const corrPart = state.correlation.map((row) => row.map((value) => value.toFixed(5)).join(",")).join("|");
+  const weightPart = rows.map((row) => `${row.profile}:${row.weights.map((weight) => weight.toFixed(6)).join(",")}`).join("|");
+  return `${seed}::${assetPart}::${corrPart}::${weightPart}`;
+}
+
+function buildClientMonteCarloFanCache(seed, runs = 100000) {
+  const model = calculateClientOverallAllocation();
+  const rows = model?.rows?.map((row) => {
+    const weights = row.chosen?.weights || row.allocationChoice?.weights;
+    return weights ? { profile: row.profile, weights, stats: portfolioStats(weights, state.assets, state.correlation) } : null;
+  }).filter(Boolean);
+  if (!rows?.length) return null;
+
+  const signature = clientMonteCarloSignature(seed, rows);
+  if (clientMonteCarloFanCache?.signature === signature) return clientMonteCarloFanCache;
+
+  const years = 10;
+  const displayPathLimit = 800;
+  const displayStride = Math.max(1, Math.floor(runs / displayPathLimit));
+  const percentiles = [0.50];
+  const rand = seededRandom(seed);
+  const valuesByProfile = Object.fromEntries(rows.map((row) => [row.profile, Array.from({ length: years + 1 }, () => [])]));
+  const endingAnnualizedReturnsByProfile = Object.fromEntries(rows.map((row) => [row.profile, []]));
+  const displayPathsByProfile = Object.fromEntries(rows.map((row) => [row.profile, []]));
+
+  for (let run = 0; run < runs; run += 1) {
+    const annualPaths = rows.map(() => [0]);
+    rows.forEach((row, rowIndex) => {
+      let value = 100;
+      for (let year = 1; year <= years; year += 1) {
+        const annualReturn = Math.max(-0.95, row.stats.expectedReturn + row.stats.volatility * normalSample(rand));
+        value *= (1 + annualReturn);
+        annualPaths[rowIndex].push((value / 100) - 1);
+      }
+    });
+    rows.forEach((row, rowIndex) => {
+      annualPaths[rowIndex].forEach((value, yearIndex) => valuesByProfile[row.profile][yearIndex].push(value));
+      const endingTotalReturn = annualPaths[rowIndex][years];
+      endingAnnualizedReturnsByProfile[row.profile].push(Math.pow(Math.max(0.0001, 1 + endingTotalReturn), 1 / years) - 1);
+      if (run % displayStride === 0 && displayPathsByProfile[row.profile].length < displayPathLimit) {
+        displayPathsByProfile[row.profile].push(annualPaths[rowIndex]);
+      }
+    });
+  }
+
+  const summaryPathsByProfile = Object.fromEntries(rows.map((row) => {
+    const yearlyStats = valuesByProfile[row.profile].map((yearValues) => {
+      const sorted = [...yearValues].sort((a, b) => a - b);
+      const median = percentileValue(sorted, 0.50);
+      const standardDeviation = standardDeviationValue(yearValues);
+      return { median, standardDeviation };
+    });
+    return [row.profile, [
+      { key: "minusOneStdDev", label: "-1 Std Dev", values: yearlyStats.map((stat) => Math.max(-0.99, stat.median - stat.standardDeviation)) },
+      { key: "median", label: "Median", values: yearlyStats.map((stat) => stat.median) },
+      { key: "plusOneStdDev", label: "+1 Std Dev", values: yearlyStats.map((stat) => stat.median + stat.standardDeviation) },
+    ]];
+  }));
+
+  clientMonteCarloFanCache = { signature, displayPathsByProfile, summaryPathsByProfile, endingAnnualizedReturnsByProfile };
+  return clientMonteCarloFanCache;
+}
+function annualReturnPathFromMonthlyValues(values) {
+  return Array.from({ length: 6 }, (_, year) => (values[Math.min(year * 12, values.length - 1)] / 100) - 1);
+}
+
+function standardDeviationValue(values) {
+  if (!values.length) return 0;
+  const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+  const variance = values.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / values.length;
+  return Math.sqrt(Math.max(0, variance));
+}
+function percentileValue(sortedValues, percentile) {
+  if (!sortedValues.length) return 0;
+  const index = (sortedValues.length - 1) * percentile;
+  const lower = Math.floor(index);
+  const upper = Math.ceil(index);
+  const mix = index - lower;
+  return sortedValues[lower] * (1 - mix) + sortedValues[upper] * mix;
+}
+
+function renderClientMonteCarloFanChart(chart, portfolio, scenarioSeed) {
+  const cache = buildClientMonteCarloFanCache(scenarioSeed, 100000);
+  const portfolioPaths = cache?.displayPathsByProfile?.[portfolio.profileName] || [];
+  const years = Array.from({ length: 11 }, (_, index) => index);
+  const summaryPaths = cache?.summaryPathsByProfile?.[portfolio.profileName] || [];
+  const pathValues = [...portfolioPaths.flat(), ...summaryPaths.flatMap((path) => path.values || [])];
+  const finitePathValues = pathValues.filter((value) => Number.isFinite(value));
+  const visibleMax = Math.max(0.40, ...finitePathValues.map((value) => Math.min(value, 3.0)));
+  const visibleMin = Math.min(-0.10, ...finitePathValues.map((value) => Math.max(value, -0.80)));
+  const yMin = Math.floor((visibleMin - 0.05) * 4) / 4;
+  const yMax = Math.ceil((visibleMax + 0.10) * 4) / 4;
+  const width = 980;
+  const height = 430;
+  const pad = { left: 82, right: 142, top: 58, bottom: 58 };
+  const plotW = width - pad.left - pad.right;
+  const plotH = height - pad.top - pad.bottom;
+  const xScale = (year) => pad.left + (year / 10) * plotW;
+  const yScale = (value) => pad.top + (1 - ((value - yMin) / Math.max(yMax - yMin, 1e-8))) * plotH;
+  const yTicks = Array.from({ length: 6 }, (_, i) => yMin + ((yMax - yMin) * i) / 5);
+  const clampToPlot = (value) => Math.min(yMax, Math.max(yMin, value));
+  const fanPath = portfolioPaths.map((path) => path.map((value, index) => `${index ? "L" : "M"} ${xScale(index).toFixed(1)} ${yScale(clampToPlot(value)).toFixed(1)}`).join(" ")).join(" ");
+  const clippedLinePath = (values) => values.map((value, index) => `${index ? "L" : "M"} ${xScale(index).toFixed(1)} ${yScale(clampToPlot(value)).toFixed(1)}`).join(" ");
+  const minusOne = summaryPaths.find((path) => path.key === "minusOneStdDev");
+  const median = summaryPaths.find((path) => path.key === "median");
+  const plusOne = summaryPaths.find((path) => path.key === "plusOneStdDev");
+  const annualizedEnding = (path) => Math.pow(Math.max(0.0001, 1 + path.values.at(-1)), 1 / 10) - 1;
+  const summaryLabel = (path, label, color, dy = 0) => {
+    const endValue = path.values.at(-1);
+    return `<text x="${(xScale(10) + 10).toFixed(1)}" y="${(yScale(clampToPlot(endValue)) + dy).toFixed(1)}" class="frontier-axis percentile-path-label" fill="${color}">${label}: ${pct(annualizedEnding(path))}</text>`;
+  };
+
+  const clipId = `monte-carlo-clip-${Math.abs(seedFromString(`${portfolio.profileName}-${scenarioSeed}`, 1))}`;
+
+  chart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monte Carlo portfolio total return paths with median and standard deviation lines">
+    <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
+    <defs><clipPath id="${clipId}"><rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}"></rect></clipPath></defs>
+    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
+    ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line>
+      <text x="${pad.left - 10}" y="${yScale(tick) + 4}" text-anchor="end" class="frontier-axis">${pct(tick)}</text>`).join("")}
+    ${years.map((year) => `<line x1="${xScale(year)}" y1="${pad.top}" x2="${xScale(year)}" y2="${height - pad.bottom}" stroke="${chartTheme.gridLight}"></line>
+      <text x="${xScale(year)}" y="${height - 24}" text-anchor="middle" class="frontier-axis">Year ${year}</text>`).join("")}
+    <line x1="${pad.left}" y1="${yScale(0)}" x2="${width - pad.right}" y2="${yScale(0)}" stroke="#101820" stroke-width="1.1"></line>
+    <g clip-path="url(#${clipId})">
+      <path d="${fanPath}" fill="none" stroke="#8fc7e8" stroke-width="0.55" stroke-opacity="0.18" stroke-linecap="round" stroke-linejoin="round"></path>
+      ${minusOne ? `<path d="${clippedLinePath(minusOne.values)}" fill="none" stroke="#b98256" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>` : ""}
+      ${median ? `<path d="${clippedLinePath(median.values)}" fill="none" stroke="#101820" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path>` : ""}
+      ${plusOne ? `<path d="${clippedLinePath(plusOne.values)}" fill="none" stroke="#3d5568" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>` : ""}
+    </g>
+    ${plusOne ? summaryLabel(plusOne, "+1 Std Dev", "#3d5568", -5) : ""}
+    ${median ? summaryLabel(median, "Median", "#101820", 4) : ""}
+    ${minusOne ? summaryLabel(minusOne, "-1 Std Dev", "#b98256", 13) : ""}
+    <g transform="translate(${pad.left}, 24)">
+      <line x1="0" y1="0" x2="24" y2="0" stroke="#8fc7e8" stroke-width="4" stroke-opacity="0.45"></line><text x="32" y="4" class="frontier-axis">100,000 simulations</text>
+      <line x1="210" y1="0" x2="234" y2="0" stroke="#b98256" stroke-width="2.2"></line><text x="242" y="4" class="frontier-axis">-1 Std Dev</text>
+      <line x1="374" y1="0" x2="398" y2="0" stroke="#101820" stroke-width="2.8"></line><text x="406" y="4" class="frontier-axis">Median</text>
+      <line x1="502" y1="0" x2="526" y2="0" stroke="#3d5568" stroke-width="2.2"></line><text x="534" y="4" class="frontier-axis">+1 Std Dev</text>
+    </g>
+    <text x="${width / 2}" y="${height - 6}" text-anchor="middle" class="frontier-axis">Scenario year</text>
+    <text x="24" y="${height / 2}" text-anchor="middle" transform="rotate(-90 24 ${height / 2})" class="frontier-axis">Total return</text>
+  </svg>`;
+}
+function renderClientMonteCarloDistributionChart(chart, portfolio, scenarioSeed) {
+  const cache = buildClientMonteCarloFanCache(scenarioSeed, 100000);
+  const values = cache?.endingAnnualizedReturnsByProfile?.[portfolio.profileName] || [];
+  if (!values.length) {
+    chart.innerHTML = `<p class="frontier-note">Distribution is not available.</p>`;
+    return;
+  }
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const xMin = -0.20;
+  const xMax = 0.30;
+  const binCount = 28;
+  const binWidth = (xMax - xMin) / binCount;
+  const bins = Array.from({ length: binCount }, (_, index) => ({
+    start: xMin + index * binWidth,
+    end: xMin + (index + 1) * binWidth,
+    count: 0,
+  }));
+  values.forEach((value) => {
+    const index = Math.max(0, Math.min(binCount - 1, Math.floor((value - xMin) / Math.max(binWidth, 1e-8))));
+    bins[index].count += 1;
+  });
+
+  const width = 980;
+  const height = 340;
+  const pad = { left: 66, right: 28, top: 36, bottom: 54 };
+  const plotW = width - pad.left - pad.right;
+  const plotH = height - pad.top - pad.bottom;
+  const yMax = Math.max(...bins.map((bin) => bin.count / values.length), 0.01) * 1.12;
+  const xScale = (value) => pad.left + ((value - xMin) / Math.max(xMax - xMin, 1e-8)) * plotW;
+  const yScale = (value) => pad.top + (1 - (value / Math.max(yMax, 1e-8))) * plotH;
+  const xTicks = Array.from({ length: 6 }, (_, index) => xMin + ((xMax - xMin) * index) / 5);
+  const yTicks = Array.from({ length: 5 }, (_, index) => (yMax * index) / 4);
+  const median = percentileValue(sorted, 0.50);
+  const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+
+  chart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monte Carlo ending annualized return distribution">
+    <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
+    <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
+    ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line>
+      <text x="${pad.left - 10}" y="${yScale(tick) + 4}" text-anchor="end" class="frontier-axis">${pct(tick)}</text>`).join("")}
+    ${xTicks.map((tick) => `<line x1="${xScale(tick)}" y1="${pad.top}" x2="${xScale(tick)}" y2="${height - pad.bottom}" stroke="${chartTheme.gridLight}"></line>
+      <text x="${xScale(tick)}" y="${height - 24}" text-anchor="middle" class="frontier-axis">${pct(tick)}</text>`).join("")}
+    ${bins.map((bin) => {
+      const x = xScale(bin.start) + 1;
+      const barW = Math.max(1, xScale(bin.end) - xScale(bin.start) - 2);
+      const barH = Math.max(0, yScale(0) - yScale(bin.count / values.length));
+      return `<rect x="${x.toFixed(1)}" y="${yScale(bin.count / values.length).toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" fill="#8fc7e8" opacity="0.78"></rect>`;
+    }).join("")}
+    <line x1="${xScale(median)}" y1="${pad.top}" x2="${xScale(median)}" y2="${height - pad.bottom}" stroke="#101820" stroke-width="2.2"></line>
+    <line x1="${xScale(mean)}" y1="${pad.top}" x2="${xScale(mean)}" y2="${height - pad.bottom}" stroke="#b98256" stroke-width="2" stroke-dasharray="6 5"></line>
+    <g transform="translate(${pad.left}, 18)">
+      <line x1="0" y1="0" x2="22" y2="0" stroke="#101820" stroke-width="2.2"></line><text x="30" y="4" class="frontier-axis">Median ${pct(median)}</text>
+      <line x1="156" y1="0" x2="178" y2="0" stroke="#b98256" stroke-width="2" stroke-dasharray="6 5"></line><text x="186" y="4" class="frontier-axis">Average ${pct(mean)}</text>
+    </g>
+    <text x="${pad.left + plotW / 2}" y="${height - 4}" text-anchor="middle" class="frontier-axis">Ending annualized return</text>
+    <text x="16" y="${height / 2}" text-anchor="middle" transform="rotate(-90 16 ${height / 2})" class="frontier-axis">Share of simulations</text>
+  </svg>`;
+}
 function renderMonteCarlo() {
   renderMonteCarloControls();
   const chart = document.querySelector("#monteCarloChart");
   const assetChart = document.querySelector("#monteCarloAssetsChart");
   const assetBars = document.querySelector("#monteCarloAssetBarsChart");
+  const distributionChart = document.querySelector("#monteCarloDistributionChart");
   if (!chart) return;
 
   const portfolio = currentMonteCarloPortfolio();
@@ -2524,6 +2743,14 @@ function renderMonteCarlo() {
   }
 
   const scenarioSeed = seedFromString(`${monteCarloSeed}`, 9101);
+  if (viewMode === "client") {
+    renderClientMonteCarloFanChart(chart, portfolio, scenarioSeed);
+    if (distributionChart) renderClientMonteCarloDistributionChart(distributionChart, portfolio, scenarioSeed);
+    if (assetChart) assetChart.innerHTML = "";
+    if (assetBars) assetBars.innerHTML = "";
+    return;
+  }
+  if (distributionChart) distributionChart.innerHTML = "";
   const paths = simulateScenarioUniverse(portfolio, scenarioSeed);
   const pickRand = seededRandom(scenarioSeed + 99);
   const selectedPath = paths[Math.floor(pickRand() * paths.length)];
@@ -2564,6 +2791,7 @@ function renderMonteCarlo() {
 
   chart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monte Carlo random annual return scenario chart">
     <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
+    <defs><clipPath id="${clipId}"><rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}"></rect></clipPath></defs>
     <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
     ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line>
       <text x="${pad.left - 10}" y="${yScale(tick) + 4}" text-anchor="end" class="frontier-axis">${pct(tick)}</text>`).join("")}
@@ -2716,6 +2944,7 @@ function renderFrontierChart(selected, frontier, assetPoints, profile, options =
   </div>
   <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Efficient frontier chart showing MVO portfolio volatility and expected return">
     <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
+    <defs><clipPath id="${clipId}"><rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}"></rect></clipPath></defs>
     <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
     ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line>
       <text x="${pad.left - 12}" y="${yScale(tick) + 4}" text-anchor="end" class="frontier-axis">${pct(tick)}</text>`).join("")}
@@ -3129,7 +3358,7 @@ document.addEventListener("change", (event) => {
     renderMonteCarloControls();
     return;
   }
-  if (event.target.matches("#mcProfileSelect")) {
+  if (event.target.matches("#mcProfileSelect, #mcDistributionProfileSelect")) {
     selectedMcProfile = event.target.value;
     selectedClientProfile = selectedMcProfile;
     renderMonteCarlo();
@@ -3271,7 +3500,7 @@ window.addEventListener("afterprint", () => {
 
 async function init() {
   try {
-    baseData = await fetch("./data/model-data.json?v=20260819-clickable-benchmarks", { cache: "no-store" }).then((r) => {
+    baseData = await fetch("./data/model-data.json?v=20260828-mc-distribution-select-v1", { cache: "no-store" }).then((r) => {
       if (!r.ok) throw new Error(`Could not load model-data.json (${r.status})`);
       return r.json();
     });
@@ -3290,6 +3519,26 @@ async function init() {
 }
 
 init();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
