@@ -15,14 +15,16 @@ let frontierResult = null;
 let mvoDirty = true;
 let mvoTimer = null;
 let liveUpdateTimer = null;
+let advisorPercentileTimer = null;
 let selectedMvoProfile = "Moderate";
 let selectedClientProfile = "Moderate";
 let selectedMcProfile = "Moderate";
 let monteCarloSeed = 75;
 let selectedMcAssets = null;
-let viewMode = "client";
-let selectedAllocationPreset = "CORE";
-let selectedSubAllocationPreset = "CORE";
+let viewMode = "advisor";
+let selectedAllocationPreset = "Unconstrained";
+let selectedSubAllocationPreset = "Special";
+let selectedAssumptionYear = "2027";
 let selectedAssumptionSet = "CORE";
 let selectedFundProvider = "Fidelity";
 let selectedVolatilityCase = "Neutral";
@@ -47,6 +49,7 @@ const defaultVolatilityPercentiles = {
   "Growth": 75,
   "Aggressive Growth": 90,
 };
+let advisorVolatilityPercentiles = { ...defaultVolatilityPercentiles };
 
 const volatilityCases = {
   "Neutral": 0,
@@ -70,6 +73,25 @@ const clientInterestRatePercentileShifts = {
   "Neutral": 0,
   "Loose": 2.5,
   "Restrictive": -2.5,
+};
+
+const specialSubAllocationBounds = {
+  "U.S. Large Cap": { min: 0.01, max: 0.35 },
+  "U.S. Mid Cap": { min: 0, max: 0.20 },
+  "U.S. Small Cap": { min: 0, max: 0.20 },
+  "U.S. Value": { min: 0, max: 0.30 },
+  "U.S. Growth": { min: 0, max: 0.30 },
+  "International Developed Equity": { min: 0, max: 0.30 },
+  "Emerging Markets Equity": { min: 0, max: 0.10 },
+  "U.S. REITs": { min: 0, max: 0.10 },
+  "Commodities": { min: 0, max: 0.10 },
+  "US Short Treasuries": { min: 0, max: 0.50 },
+  "US Intermediate Treasuries": { min: 0, max: 0.50 },
+  "US Long Treasuries": { min: 0, max: 0.50 },
+  "Investment Grade Corporate": { min: 0, max: 0.50 },
+  "High Yield": { min: 0, max: 0.20 },
+  "International Fixed Income (H)": { min: 0, max: 0.10 },
+  "Cash": { min: 0.01, max: 0.01 },
 };
 
 const chartTheme = {
@@ -126,13 +148,14 @@ const assetColor = (asset, index) => ({
 ][index % 14]);
 
 function buildVolatilityModel(profiles) {
-  const halfWidth = Math.max(...Object.values(profiles).map((profile) => (
-    (profile.targetVolMax - profile.targetVolMin) / 2
-  )));
+  const calculatedHalfWidths = Object.values(profiles)
+    .map((profile) => (profile.targetVolMax - profile.targetVolMin) / 2)
+    .filter((value) => Number.isFinite(value) && value >= 0);
+  const halfWidth = calculatedHalfWidths.length ? Math.max(...calculatedHalfWidths) : 0.005;
   const model = { mode: "feasiblePercentile", halfWidth, profiles: {} };
   Object.entries(profiles).forEach(([name, profile]) => {
     model.profiles[name] = {
-      percentile: defaultVolatilityPercentiles[name] ?? 50,
+      percentile: advisorVolatilityPercentiles[name] ?? defaultVolatilityPercentiles[name] ?? 50,
       halfWidth,
     };
   });
@@ -145,13 +168,20 @@ function ensureVolatilityModel() {
   const existingHalfWidths = Object.values(state.volatilityModel.profiles || {})
     .map((rule) => rule.halfWidth)
     .filter((value) => Number.isFinite(value));
-  state.volatilityModel.halfWidth ??= existingHalfWidths.length
-    ? Math.max(...existingHalfWidths)
-    : Math.max(...Object.values(state.profiles).map((profile) => (profile.targetVolMax - profile.targetVolMin) / 2));
+  const profileHalfWidths = Object.values(state.profiles)
+    .map((profile) => (profile.targetVolMax - profile.targetVolMin) / 2)
+    .filter((value) => Number.isFinite(value) && value >= 0);
+  if (!Number.isFinite(state.volatilityModel.halfWidth)) {
+    state.volatilityModel.halfWidth = existingHalfWidths.length
+      ? Math.max(...existingHalfWidths)
+      : profileHalfWidths.length
+        ? Math.max(...profileHalfWidths)
+        : 0.005;
+  }
   Object.entries(state.profiles).forEach(([name, profile]) => {
     state.volatilityModel.profiles ||= {};
     state.volatilityModel.profiles[name] ||= {};
-    state.volatilityModel.profiles[name].percentile ??= defaultVolatilityPercentiles[name] ?? 50;
+    state.volatilityModel.profiles[name].percentile ??= advisorVolatilityPercentiles[name] ?? defaultVolatilityPercentiles[name] ?? 50;
     state.volatilityModel.profiles[name].halfWidth = state.volatilityModel.halfWidth;
   });
 }
@@ -168,11 +198,30 @@ function applyAssumptionSet(name) {
   });
 }
 
+function applyAssumptionYear(year) {
+  const yearData = baseData?.assumptionYears?.[year];
+  if (!yearData) return false;
+  selectedAssumptionYear = year;
+  state.generatedFrom = yearData.generatedFrom;
+  state.assumptionSets = clone(yearData.assumptionSets);
+  state.benchmarks = clone(yearData.benchmarks);
+  state.correlation = clone(yearData.correlation);
+  selectedAssumptionSet = yearData.selectedAssumptionSet || "CORE";
+  applyAssumptionSet(selectedAssumptionSet);
+  overallFrontierCache = null;
+  clientOverallFrontierCache = null;
+  clientMonteCarloFanCache = null;
+  frontierResult = null;
+  mvoDirty = true;
+  results = {};
+  return true;
+}
+
 function applyVolatilityCase(caseName) {
   selectedVolatilityCase = volatilityCases[caseName] === undefined ? "Neutral" : caseName;
   ensureVolatilityModel();
   const shift = volatilityCases[selectedVolatilityCase];
-  Object.entries(defaultVolatilityPercentiles).forEach(([profileName, basePercentile]) => {
+  Object.entries(advisorVolatilityPercentiles).forEach(([profileName, basePercentile]) => {
     state.volatilityModel.profiles ||= {};
     state.volatilityModel.profiles[profileName] ||= {};
     state.volatilityModel.profiles[profileName].percentile = Math.max(0, Math.min(100, basePercentile + shift));
@@ -182,8 +231,8 @@ function applyVolatilityCase(caseName) {
 }
 
 function percentileValue(values, percentile) {
-  if (!values.length) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
+  const sorted = values.filter((value) => Number.isFinite(value)).sort((a, b) => a - b);
+  if (!sorted.length) return 0;
   const clamped = Math.max(0, Math.min(100, percentile));
   const pos = (clamped / 100) * (sorted.length - 1);
   const lower = Math.floor(pos);
@@ -237,6 +286,23 @@ function sharedConstraintProfile(profileName) {
   };
 }
 
+function advisorConstraintProfile(profileName) {
+  return state.profiles[profileName] || Object.values(state.profiles)[0];
+}
+
+function advisorFeasibleVolatilities(profileName) {
+  const profile = advisorConstraintProfile(profileName);
+  const vols = [];
+  const rand = seededRandom(seedFromString(constraintSignature(profile), 4409));
+  for (let i = 0; i < 2200; i += 1) {
+    const weights = randomAssetWeights(profile, rand);
+    if (!weights) continue;
+    const volatility = portfolioStats(weights, state.assets, state.correlation).volatility;
+    if (Number.isFinite(volatility)) vols.push(volatility);
+  }
+  return vols;
+}
+
 function feasibleVolatilities(profileName) {
   const profile = sharedConstraintProfile(profileName);
   const vols = [];
@@ -253,11 +319,22 @@ function applyVolatilityModel() {
   ensureVolatilityModel();
   const model = state.volatilityModel;
   Object.entries(model.profiles).forEach(([name, rule]) => {
-    const feasible = feasibleVolatilities(name);
-    const fallbackMidpoint = (state.profiles[name].targetVolMin + state.profiles[name].targetVolMax) / 2;
-    const midpoint = feasible.length ? percentileValue(feasible, rule.percentile) : fallbackMidpoint;
-    state.profiles[name].targetVolMin = Math.max(0, midpoint - rule.halfWidth);
-    state.profiles[name].targetVolMax = Math.max(0, midpoint + rule.halfWidth);
+    const feasible = advisorFeasibleVolatilities(name);
+    const currentMin = Number(state.profiles[name].targetVolMin);
+    const currentMax = Number(state.profiles[name].targetVolMax);
+    const fallbackMidpoint = Number.isFinite(currentMin) && Number.isFinite(currentMax)
+      ? (currentMin + currentMax) / 2
+      : 0;
+    const sampledMidpoint = feasible.length ? percentileValue(feasible, Number(rule.percentile)) : fallbackMidpoint;
+    const midpoint = Number.isFinite(sampledMidpoint) ? sampledMidpoint : fallbackMidpoint;
+    const halfWidth = Number.isFinite(rule.halfWidth)
+      ? Math.max(0, rule.halfWidth)
+      : Number.isFinite(model.halfWidth)
+        ? Math.max(0, model.halfWidth)
+        : 0.005;
+    rule.halfWidth = halfWidth;
+    state.profiles[name].targetVolMin = Math.max(0, midpoint - halfWidth);
+    state.profiles[name].targetVolMax = Math.max(0, midpoint + halfWidth);
   });
 }
 
@@ -829,7 +906,7 @@ function globalFeasibleRegion(selected, frontier = []) {
     points.push(point);
   };
 
-  const profile = sharedConstraintProfile(selected.profileName || selectedMvoProfile);
+  const profile = advisorConstraintProfile(selected.profileName || selectedMvoProfile);
   if (profile) {
     const rand = seededRandom(seedFromString(constraintSignature(profile), 4409));
     for (let i = 0; i < 25000; i += 1) {
@@ -900,7 +977,7 @@ function randomCategoryWeights(profile, categories, rand) {
 }
 
 function optimizeProfile(profileName, seedOffset = 17, draws = 900) {
-  const profile = sharedConstraintProfile(profileName);
+  const profile = advisorConstraintProfile(profileName);
   const rand = seededRandom(seedFromString(constraintSignature(profile), seedOffset));
   let best = null;
   let fallback = null;
@@ -950,8 +1027,8 @@ function calculateConstrainedResults() {
 function runOptimization() {
   applyVolatilityModel();
   results = calculateConstrainedResults();
-  renderAll();
   mvoDirty = true;
+  renderAll();
   if (mvoIsActive()) refreshMvo();
 }
 
@@ -1020,16 +1097,20 @@ function renderProfiles() {
   const control = document.querySelector("#volatilityControl");
   const model = state.volatilityModel;
   control.innerHTML = `<div class="volatility-case-layout">
-    <div class="volatility-case-control">
-      <label for="volatilityCaseSelect">Market P/E</label>
-      <select id="volatilityCaseSelect">
-        ${Object.keys(volatilityCases).map((name) => `<option value="${name}" ${name === selectedVolatilityCase ? "selected" : ""}>${name}</option>`).join("")}
-      </select>
+    <div class="percentile-shift-field">
+      <label>Volatility Percentile Adjustment</label>
+      <div class="percentile-shift-buttons">
+        <button type="button" class="percentile-shift-add" data-advisor-percentile-shift="5">Add +5%</button>
+        <button type="button" data-advisor-percentile-shift="-5">Subtract -5%</button>
+      </div>
     </div>
-    <div class="percentile-grid read-only-percentiles">
+    <div class="percentile-grid advisor-percentiles">
       ${Object.keys(state.profiles).map((name) => `<div class="percentile-field">
         <label>${name} Volatility Percentile</label>
-        <strong>${(model.profiles[name].percentile || 0).toFixed(0)}%</strong>
+        <div class="percentile-input">
+          <input type="number" min="0" max="100" step="0.5" value="${(model.profiles[name].percentile || 0).toFixed(1)}" data-advisor-volatility-percentile="${escapeHtml(name)}" aria-label="${escapeHtml(name)} volatility percentile" />
+          <span>%</span>
+        </div>
       </div>`).join("")}
     </div>
   </div>`;
@@ -1071,15 +1152,23 @@ function assetSourceDisplay(asset) {
 }
 
 function renderAssets() {
+  const yearSelect = document.querySelector("#assumptionYearSelect");
   const select = document.querySelector("#assumptionSetSelect");
+  const table = document.querySelector("#assetsTable");
+  if (yearSelect) {
+    const years = Object.keys(baseData?.assumptionYears || { "2027": {} }).sort();
+    yearSelect.innerHTML = years.map((year) => `<option value="${year}" ${year === selectedAssumptionYear ? "selected" : ""}>${year}</option>`).join("");
+    yearSelect.value = selectedAssumptionYear;
+  }
+
   if (select && state.assumptionSets) {
+    select.disabled = false;
     const names = Object.keys(state.assumptionSets);
     if (!names.includes(selectedAssumptionSet)) selectedAssumptionSet = names[0];
-    select.innerHTML = names.map((name) => `<option value="${name}" ${name === selectedAssumptionSet ? "selected" : ""}>${name}</option>`).join("");
+    select.innerHTML = names.map((name) => `<option value="${name}" ${name === selectedAssumptionSet ? "selected" : ""}>${name === "CORE" ? "Average" : name}</option>`).join("");
     select.value = selectedAssumptionSet;
   }
 
-  const table = document.querySelector("#assetsTable");
   table.innerHTML = `<thead><tr><th>Asset</th><th>Category</th><th>Source</th><th>Return</th><th>Volatility</th></tr></thead>
   <tbody>${state.assets.map((asset, i) => `<tr>
       <td class="text">${asset.name}</td><td>${asset.category}</td><td class="text">${assetSourceDisplay(asset)}</td>
@@ -1091,7 +1180,7 @@ function renderAssets() {
 }
 
 function providerShortName(name) {
-  const clean = name.replace(/\s*2026\s*/i, "").trim();
+  const clean = name.replace(/\s*20\d{2}\s*/i, "").trim();
   const labels = {
     "Asset Allocation Interactive": "AAI",
     "Capital Group": "CG",
@@ -1659,16 +1748,31 @@ function selectedMvoDisplayResult(profileName, baseResult, frontier) {
 function renderMvo() {
   renderMvoControls();
   if (!frontierResult) return;
-  if (frontierResult.error) {
-    renderMvoSelectedStatus(selectedMvoProfile, null, "Out of range");
-    document.querySelector("#frontierChart").innerHTML = `<p class="frontier-note">The MVO chart could not run. Check that Asset Assumptions have valid return and volatility numbers.</p>`;
-    document.querySelector("#mvoWeightCharts").innerHTML = "";
-    document.querySelector("#mvoConstraints").innerHTML = "";
-    return;
-  }
   const baseSelected = results[selectedMvoProfile];
   if (!baseSelected) return;
   const profile = state.profiles[selectedMvoProfile];
+  if (frontierResult.error) {
+    renderMvoSelectedStatus(
+      selectedMvoProfile,
+      baseSelected,
+      selectedRangeStatus(baseSelected, selectedMvoProfile)
+    );
+    document.querySelector("#frontierChart").innerHTML = `<p class="frontier-note">The MVO chart could not run. Check that Asset Assumptions have valid return and volatility numbers.</p>`;
+    document.querySelector("#mvoWeightCharts").innerHTML = [
+      renderAllocationSummaryCard(selectedMvoProfile, baseSelected, profile),
+      renderPieCard(
+        "Sub-Sleeve Weights",
+        state.assets.map((asset, index) => ({
+          label: asset.name,
+          value: baseSelected.weights[index] || 0,
+          color: assetColor(asset, index),
+        })),
+        { variant: "sleeve" }
+      ),
+    ].join("");
+    document.querySelector("#mvoConstraints").innerHTML = "";
+    return;
+  }
   const selected = selectedMvoDisplayResult(selectedMvoProfile, baseSelected, frontierResult.frontier);
   renderMvoSelectedStatus(selectedMvoProfile, selected, selectedRangeStatus(selected, selectedMvoProfile));
 
@@ -1963,6 +2067,50 @@ function calculateOverallAllocation() {
   return { sp, agg, blendPoints, broadCurve, assetPoints: overallDisplayAssetPoints(), rows };
 }
 
+function calculateAdvisorOverallAllocation() {
+  const baseModel = calculateOverallAllocation();
+  if (!baseModel || !hasConstrainedResults()) return null;
+
+  if (mvoDirty || !frontierResult || frontierResult.error) {
+    try {
+      frontierResult = calculateEfficientFrontier();
+      mvoDirty = false;
+    } catch (error) {
+      console.error("Advisor overall allocation frontier failed:", error);
+    }
+  }
+
+  const mvoFrontier = frontierResult && !frontierResult.error ? frontierResult : null;
+  const rows = Object.keys(state.profiles).map((profileName) => {
+    const result = results[profileName];
+    const displayResult = mvoFrontier
+      ? selectedMvoDisplayResult(profileName, result, mvoFrontier.frontier)
+      : result;
+    const profile = state.profiles[profileName];
+    const benchmarkRow = baseModel.rows.find((row) => row.profile === profileName);
+    return {
+      ...benchmarkRow,
+      profile: profileName,
+      chosen: displayResult,
+      displayPoint: displayResult.stats,
+      categoryWeights: displayResult.categoryWeights,
+      targetVolatility: (profile.targetVolMin + profile.targetVolMax) / 2,
+      targetVolMin: profile.targetVolMin,
+      targetVolMax: profile.targetVolMax,
+      volatilityPercentile: state.volatilityModel?.profiles?.[profileName]?.percentile ?? 0,
+    };
+  });
+
+  return {
+    ...baseModel,
+    broadCurve: mvoFrontier
+      ? mvoFrontier.frontier.map((point) => ({ ...point.stats, weights: point.weights, stats: point.stats }))
+      : baseModel.broadCurve,
+    assetPoints: mvoFrontier?.assetPoints || baseModel.assetPoints,
+    rows,
+  };
+}
+
 
 function getClientOverallBoundedFrontier() {
   const indexes = overallEligibleAssetIndexes();
@@ -1975,11 +2123,8 @@ function getClientOverallBoundedFrontier() {
 }
 
 function clientAllocationPercentile(profileName) {
-  ensureVolatilityModel();
-  const displayedPercentile = state.volatilityModel?.profiles?.[profileName]?.percentile ?? defaultVolatilityPercentiles[profileName] ?? 50;
-  const advisorPeShift = volatilityCases[selectedVolatilityCase] || 0;
-  const basePercentile = displayedPercentile - advisorPeShift;
-  const peShift = advisorPeShift / 2;
+  const basePercentile = defaultVolatilityPercentiles[profileName] ?? 50;
+  const peShift = (volatilityCases[selectedVolatilityCase] || 0) / 2;
   const rateShift = clientInterestRatePercentileShifts[selectedInterestRateCase] || 0;
   return Math.max(1, Math.min(99, basePercentile + peShift + rateShift));
 }
@@ -2158,6 +2303,40 @@ function renderOverallAllocationCards(model) {
   }).join("");
 }
 
+function renderAdvisorOverallAllocationCards(model) {
+  return model.rows.map((row) => {
+    const items = state.categories
+      .map((category) => ({
+        label: category,
+        value: Math.max(0, row.categoryWeights?.[category] || 0),
+        color: categoryColor(category),
+        displayPct: displayAllocationPct(category, row.categoryWeights?.[category] || 0),
+      }))
+      .filter((item) => item.value > 0.0005);
+    const total = items.reduce((sum, item) => sum + item.value, 0) || 1;
+    let angle = -Math.PI / 2;
+    const slices = items.map((item) => {
+      const nextAngle = angle + (item.value / total) * Math.PI * 2;
+      const path = pieSliceMarkup(item, total, angle, nextAngle);
+      angle = nextAngle;
+      return path;
+    }).join("");
+    return `<div class="overall-allocation-card">
+      <h3>${row.profile}</h3>
+      <div class="overall-card-body">
+        <svg viewBox="0 0 124 124" role="img" aria-label="${row.profile} optimized allocation pie chart">
+          ${slices}
+          <circle cx="62" cy="62" r="48" fill="none" stroke="${chartTheme.surface}" stroke-width="1.5"></circle>
+        </svg>
+        <div class="overall-card-legend">
+          ${items.map((item) => `<span><i style="--pie-color:${item.color}"></i>${item.label}<strong>${item.displayPct}</strong></span>`).join("")}
+        </div>
+      </div>
+      <div class="overall-benchmark-note">Volatility percentile: ${Number(row.volatilityPercentile).toFixed(0)}th<br />Target volatility: ${pct(row.targetVolMin)} - ${pct(row.targetVolMax)}</div>
+    </div>`;
+  }).join("");
+}
+
 function renderPeValuationChart() {
   const targets = [
     { panel: "#peValuationPanel", chart: "#peValuationChart", toggle: "#togglePeChart" },
@@ -2192,14 +2371,14 @@ function renderOverallAllocation() {
   }
   renderPeValuationChart();
   if (!cards || !chart) return;
-  const model = calculateOverallAllocation();
+  const model = calculateAdvisorOverallAllocation();
   if (!model) {
     cards.innerHTML = "";
-    chart.innerHTML = `<p class="frontier-note">Overall allocation needs S&amp;P 500 and AGG benchmark assumptions.</p>`;
+    chart.innerHTML = `<p class="frontier-note">Calculating optimized allocations...</p>`;
     return;
   }
 
-  cards.innerHTML = renderOverallAllocationCards(model);
+  cards.innerHTML = renderAdvisorOverallAllocationCards(model);
 
   const width = 860;
   const height = 430;
@@ -2209,7 +2388,6 @@ function renderOverallAllocation() {
   const plotted = [
     ...model.broadCurve.map((point) => ({ x: point.volatility, y: point.expectedReturn })),
     ...model.blendPoints.map((point) => ({ x: point.volatility, y: point.expectedReturn })),
-    ...model.rows.map((row) => ({ x: (row.displayPoint || row.chosen.stats).volatility, y: (row.displayPoint || row.chosen.stats).expectedReturn })),
     ...(model.assetPoints || []).map((point) => ({ x: point.stats.volatility, y: point.stats.expectedReturn })),
   ];
   const minVol = Math.min(...plotted.map((point) => point.x));
@@ -2263,15 +2441,10 @@ function renderOverallAllocation() {
     }).join("")}
     <g class="benchmark-point" tabindex="0" role="button" data-tooltip-title="AGG" data-tooltip-body="Return ${pct(model.agg.return)} | Vol ${pct(model.agg.volatility)}"><rect x="${(xScale(model.agg.volatility) - 6).toFixed(1)}" y="${(yScale(model.agg.return) - 6).toFixed(1)}" width="12" height="12" fill="#8a8f98" stroke="#101820" stroke-width="1.2"></rect></g>
     <g class="benchmark-point" tabindex="0" role="button" data-tooltip-title="S&amp;P 500" data-tooltip-body="Return ${pct(model.sp.return)} | Vol ${pct(model.sp.volatility)}"><rect x="${(xScale(model.sp.volatility) - 6).toFixed(1)}" y="${(yScale(model.sp.return) - 6).toFixed(1)}" width="12" height="12" fill="#101820" stroke="#101820" stroke-width="1.2"></rect></g>
-    ${model.rows.map((row) => {
-      const point = row.displayPoint || row.chosen.stats;
-      return `<g class="selected-point" tabindex="0" role="button" data-tooltip-title="${row.profile}" data-tooltip-body="${overallCategoryTooltip(row.categoryWeights)}"><circle cx="${xScale(point.volatility).toFixed(1)}" cy="${yScale(point.expectedReturn).toFixed(1)}" r="6.2" fill="#00a95a" stroke="#101820" stroke-width="1.8"></circle></g>`;
-    }).join("")}
     <g transform="translate(${pad.left + 4}, 16)">
       <line x1="0" y1="0" x2="26" y2="0" stroke="#3d5568" stroke-width="2.4"></line><text x="34" y="4" class="frontier-axis">Efficient Frontier</text>
       <line x1="224" y1="0" x2="250" y2="0" stroke="#b98256" stroke-width="2" stroke-dasharray="5 5"></line><text x="258" y="4" class="frontier-axis">S&amp;P/AGG blend</text>
-      <circle cx="410" cy="0" r="6" fill="#00a95a" stroke="#101820" stroke-width="1.5"></circle><text x="424" y="4" class="frontier-axis">Optimized targets</text>
-      <polygon points="584,-7 577,7 591,7" fill="#005f73" stroke="#101820" stroke-width="1.1"></polygon><text x="598" y="4" class="frontier-axis">Sub-assets</text>
+      <polygon points="410,-7 403,7 417,7" fill="#005f73" stroke="#101820" stroke-width="1.1"></polygon><text x="424" y="4" class="frontier-axis">Sub-assets</text>
     </g>
     <text x="${width / 2}" y="${height - 6}" text-anchor="middle" class="frontier-axis">Annualized volatility</text>
     <text x="16" y="${height / 2}" text-anchor="middle" transform="rotate(-90 16 ${height / 2})" class="frontier-axis">Compound return</text>
@@ -2453,7 +2626,6 @@ function renderMonteCarloAssetsChart(selectedPath) {
 
   assetChart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monte Carlo sub-sleeve five-year time-weighted return path chart">
     <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
-    <defs><clipPath id="${clipId}"><rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}"></rect></clipPath></defs>
     <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
     ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line>
       <text x="${width - pad.right + 12}" y="${yScale(tick) + 4}" text-anchor="start" class="frontier-axis">${pct(tick)}</text>`).join("")}
@@ -2570,7 +2742,7 @@ function buildClientMonteCarloFanCache(seed, runs = 100000) {
   const summaryPathsByProfile = Object.fromEntries(rows.map((row) => {
     const yearlyStats = valuesByProfile[row.profile].map((yearValues) => {
       const sorted = [...yearValues].sort((a, b) => a - b);
-      const median = percentileValue(sorted, 0.50);
+      const median = fractionalPercentileValue(sorted, 0.50);
       const standardDeviation = standardDeviationValue(yearValues);
       return { median, standardDeviation };
     });
@@ -2594,7 +2766,7 @@ function standardDeviationValue(values) {
   const variance = values.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / values.length;
   return Math.sqrt(Math.max(0, variance));
 }
-function percentileValue(sortedValues, percentile) {
+function fractionalPercentileValue(sortedValues, percentile) {
   if (!sortedValues.length) return 0;
   const index = (sortedValues.length - 1) * percentile;
   const lower = Math.floor(index);
@@ -2697,7 +2869,7 @@ function renderClientMonteCarloDistributionChart(chart, portfolio, scenarioSeed)
   const yScale = (value) => pad.top + (1 - (value / Math.max(yMax, 1e-8))) * plotH;
   const xTicks = Array.from({ length: 6 }, (_, index) => xMin + ((xMax - xMin) * index) / 5);
   const yTicks = Array.from({ length: 5 }, (_, index) => (yMax * index) / 4);
-  const median = percentileValue(sorted, 0.50);
+  const median = fractionalPercentileValue(sorted, 0.50);
   const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
 
   chart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monte Carlo ending annualized return distribution">
@@ -2791,7 +2963,6 @@ function renderMonteCarlo() {
 
   chart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Monte Carlo random annual return scenario chart">
     <rect x="0" y="0" width="${width}" height="${height}" fill="${chartTheme.surface}"></rect>
-    <defs><clipPath id="${clipId}"><rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}"></rect></clipPath></defs>
     <rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="${chartTheme.plot}" stroke="${chartTheme.border}"></rect>
     ${yTicks.map((tick) => `<line x1="${pad.left}" y1="${yScale(tick)}" x2="${width - pad.right}" y2="${yScale(tick)}" stroke="${chartTheme.grid}"></line>
       <text x="${pad.left - 10}" y="${yScale(tick) + 4}" text-anchor="end" class="frontier-axis">${pct(tick)}</text>`).join("")}
@@ -2895,6 +3066,7 @@ function renderFrontierChart(selected, frontier, assetPoints, profile, options =
   const regionPolygon = region.hull.map((point) => `${xScale(point.x).toFixed(1)},${yScale(point.y).toFixed(1)}`).join(" ");
   const xTicks = Array.from({ length: 6 }, (_, i) => xMin + ((xMax - xMin) * i) / 5);
   const yTicks = Array.from({ length: 6 }, (_, i) => yMin + ((yMax - yMin) * i) / 5);
+  const clipId = `advisor-frontier-clip-${Math.abs(seedFromString(`${selected.profileName}-${selectedVolatilityCase}-${selectedAllocationPreset}-${selectedSubAllocationPreset}`, 1))}`;
   const bandX = xScale(profile.targetVolMin);
   const bandWidth = Math.max(2, xScale(profile.targetVolMax) - bandX);
   const selectedX = xScale(selected.stats.volatility);
@@ -2950,6 +3122,10 @@ function renderFrontierChart(selected, frontier, assetPoints, profile, options =
       <text x="${pad.left - 12}" y="${yScale(tick) + 4}" text-anchor="end" class="frontier-axis">${pct(tick)}</text>`).join("")}
     ${xTicks.map((tick) => `<line x1="${xScale(tick)}" y1="${pad.top}" x2="${xScale(tick)}" y2="${height - pad.bottom}" stroke="${chartTheme.gridLight}"></line>
       <text x="${xScale(tick)}" y="${height - 26}" text-anchor="middle" class="frontier-axis">${pct(tick)}</text>`).join("")}
+    <g clip-path="url(#${clipId})">
+      ${regionShape}
+      ${visibleRegionPoints.map((point) => `<circle cx="${xScale(point.x).toFixed(1)}" cy="${yScale(point.y).toFixed(1)}" r="1.45" fill="#2f80b7" opacity="0.18"></circle>`).join("")}
+    </g>
     <rect x="${bandX.toFixed(1)}" y="${pad.top}" width="${bandWidth.toFixed(1)}" height="${plotH}" fill="#00a95a" opacity="0.11"></rect>
     <line x1="${bandX.toFixed(1)}" y1="${pad.top}" x2="${bandX.toFixed(1)}" y2="${height - pad.bottom}" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="5 5"></line>
     <line x1="${(bandX + bandWidth).toFixed(1)}" y1="${pad.top}" x2="${(bandX + bandWidth).toFixed(1)}" y2="${height - pad.bottom}" stroke="#00a95a" stroke-width="1.4" stroke-dasharray="5 5"></line>
@@ -3042,7 +3218,7 @@ function renderAll() {
   renderWeights();
   renderFundModels();
   renderMvo();
-  renderClientPortfolio();
+  if (viewMode === "client") renderClientPortfolio();
   if (monteCarloIsActive()) renderMonteCarlo();
 }
 
@@ -3061,7 +3237,7 @@ function activateTab(tabName) {
   const page = document.querySelector(`#${tabName}`);
   if (tab) tab.classList.add("active");
   if (page) page.classList.add("active");
-  if (tabName === "mvo" || tabName === "monteCarlo") ensureConstrainedResults();
+  if (tabName === "overallAllocation" || tabName === "mvo" || tabName === "monteCarlo") ensureConstrainedResults();
   if (tabName === "mvo") refreshMvo();
   if (tabName === "clientPortfolio") renderClientPortfolio();
   if (tabName === "overallAllocation") renderOverallAllocation();
@@ -3073,7 +3249,7 @@ function setViewMode(mode) {
   document.body.dataset.viewMode = viewMode;
   const select = document.querySelector("#viewModeSelect");
   if (select) select.value = viewMode;
-  activateTab(viewMode === "client" ? "clientPortfolio" : "overallAllocation");
+  activateTab(viewMode === "client" ? "clientPortfolio" : "mvo");
 }
 
 function renderEditableInputs() {
@@ -3091,16 +3267,18 @@ function setPath(path, value) {
 
 function resetModel() {
   state = clone(baseData);
-  selectedAssumptionSet = state.selectedAssumptionSet || "CORE";
-  applyAssumptionSet(selectedAssumptionSet);
+  selectedAssumptionYear = baseData.defaultAssumptionYear || "2027";
+  applyAssumptionYear(selectedAssumptionYear);
   selectedVolatilityCase = "Neutral";
   selectedInterestRateCase = "Neutral";
   selectedClientProfile = "Moderate";
   selectedMcProfile = "Moderate";
   monteCarloSeed = 75;
   selectedMcAssets = null;
-  selectedAllocationPreset = "CORE";
-  selectedSubAllocationPreset = "CORE";
+  selectedAllocationPreset = "Unconstrained";
+  selectedSubAllocationPreset = "Special";
+  advisorVolatilityPercentiles = { ...defaultVolatilityPercentiles };
+  applyAllocationPreset(selectedAllocationPreset);
   applySubAllocationPreset(selectedSubAllocationPreset);
   ensureVolatilityModel();
   applyVolatilityCase(selectedVolatilityCase);
@@ -3127,6 +3305,13 @@ function applySubAllocationPreset(name) {
     if (name === "Unconstrained") {
       asset.minWeight = 0;
       asset.maxWeight = 1;
+    } else if (name === "Special") {
+      const bounds = specialSubAllocationBounds[asset.name];
+      if (!bounds) {
+        throw new Error(`Special allocation constraints are missing for ${asset.name}.`);
+      }
+      asset.minWeight = bounds.min;
+      asset.maxWeight = bounds.max;
     } else {
       asset.minWeight = baseData.assets[index].minWeight;
       asset.maxWeight = baseData.assets[index].maxWeight;
@@ -3137,33 +3322,63 @@ function applySubAllocationPreset(name) {
 function refreshMvo() {
   if (!mvoDirty && frontierResult) {
     renderMvo();
-    renderClientPortfolio();
     return;
   }
   renderMvoSelectedStatus(selectedMvoProfile, null, "Checking ranges...");
   const advisorFrontier = document.querySelector("#frontierChart");
   const advisorWeights = document.querySelector("#mvoWeightCharts");
   const advisorConstraints = document.querySelector("#mvoConstraints");
-  const clientFrontier = document.querySelector("#clientFrontierChart");
-  const clientWeights = document.querySelector("#clientWeightCharts");
   if (advisorFrontier) advisorFrontier.innerHTML = `<p class="frontier-note">Calculating efficient frontier...</p>`;
   if (advisorWeights) advisorWeights.innerHTML = `<p class="frontier-note">Calculating weights...</p>`;
   if (advisorConstraints) advisorConstraints.innerHTML = "";
-  if (clientFrontier) clientFrontier.innerHTML = `<p class="frontier-note">Calculating efficient frontier...</p>`;
-  if (clientWeights) clientWeights.innerHTML = `<p class="frontier-note">Calculating weights...</p>`;
   setTimeout(() => {
     try {
       frontierResult = calculateEfficientFrontier();
       mvoDirty = false;
       renderMvo();
-      renderClientPortfolio();
     } catch (error) {
+      console.error("Advisor portfolio optimization failed:", error);
       frontierResult = { error: error.message };
       mvoDirty = false;
       renderMvo();
-      renderClientPortfolio();
     }
   }, 25);
+}
+
+function updateAdvisorVolatilityPercentile(input) {
+  const profileName = input.dataset.advisorVolatilityPercentile;
+  if (!profileName || input.value.trim() === "") return;
+  const displayedPercentile = Math.max(0, Math.min(100, num(input.value)));
+  const caseShift = volatilityCases[selectedVolatilityCase] || 0;
+  advisorVolatilityPercentiles[profileName] = displayedPercentile - caseShift;
+  ensureVolatilityModel();
+  state.volatilityModel.profiles[profileName].percentile = displayedPercentile;
+  state.volatilityModel.profiles[profileName].halfWidth = state.volatilityModel.halfWidth;
+  results = {};
+  runOptimization();
+}
+
+function shiftAdvisorVolatilityPercentiles(delta) {
+  ensureVolatilityModel();
+  const caseShift = volatilityCases[selectedVolatilityCase] || 0;
+  Object.keys(state.profiles).forEach((profileName) => {
+    const profileModel = state.volatilityModel.profiles[profileName];
+    const current = Number(profileModel.percentile ?? advisorVolatilityPercentiles[profileName] ?? 50);
+    const next = Math.max(0, Math.min(100, current + delta));
+    advisorVolatilityPercentiles[profileName] = next - caseShift;
+    profileModel.percentile = next;
+    profileModel.halfWidth = state.volatilityModel.halfWidth;
+  });
+  results = {};
+  runOptimization();
+}
+
+function scheduleAdvisorPercentileUpdate(input) {
+  window.clearTimeout(advisorPercentileTimer);
+  advisorPercentileTimer = window.setTimeout(() => {
+    if (!input.isConnected || input.value.trim() === "") return;
+    updateAdvisorVolatilityPercentile(input);
+  }, 350);
 }
 
 function mvoIsActive() {
@@ -3330,12 +3545,21 @@ document.addEventListener("input", (event) => {
     renderMonteCarlo();
     return;
   }
+  if (event.target.matches("input[data-advisor-volatility-percentile]")) {
+    if (event.target.value.trim() === "") return;
+    scheduleAdvisorPercentileUpdate(event.target);
+    return;
+  }
   if (!event.target.matches("input[data-path]")) return;
   updateInputState(event.target);
   scheduleLiveUpdate();
 });
 
 document.addEventListener("change", (event) => {
+  if (event.target.matches("#assumptionYearSelect")) {
+    if (applyAssumptionYear(event.target.value)) runOptimization();
+    return;
+  }
   if (event.target.matches("#assumptionSetSelect")) {
     applyAssumptionSet(event.target.value);
     runOptimization();
@@ -3390,16 +3614,26 @@ document.addEventListener("change", (event) => {
     runOptimization();
     return;
   }
+  if (event.target.matches("input[data-advisor-volatility-percentile]")) {
+    window.clearTimeout(advisorPercentileTimer);
+    updateAdvisorVolatilityPercentile(event.target);
+    return;
+  }
   if (event.target.matches("#volatilityCaseSelect")) {
     applyVolatilityCase(event.target.value);
     results = {};
     renderProfiles();
-    renderOverallAllocation();
-    renderClientPortfolio();
-    if (mvoIsActive() || monteCarloIsActive()) ensureConstrainedResults();
+    runOptimization();
     return;
   }
-  if (event.target.matches("#overallVolatilityCaseSelect") || event.target.matches("#clientOverallVolatilityCaseSelect")) {
+  if (event.target.matches("#overallVolatilityCaseSelect")) {
+    applyVolatilityCase(event.target.value);
+    results = {};
+    renderProfiles();
+    runOptimization();
+    return;
+  }
+  if (event.target.matches("#clientOverallVolatilityCaseSelect")) {
     applyVolatilityCase(event.target.value);
     results = {};
     renderProfiles();
@@ -3420,6 +3654,12 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("click", (event) => {
+  const percentileShiftButton = event.target.closest("[data-advisor-percentile-shift]");
+  if (percentileShiftButton) {
+    shiftAdvisorVolatilityPercentiles(Number(percentileShiftButton.dataset.advisorPercentileShift) || 0);
+    return;
+  }
+
   if (event.target.closest("#toggleProviderLogos") || event.target.closest("#clientToggleProviderLogos")) {
     showProviderLogoPanel = !showProviderLogoPanel;
     renderOverallAllocation();
@@ -3453,7 +3693,7 @@ document.addEventListener("click", (event) => {
     document.querySelectorAll(".page").forEach((x) => x.classList.remove("active"));
     tab.classList.add("active");
     document.querySelector(`#${tab.dataset.tab}`).classList.add("active");
-    if (tab.dataset.tab === "mvo" || tab.dataset.tab === "monteCarlo") ensureConstrainedResults();
+    if (tab.dataset.tab === "overallAllocation" || tab.dataset.tab === "mvo" || tab.dataset.tab === "monteCarlo") ensureConstrainedResults();
     if (tab.dataset.tab === "mvo") refreshMvo();
     if (tab.dataset.tab === "clientPortfolio") renderClientPortfolio();
     if (tab.dataset.tab === "overallAllocation") renderOverallAllocation();
@@ -3505,8 +3745,9 @@ async function init() {
       return r.json();
     });
     state = clone(baseData);
-    selectedAssumptionSet = state.selectedAssumptionSet || "CORE";
-    applyAssumptionSet(selectedAssumptionSet);
+    selectedAssumptionYear = baseData.defaultAssumptionYear || "2027";
+    applyAssumptionYear(selectedAssumptionYear);
+    applyAllocationPreset(selectedAllocationPreset);
     applySubAllocationPreset(selectedSubAllocationPreset);
     ensureVolatilityModel();
     applyVolatilityCase(selectedVolatilityCase);
@@ -3519,87 +3760,3 @@ async function init() {
 }
 
 init();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

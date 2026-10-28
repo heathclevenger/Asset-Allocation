@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Portfolio Allocation</title>
-    <link rel="stylesheet" href="./styles.css?v=20260828-mc-distribution-select-v1" />
+    <link rel="stylesheet" href="./styles.css?v=20261028-advisor-shift-buttons-v1" />
   </head>
-  <body data-view-mode="client">
+  <body data-view-mode="advisor">
     <div class="shell">
       <header class="masthead">
         <div class="brand">
@@ -21,8 +21,8 @@
               <label>
                 View
                 <select id="viewModeSelect">
-                  <option value="advisor">Advisor</option>
-                  <option value="client" selected>Client</option>
+                  <option value="advisor" selected>Advisor</option>
+                  <option value="client">Client</option>
                 </select>
               </label>
             </div>
@@ -33,11 +33,10 @@
 
       <div class="nav-row">
         <nav class="tabs" aria-label="Model pages">
-          <button class="tab" data-tab="overallAllocation" data-view-tab="advisor">Overall Allocation</button>
+          <button class="tab" data-tab="mvo" data-view-tab="advisor">Portfolio Optimization</button>
           <button class="tab" data-tab="assets" data-view-tab="advisor">Asset Assumptions</button>
           <button class="tab" data-tab="profiles" data-view-tab="advisor">Model Constraints</button>
-          <button class="tab" data-tab="mvo" data-view-tab="advisor">Portfolio Optimization</button>
-          <button class="tab" data-tab="monteCarlo" data-view-tab="advisor">Monte Carlo</button>
+          <button class="tab" data-tab="overallAllocation" data-view-tab="advisor">Summary</button>
           <button class="tab active" data-tab="clientPortfolio" data-view-tab="client">Portfolio</button>
           <button class="tab" data-tab="monteCarlo" data-view-tab="client">Monte Carlo</button>
         </nav>
@@ -77,28 +76,9 @@
         <section id="overallAllocation" class="page">
           <div class="toolbar">
             <div>
-              <h2>Overall Allocation</h2>
-              <p>This page looks only at the broad stock and bond decision. It uses blended equity and fixed income assumptions to estimate the closest mix to each benchmark volatility target. The Market P/E and Monetary Policy settings adjust those benchmark volatility targets higher or lower before the optimizer finds the closest stock and bond mix.</p>
+              <h2>Summary</h2>
+              <p>This page summarizes the optimized portfolios from Portfolio Optimization. Each allocation uses the current asset assumptions, volatility percentile, and active model constraints. The chart shows those same optimized portfolios against the efficient frontier and market benchmarks.</p>
             </div>
-            <div class="overall-adjustment-controls">
-              <div class="select-control compact market-pe-control">
-                <div class="market-pe-label-row">
-                  <label for="overallVolatilityCaseSelect">Market P/E</label>
-                  <button type="button" id="togglePeChart" class="icon-toggle" aria-expanded="false" aria-label="Show Market P/E chart">+</button>
-                </div>
-                <div class="market-pe-row">
-                  <select id="overallVolatilityCaseSelect"></select>
-                </div>
-              </div>
-              <div class="select-control compact">
-                <label for="overallInterestRateSelect">Monetary Policy</label>
-                <select id="overallInterestRateSelect"></select>
-              </div>
-            </div>
-          </div>
-          <div id="peValuationPanel" class="panel pe-valuation-panel collapsed">
-            <div class="panel-title">S&amp;P 500 Valuation Measures</div>
-            <div id="peValuationChart" class="pe-valuation-chart"></div>
           </div>
           <div class="panel">
             <div class="panel-title">Broad Risk/Return Map</div>
@@ -126,6 +106,7 @@
                   <label for="subAllocationPresetSelect">Allocation Set</label>
                   <select id="subAllocationPresetSelect">
                     <option value="CORE">CORE</option>
+                    <option value="Special" selected>Special</option>
                     <option value="Unconstrained">Unconstrained</option>
                   </select>
                 </div>
@@ -141,7 +122,7 @@
                   <label for="allocationPresetSelect">Allocation Set</label>
                   <select id="allocationPresetSelect">
                     <option value="CORE">CORE</option>
-                    <option value="Unconstrained">Unconstrained</option>
+                    <option value="Unconstrained" selected>Unconstrained</option>
                   </select>
                 </div>
               </div>
@@ -156,12 +137,17 @@
           <div class="toolbar">
             <div>
               <h2>Asset Assumptions</h2>
-              <p>Use this page to review the capital market assumptions used by the model. The selected assumption set changes the return and volatility inputs across the app. The comparison table shows how each provider differs before the CORE average is applied.</p>
+              <p>Use this page to review the capital market assumptions used by the model. The selected assumption set changes the return and volatility inputs across the app. The comparison table shows how each provider differs before the Average assumption set is applied.</p>
             </div>
             <div class="select-control">
-              <label for="assumptionSetSelect">Assumption Set</label>
+              <label for="assumptionYearSelect">Year</label>
+              <select id="assumptionYearSelect">
+                <option value="2026">2026</option>
+                <option value="2027" selected>2027</option>
+              </select>
+              <label for="assumptionSetSelect" class="stacked-control-label">Assumption Set</label>
               <select id="assumptionSetSelect">
-                <option value="CORE" selected>CORE</option>
+                <option value="CORE" selected>Average</option>
               </select>
             </div>
           </div>
@@ -319,53 +305,6 @@
         <span>Do Not Distribute</span>
       </footer>
     </div>
-    <script src="./app.js?v=20260828-mc-distribution-select-v1"></script>
+    <script src="./app.js?v=20261028-year-data-v5"></script>
   </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

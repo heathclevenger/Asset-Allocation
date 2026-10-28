@@ -15,7 +15,8 @@ from scipy.optimize import minimize
 BASE_DIR = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = BASE_DIR / "outputs"
 OUTPUT_FILE = OUTPUT_DIR / "paul_asset_allocation_model.xlsx"
-JPM_MATRIX_FILE = BASE_DIR / "inputs" / "jpm_matrix.xlsx"
+INPUTS_DIR = BASE_DIR / "inputs"
+DEFAULT_ASSUMPTION_YEAR = "2027"
 CASH_TARGET = 0.01
 CATEGORIES = ["Equity", "Fixed Income", "Alternatives", "Cash"]
 MODERATE_VOL_TARGET = 0.130
@@ -95,15 +96,26 @@ def normalize_name(name: str) -> str:
     return " ".join(str(name).replace("\xa0", " ").split())
 
 
-def jpm_matrix_path() -> Path:
-    if JPM_MATRIX_FILE.exists():
-        return JPM_MATRIX_FILE
-    raise FileNotFoundError(f"Could not find JPM matrix file at {JPM_MATRIX_FILE}. Replace that file each quarter before refreshing.")
+def jpm_matrix_path(year: str = DEFAULT_ASSUMPTION_YEAR) -> Path:
+    year_dir = INPUTS_DIR / str(year)
+    preferred = year_dir / "jpm_matrix.xlsx"
+    if preferred.exists():
+        return preferred
+    candidates = sorted(
+        path for path in year_dir.glob("*.xlsx")
+        if "jpm" in path.name.lower() and not path.name.startswith("~$")
+    )
+    if len(candidates) == 1:
+        return candidates[0]
+    if not candidates:
+        raise FileNotFoundError(f"Could not find a JPM matrix workbook in {year_dir}.")
+    raise FileNotFoundError(f"Found multiple JPM matrix workbooks in {year_dir}: {', '.join(path.name for path in candidates)}")
 
 
-def load_jpm_source_data() -> Dict[str, object]:
-    wb = load_workbook(jpm_matrix_path(), data_only=True)
-    ws = wb["2026"] if "2026" in wb.sheetnames else wb.active
+def load_jpm_source_data(matrix_path: Path | None = None, year: str = DEFAULT_ASSUMPTION_YEAR) -> Dict[str, object]:
+    source_path = Path(matrix_path) if matrix_path is not None else jpm_matrix_path(year)
+    wb = load_workbook(source_path, data_only=True)
+    ws = wb[str(year)] if str(year) in wb.sheetnames else wb.active
 
     row_by_name: Dict[str, int] = {}
     for row in range(9, ws.max_row + 1):
@@ -118,7 +130,10 @@ def load_jpm_source_data() -> Dict[str, object]:
             col_by_name[normalize_name(value)] = col
 
     source_names = sorted(set(row_by_name).intersection(col_by_name))
-    returns = {name: float(ws.cell(row_by_name[name], 6).value) / 100.0 for name in source_names}
+    # The 2027 source workbook's approved compound-return series is in column C.
+    # Keep the established 2026 parser on its existing compound-return column.
+    return_column = 3 if str(year) == "2027" else 6
+    returns = {name: float(ws.cell(row_by_name[name], return_column).value) / 100.0 for name in source_names}
     vols = {name: float(ws.cell(row_by_name[name], 5).value) / 100.0 for name in source_names}
     corr = np.eye(len(source_names))
     for i, row_name in enumerate(source_names):

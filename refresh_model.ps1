@@ -2,20 +2,25 @@ $ErrorActionPreference = "Stop"
 
 $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $VenvPython = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
-$JpmMatrix = Join-Path $ProjectRoot "inputs\jpm_matrix.xlsx"
+$DefaultJpmMatrix = Join-Path $ProjectRoot "inputs\2027\JPM matrix-usd_2027.xlsx"
+$PythonExe = $null
 
-if (-not (Test-Path $VenvPython)) {
-    Write-Host "Virtual environment not found. Create it first with:"
-    Write-Host "  py -m venv .venv"
-    Write-Host "  .\.venv\Scripts\Activate.ps1"
-    Write-Host "  python -m pip install --upgrade pip"
+$PythonCommand = Get-Command python -ErrorAction SilentlyContinue
+if ($PythonCommand) {
+    $PythonExe = $PythonCommand.Source
+} elseif (Test-Path $VenvPython) {
+    $PythonExe = $VenvPython
+}
+
+if (-not $PythonExe) {
+    Write-Host "Python was not found. Install Python, then run:"
     Write-Host "  python -m pip install -r requirements.txt"
     exit 1
 }
 
-if (-not (Test-Path $JpmMatrix)) {
-    Write-Host "JPM matrix file not found. Save the quarterly JPM file here before refreshing:"
-    Write-Host "  inputs\jpm_matrix.xlsx"
+if (-not (Test-Path $DefaultJpmMatrix)) {
+    Write-Host "The default JPM matrix file was not found:"
+    Write-Host "  inputs\2027\JPM matrix-usd_2027.xlsx"
     exit 1
 }
 
@@ -29,15 +34,15 @@ if missing:
     sys.exit(1)
 "@
 
-$DependencyCheck | & $VenvPython -
+$DependencyCheck | & $PythonExe -
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
     Write-Host "Install the required packages with:"
-    Write-Host "  .\.venv\Scripts\python.exe -m pip install -r requirements.txt"
+    Write-Host "  python -m pip install -r requirements.txt"
     exit 1
 }
 
-& $VenvPython (Join-Path $ProjectRoot "src\portfolio_optimizer.py")
-& $VenvPython (Join-Path $ProjectRoot "src\export_web_data.py")
+& $PythonExe (Join-Path $ProjectRoot "src\portfolio_optimizer.py")
+& $PythonExe (Join-Path $ProjectRoot "src\export_web_data.py")
 Write-Host "Updated workbook: outputs\paul_asset_allocation_model.xlsx"
-Write-Host "Updated web data: web\data\model-data.json"
+Write-Host "Updated year-aware web data: web\data\model-data.json"

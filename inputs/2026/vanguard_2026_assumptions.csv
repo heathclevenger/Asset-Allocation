@@ -1,0 +1,17 @@
+Model Asset,Provider Asset,Return,Volatility,Source Note
+U.S. Large Cap,Vanguard U.S. large-cap,5.10%,15.00%,50th percentile return; median volatility
+U.S. Value,Vanguard U.S. value,7.40%,19.00%,50th percentile return; median volatility
+U.S. Growth,Vanguard U.S. growth,4.60%,16.30%,50th percentile return; median volatility
+U.S. Mid Cap,Vanguard U.S. equities proxy,5.20%,15.10%,50th percentile return; median volatility
+U.S. Small Cap,Vanguard U.S. small-cap,5.70%,19.70%,50th percentile return; median volatility
+International Developed Equity,Vanguard developed markets ex-U.S. equities (unhedged),5.50%,18.00%,50th percentile return; median volatility
+Emerging Markets Equity,Vanguard emerging markets equities (unhedged),3.00%,25.10%,50th percentile return; median volatility
+U.S. REITs,Vanguard U.S. REITs,4.40%,17.90%,50th percentile return; median volatility
+Commodities,Vanguard Commodities,5.70%,16.70%,50th percentile return; median volatility
+US Short Treasuries,Vanguard U.S. short-term Treasury bonds,4.00%,1.70%,50th percentile return; median volatility
+US Intermediate Treasuries,Vanguard U.S. intermediate-term Treasury bonds,4.20%,5.10%,50th percentile return; median volatility
+US Long Treasuries,Vanguard U.S. long-term Treasury bonds,5.70%,10.40%,50th percentile return; median volatility
+Investment Grade Corporate,Vanguard U.S. credit,4.80%,6.40%,50th percentile return; median volatility
+High Yield,Vanguard U.S. high-yield corporate bonds,5.20%,9.60%,50th percentile return; median volatility
+International Fixed Income (H),Vanguard global ex-U.S. aggregate bonds hedged,5.00%,5.00%,50th percentile return; median volatility
+Cash,Vanguard U.S. cash,3.50%,1.10%,50th percentile return; median volatility

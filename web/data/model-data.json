@@ -1,5 +1,5 @@
 {
-  "generatedFrom": "C:\\Users\\hclevenger\\Desktop\\Paul Asset Allocation\\inputs\\jpm_matrix.xlsx",
+  "generatedFrom": "C:\\Users\\hclevenger\\Desktop\\Python Files\\Investment\\Paul Asset Allocation\\inputs\\2027\\JPM matrix-usd_2027.xlsx",
   "cashTarget": 0.01,
   "categories": [
     "Equity",
@@ -7,6 +7,2837 @@
     "Alternatives",
     "Cash"
   ],
+  "defaultAssumptionYear": "2027",
+  "assumptionYears": {
+    "2026": {
+      "generatedFrom": "C:\\Users\\hclevenger\\Desktop\\Python Files\\Investment\\Paul Asset Allocation\\inputs\\2026\\jpm_matrix.xlsx",
+      "selectedAssumptionSet": "CORE",
+      "assets": [
+        {
+          "name": "U.S. Large Cap",
+          "category": "Equity",
+          "sourceNames": [
+            "U.S. Large Cap"
+          ],
+          "return": 0.060805230754333334,
+          "volatility": 0.1627911875692516,
+          "minWeight": 0.15,
+          "maxWeight": 0.55,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 6
+        },
+        {
+          "name": "U.S. Mid Cap",
+          "category": "Equity",
+          "sourceNames": [
+            "U.S. Mid Cap"
+          ],
+          "return": 0.06385210604130001,
+          "volatility": 0.17718447441309745,
+          "minWeight": 0.0,
+          "maxWeight": 0.1,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 5
+        },
+        {
+          "name": "U.S. Small Cap",
+          "category": "Equity",
+          "sourceNames": [
+            "U.S. Small Cap"
+          ],
+          "return": 0.06878161264783333,
+          "volatility": 0.20925169517654715,
+          "minWeight": 0.0,
+          "maxWeight": 0.05,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 6
+        },
+        {
+          "name": "U.S. Value",
+          "category": "Equity",
+          "sourceNames": [
+            "U.S. Equity Value Factor"
+          ],
+          "return": 0.063724164903,
+          "volatility": 0.1722706920805004,
+          "minWeight": 0.0,
+          "maxWeight": 0.075,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 3
+        },
+        {
+          "name": "U.S. Growth",
+          "category": "Equity",
+          "sourceNames": [
+            "U.S. Large Cap"
+          ],
+          "return": 0.06479342170108333,
+          "volatility": 0.18602144137289936,
+          "minWeight": 0.0,
+          "maxWeight": 0.075,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 6
+        },
+        {
+          "name": "International Developed Equity",
+          "category": "Equity",
+          "sourceNames": [
+            "EAFE Equity"
+          ],
+          "return": 0.07339483415016666,
+          "volatility": 0.1723935390255424,
+          "minWeight": 0.0,
+          "maxWeight": 0.15,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 6
+        },
+        {
+          "name": "Emerging Markets Equity",
+          "category": "Equity",
+          "sourceNames": [
+            "Emerging Markets Equity"
+          ],
+          "return": 0.06370636414599999,
+          "volatility": 0.21023543757448734,
+          "minWeight": 0.0,
+          "maxWeight": 0.005,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 6
+        },
+        {
+          "name": "U.S. REITs",
+          "category": "Alternatives",
+          "sourceNames": [
+            "U.S. REITs"
+          ],
+          "return": 0.06275230887325,
+          "volatility": 0.17711721987295678,
+          "minWeight": 0.0,
+          "maxWeight": 0.0,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 4
+        },
+        {
+          "name": "Commodities",
+          "category": "Alternatives",
+          "sourceNames": [
+            "Commodities"
+          ],
+          "return": 0.0564192112385,
+          "volatility": 0.17097718021116862,
+          "minWeight": 0.0,
+          "maxWeight": 0.0,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 4
+        },
+        {
+          "name": "US Short Treasuries",
+          "category": "Fixed Income",
+          "sourceNames": [
+            "U.S. Short Duration Government/Credit"
+          ],
+          "return": 0.038635009898400005,
+          "volatility": 0.014780531045622988,
+          "minWeight": 0.0,
+          "maxWeight": 0.5,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 5
+        },
+        {
+          "name": "US Intermediate Treasuries",
+          "category": "Fixed Income",
+          "sourceNames": [
+            "U.S. Intermediate Treasuries"
+          ],
+          "return": 0.04194449137133333,
+          "volatility": 0.039317852367530874,
+          "minWeight": 0.0,
+          "maxWeight": 0.5,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 6
+        },
+        {
+          "name": "US Long Treasuries",
+          "category": "Fixed Income",
+          "sourceNames": [
+            "U.S. Long Treasuries"
+          ],
+          "return": 0.05246465970966666,
+          "volatility": 0.11858315531531803,
+          "minWeight": 0.0,
+          "maxWeight": 0.0,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 6
+        },
+        {
+          "name": "Investment Grade Corporate",
+          "category": "Fixed Income",
+          "sourceNames": [
+            "U.S. Inv Grade Corporate Bonds"
+          ],
+          "return": 0.0516179765925,
+          "volatility": 0.060255405979988165,
+          "minWeight": 0.0,
+          "maxWeight": 0.4,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 6
+        },
+        {
+          "name": "High Yield",
+          "category": "Fixed Income",
+          "sourceNames": [
+            "U.S. High Yield Bonds"
+          ],
+          "return": 0.057138708312166664,
+          "volatility": 0.07469913969925997,
+          "minWeight": 0.0,
+          "maxWeight": 0.1,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 6
+        },
+        {
+          "name": "International Fixed Income (H)",
+          "category": "Fixed Income",
+          "sourceNames": [
+            "World Government Bonds hedged"
+          ],
+          "return": 0.04546449369266667,
+          "volatility": 0.05072974678375203,
+          "minWeight": 0.0,
+          "maxWeight": 0.0,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 6
+        },
+        {
+          "name": "Cash",
+          "category": "Cash",
+          "sourceNames": [
+            "U.S. Cash"
+          ],
+          "return": 0.0339961312012,
+          "volatility": 0.006197570339358973,
+          "minWeight": 0.01,
+          "maxWeight": 0.01,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 5
+        }
+      ],
+      "assumptionSets": {
+        "CORE": [
+          {
+            "name": "U.S. Large Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "return": 0.060805230754333334,
+            "volatility": 0.1627911875692516,
+            "minWeight": 0.15,
+            "maxWeight": 0.55,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 6
+          },
+          {
+            "name": "U.S. Mid Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Mid Cap"
+            ],
+            "return": 0.06385210604130001,
+            "volatility": 0.17718447441309745,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 5
+          },
+          {
+            "name": "U.S. Small Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Small Cap"
+            ],
+            "return": 0.06878161264783333,
+            "volatility": 0.20925169517654715,
+            "minWeight": 0.0,
+            "maxWeight": 0.05,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 6
+          },
+          {
+            "name": "U.S. Value",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Equity Value Factor"
+            ],
+            "return": 0.063724164903,
+            "volatility": 0.1722706920805004,
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 3
+          },
+          {
+            "name": "U.S. Growth",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "return": 0.06479342170108333,
+            "volatility": 0.18602144137289936,
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 6
+          },
+          {
+            "name": "International Developed Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "EAFE Equity"
+            ],
+            "return": 0.07339483415016666,
+            "volatility": 0.1723935390255424,
+            "minWeight": 0.0,
+            "maxWeight": 0.15,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 6
+          },
+          {
+            "name": "Emerging Markets Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "Emerging Markets Equity"
+            ],
+            "return": 0.06370636414599999,
+            "volatility": 0.21023543757448734,
+            "minWeight": 0.0,
+            "maxWeight": 0.005,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 6
+          },
+          {
+            "name": "U.S. REITs",
+            "category": "Alternatives",
+            "sourceNames": [
+              "U.S. REITs"
+            ],
+            "return": 0.06275230887325,
+            "volatility": 0.17711721987295678,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 4
+          },
+          {
+            "name": "Commodities",
+            "category": "Alternatives",
+            "sourceNames": [
+              "Commodities"
+            ],
+            "return": 0.0564192112385,
+            "volatility": 0.17097718021116862,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 4
+          },
+          {
+            "name": "US Short Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Short Duration Government/Credit"
+            ],
+            "return": 0.038635009898400005,
+            "volatility": 0.014780531045622988,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 5
+          },
+          {
+            "name": "US Intermediate Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Intermediate Treasuries"
+            ],
+            "return": 0.04194449137133333,
+            "volatility": 0.039317852367530874,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 6
+          },
+          {
+            "name": "US Long Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Long Treasuries"
+            ],
+            "return": 0.05246465970966666,
+            "volatility": 0.11858315531531803,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 6
+          },
+          {
+            "name": "Investment Grade Corporate",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Inv Grade Corporate Bonds"
+            ],
+            "return": 0.0516179765925,
+            "volatility": 0.060255405979988165,
+            "minWeight": 0.0,
+            "maxWeight": 0.4,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 6
+          },
+          {
+            "name": "High Yield",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. High Yield Bonds"
+            ],
+            "return": 0.057138708312166664,
+            "volatility": 0.07469913969925997,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 6
+          },
+          {
+            "name": "International Fixed Income (H)",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "World Government Bonds hedged"
+            ],
+            "return": 0.04546449369266667,
+            "volatility": 0.05072974678375203,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 6
+          },
+          {
+            "name": "Cash",
+            "category": "Cash",
+            "sourceNames": [
+              "U.S. Cash"
+            ],
+            "return": 0.0339961312012,
+            "volatility": 0.006197570339358973,
+            "minWeight": 0.01,
+            "maxWeight": 0.01,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 5
+          }
+        ],
+        "JPM 2026": [
+          {
+            "name": "U.S. Large Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "return": 0.067,
+            "volatility": 0.16470142484350958,
+            "minWeight": 0.15,
+            "maxWeight": 0.55,
+            "sourceMapping": "U.S. Large Cap"
+          },
+          {
+            "name": "U.S. Mid Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Mid Cap"
+            ],
+            "return": 0.07,
+            "volatility": 0.18562979265648727,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "U.S. Mid Cap"
+          },
+          {
+            "name": "U.S. Small Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Small Cap"
+            ],
+            "return": 0.069,
+            "volatility": 0.2109707128132829,
+            "minWeight": 0.0,
+            "maxWeight": 0.05,
+            "sourceMapping": "U.S. Small Cap"
+          },
+          {
+            "name": "U.S. Value",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Equity Value Factor"
+            ],
+            "return": 0.077,
+            "volatility": 0.17700476908450113,
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "sourceMapping": "U.S. Equity Value Factor"
+          },
+          {
+            "name": "U.S. Growth",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "return": 0.068,
+            "volatility": 0.18783606882839624,
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "sourceMapping": ""
+          },
+          {
+            "name": "International Developed Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "EAFE Equity"
+            ],
+            "return": 0.081,
+            "volatility": 0.17629456614025432,
+            "minWeight": 0.0,
+            "maxWeight": 0.15,
+            "sourceMapping": "EAFE Equity"
+          },
+          {
+            "name": "Emerging Markets Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "Emerging Markets Equity"
+            ],
+            "return": 0.072,
+            "volatility": 0.20933182803592407,
+            "minWeight": 0.0,
+            "maxWeight": 0.005,
+            "sourceMapping": "Emerging Markets Equity"
+          },
+          {
+            "name": "U.S. REITs",
+            "category": "Alternatives",
+            "sourceNames": [
+              "U.S. REITs"
+            ],
+            "return": 0.08,
+            "volatility": 0.17396878635082713,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "U.S. REITs"
+          },
+          {
+            "name": "Commodities",
+            "category": "Alternatives",
+            "sourceNames": [
+              "Commodities"
+            ],
+            "return": 0.038,
+            "volatility": 0.1831843108236745,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Commodities"
+          },
+          {
+            "name": "US Short Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Short Duration Government/Credit"
+            ],
+            "return": 0.039,
+            "volatility": 0.01632258108311494,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "Proxy: U.S. Short Duration Government/Credit"
+          },
+          {
+            "name": "US Intermediate Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Intermediate Treasuries"
+            ],
+            "return": 0.038,
+            "volatility": 0.03481191874818525,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "U.S. Intermediate Treasuries"
+          },
+          {
+            "name": "US Long Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Long Treasuries"
+            ],
+            "return": 0.043,
+            "volatility": 0.13015259460890813,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "U.S. Long Treasuries"
+          },
+          {
+            "name": "Investment Grade Corporate",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Inv Grade Corporate Bonds"
+            ],
+            "return": 0.05,
+            "volatility": 0.07388216566592899,
+            "minWeight": 0.0,
+            "maxWeight": 0.4,
+            "sourceMapping": "U.S. Inv Grade Corporate Bonds"
+          },
+          {
+            "name": "High Yield",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. High Yield Bonds"
+            ],
+            "return": 0.061,
+            "volatility": 0.08738054572155979,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "U.S. High Yield Bonds"
+          },
+          {
+            "name": "International Fixed Income (H)",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "World Government Bonds hedged"
+            ],
+            "return": 0.039,
+            "volatility": 0.04015263681751216,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "World Government Bonds hedged"
+          },
+          {
+            "name": "Cash",
+            "category": "Cash",
+            "sourceNames": [
+              "U.S. Cash"
+            ],
+            "return": 0.031,
+            "volatility": 0.006692990421794862,
+            "minWeight": 0.01,
+            "maxWeight": 0.01,
+            "sourceMapping": "U.S. Cash"
+          }
+        ],
+        "Vanguard 2026": [
+          {
+            "name": "U.S. Large Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "return": 0.051,
+            "volatility": 0.15,
+            "minWeight": 0.15,
+            "maxWeight": 0.55,
+            "sourceMapping": "Vanguard U.S. large-cap"
+          },
+          {
+            "name": "U.S. Mid Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Mid Cap"
+            ],
+            "return": 0.052000000000000005,
+            "volatility": 0.151,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "Vanguard U.S. equities proxy"
+          },
+          {
+            "name": "U.S. Small Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Small Cap"
+            ],
+            "return": 0.057,
+            "volatility": 0.19699999999999998,
+            "minWeight": 0.0,
+            "maxWeight": 0.05,
+            "sourceMapping": "Vanguard U.S. small-cap"
+          },
+          {
+            "name": "U.S. Value",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Equity Value Factor"
+            ],
+            "return": 0.07400000000000001,
+            "volatility": 0.19,
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "sourceMapping": "Vanguard U.S. value"
+          },
+          {
+            "name": "U.S. Growth",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "return": 0.054,
+            "volatility": 0.1735,
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "sourceMapping": ""
+          },
+          {
+            "name": "International Developed Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "EAFE Equity"
+            ],
+            "return": 0.055,
+            "volatility": 0.18,
+            "minWeight": 0.0,
+            "maxWeight": 0.15,
+            "sourceMapping": "Vanguard developed markets ex-U.S. equities (unhedged)"
+          },
+          {
+            "name": "Emerging Markets Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "Emerging Markets Equity"
+            ],
+            "return": 0.03,
+            "volatility": 0.251,
+            "minWeight": 0.0,
+            "maxWeight": 0.005,
+            "sourceMapping": "Vanguard emerging markets equities (unhedged)"
+          },
+          {
+            "name": "U.S. REITs",
+            "category": "Alternatives",
+            "sourceNames": [
+              "U.S. REITs"
+            ],
+            "return": 0.044000000000000004,
+            "volatility": 0.179,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Vanguard U.S. REITs"
+          },
+          {
+            "name": "Commodities",
+            "category": "Alternatives",
+            "sourceNames": [
+              "Commodities"
+            ],
+            "return": 0.057,
+            "volatility": 0.16699999999999998,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Vanguard Commodities"
+          },
+          {
+            "name": "US Short Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Short Duration Government/Credit"
+            ],
+            "return": 0.04,
+            "volatility": 0.017,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "Vanguard U.S. short-term Treasury bonds"
+          },
+          {
+            "name": "US Intermediate Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Intermediate Treasuries"
+            ],
+            "return": 0.042,
+            "volatility": 0.051,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "Vanguard U.S. intermediate-term Treasury bonds"
+          },
+          {
+            "name": "US Long Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Long Treasuries"
+            ],
+            "return": 0.057,
+            "volatility": 0.10400000000000001,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Vanguard U.S. long-term Treasury bonds"
+          },
+          {
+            "name": "Investment Grade Corporate",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Inv Grade Corporate Bonds"
+            ],
+            "return": 0.048,
+            "volatility": 0.064,
+            "minWeight": 0.0,
+            "maxWeight": 0.4,
+            "sourceMapping": "Vanguard U.S. credit"
+          },
+          {
+            "name": "High Yield",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. High Yield Bonds"
+            ],
+            "return": 0.052000000000000005,
+            "volatility": 0.096,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "Vanguard U.S. high-yield corporate bonds"
+          },
+          {
+            "name": "International Fixed Income (H)",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "World Government Bonds hedged"
+            ],
+            "return": 0.05,
+            "volatility": 0.05,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Vanguard global ex-U.S. aggregate bonds hedged"
+          },
+          {
+            "name": "Cash",
+            "category": "Cash",
+            "sourceNames": [
+              "U.S. Cash"
+            ],
+            "return": 0.035,
+            "volatility": 0.011000000000000001,
+            "minWeight": 0.01,
+            "maxWeight": 0.01,
+            "sourceMapping": "Vanguard U.S. cash"
+          }
+        ],
+        "BlackRock 2026": [
+          {
+            "name": "U.S. Large Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "return": 0.084724353,
+            "volatility": 0.191472943,
+            "minWeight": 0.15,
+            "maxWeight": 0.55,
+            "sourceMapping": "BlackRock US large cap equities"
+          },
+          {
+            "name": "U.S. Mid Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Mid Cap"
+            ],
+            "return": 0.07850306700000001,
+            "volatility": 0.19980720400000002,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "BlackRock average of US large cap equities and US small cap equities"
+          },
+          {
+            "name": "U.S. Small Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Small Cap"
+            ],
+            "return": 0.072281781,
+            "volatility": 0.208141465,
+            "minWeight": 0.0,
+            "maxWeight": 0.05,
+            "sourceMapping": "BlackRock US small cap equities"
+          },
+          {
+            "name": "U.S. Value",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Equity Value Factor"
+            ],
+            "return": 0.063724164903,
+            "volatility": 0.1722706920805004,
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "sourceMapping": "BlackRock 2026 was not given for this sleeve; AVERAGE assumptions are used.",
+            "_distinctSourceCount": 3
+          },
+          {
+            "name": "U.S. Growth",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "return": 0.07850306700000001,
+            "volatility": 0.19980720400000002,
+            "sourceMapping": ""
+          },
+          {
+            "name": "International Developed Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "EAFE Equity"
+            ],
+            "return": 0.080395939,
+            "volatility": 0.17192613,
+            "minWeight": 0.0,
+            "maxWeight": 0.15,
+            "sourceMapping": "BlackRock Global ex-US large cap equities"
+          },
+          {
+            "name": "Emerging Markets Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "Emerging Markets Equity"
+            ],
+            "return": 0.072746117,
+            "volatility": 0.212149497,
+            "minWeight": 0.0,
+            "maxWeight": 0.005,
+            "sourceMapping": "BlackRock Emerging large cap equities"
+          },
+          {
+            "name": "U.S. REITs",
+            "category": "Alternatives",
+            "sourceNames": [
+              "U.S. REITs"
+            ],
+            "return": 0.065880845,
+            "volatility": 0.169844414,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "BlackRock Listed REITs"
+          },
+          {
+            "name": "Commodities",
+            "category": "Alternatives",
+            "sourceNames": [
+              "Commodities"
+            ],
+            "return": 0.0564192112385,
+            "volatility": 0.17097718021116862,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "BlackRock 2026 was not given for this sleeve; AVERAGE assumptions are used.",
+            "_distinctSourceCount": 4
+          },
+          {
+            "name": "US Short Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Short Duration Government/Credit"
+            ],
+            "return": 0.038635009898400005,
+            "volatility": 0.014780531045622988,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "BlackRock 2026 was not given for this sleeve; AVERAGE assumptions are used.",
+            "_distinctSourceCount": 5
+          },
+          {
+            "name": "US Intermediate Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Intermediate Treasuries"
+            ],
+            "return": 0.044505202,
+            "volatility": 0.0318852,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "BlackRock US government (10- years)"
+          },
+          {
+            "name": "US Long Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Long Treasuries"
+            ],
+            "return": 0.053331321,
+            "volatility": 0.119309718,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "BlackRock US government (10+ years)"
+          },
+          {
+            "name": "Investment Grade Corporate",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Inv Grade Corporate Bonds"
+            ],
+            "return": 0.054139111,
+            "volatility": 0.057610591,
+            "minWeight": 0.0,
+            "maxWeight": 0.4,
+            "sourceMapping": "BlackRock US credit (all maturities)"
+          },
+          {
+            "name": "High Yield",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. High Yield Bonds"
+            ],
+            "return": 0.064636553,
+            "volatility": 0.063561138,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "BlackRock US high yield"
+          },
+          {
+            "name": "International Fixed Income (H)",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "World Government Bonds hedged"
+            ],
+            "return": 0.044006244,
+            "volatility": 0.031558114,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "BlackRock Global ex-US treasuries (hedged)"
+          },
+          {
+            "name": "Cash",
+            "category": "Cash",
+            "sourceNames": [
+              "U.S. Cash"
+            ],
+            "return": 0.03593832,
+            "volatility": 0.0,
+            "minWeight": 0.01,
+            "maxWeight": 0.01,
+            "sourceMapping": "BlackRock US cash"
+          }
+        ],
+        "Invesco 2026": [
+          {
+            "name": "U.S. Large Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "return": 0.066,
+            "volatility": 0.168,
+            "minWeight": 0.15,
+            "maxWeight": 0.55,
+            "sourceMapping": "US large cap"
+          },
+          {
+            "name": "U.S. Mid Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Mid Cap"
+            ],
+            "return": 0.06385210604130001,
+            "volatility": 0.17718447441309745,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "Invesco 2026 was not given for this sleeve; AVERAGE assumptions are used.",
+            "_distinctSourceCount": 5
+          },
+          {
+            "name": "U.S. Small Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Small Cap"
+            ],
+            "return": 0.073,
+            "volatility": 0.243,
+            "minWeight": 0.0,
+            "maxWeight": 0.05,
+            "sourceMapping": "US small cap"
+          },
+          {
+            "name": "U.S. Value",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Equity Value Factor"
+            ],
+            "return": 0.063724164903,
+            "volatility": 0.1722706920805004,
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "sourceMapping": "Invesco 2026 was not given for this sleeve; AVERAGE assumptions are used.",
+            "_distinctSourceCount": 3
+          },
+          {
+            "name": "U.S. Growth",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "return": 0.0695,
+            "volatility": 0.20550000000000002,
+            "sourceMapping": ""
+          },
+          {
+            "name": "International Developed Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "EAFE Equity"
+            ],
+            "return": 0.086,
+            "volatility": 0.17600000000000002,
+            "minWeight": 0.0,
+            "maxWeight": 0.15,
+            "sourceMapping": "EAFE equity"
+          },
+          {
+            "name": "Emerging Markets Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "Emerging Markets Equity"
+            ],
+            "return": 0.077,
+            "volatility": 0.187,
+            "minWeight": 0.0,
+            "maxWeight": 0.005,
+            "sourceMapping": "EM equity"
+          },
+          {
+            "name": "U.S. REITs",
+            "category": "Alternatives",
+            "sourceNames": [
+              "U.S. REITs"
+            ],
+            "return": 0.06275230887325,
+            "volatility": 0.17711721987295678,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Invesco 2026 was not given for this sleeve; AVERAGE assumptions are used.",
+            "_distinctSourceCount": 4
+          },
+          {
+            "name": "Commodities",
+            "category": "Alternatives",
+            "sourceNames": [
+              "Commodities"
+            ],
+            "return": 0.075,
+            "volatility": 0.182,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "GS commodities"
+          },
+          {
+            "name": "US Short Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Short Duration Government/Credit"
+            ],
+            "return": 0.032,
+            "volatility": 0.002,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "US tsy short"
+          },
+          {
+            "name": "US Intermediate Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Intermediate Treasuries"
+            ],
+            "return": 0.04,
+            "volatility": 0.03,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "US tsy IM"
+          },
+          {
+            "name": "US Long Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Long Treasuries"
+            ],
+            "return": 0.065,
+            "volatility": 0.12,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "US tsy long"
+          },
+          {
+            "name": "Investment Grade Corporate",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Inv Grade Corporate Bonds"
+            ],
+            "return": 0.053,
+            "volatility": 0.055999999999999994,
+            "minWeight": 0.0,
+            "maxWeight": 0.4,
+            "sourceMapping": "US IG corp"
+          },
+          {
+            "name": "High Yield",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. High Yield Bonds"
+            ],
+            "return": 0.055,
+            "volatility": 0.040999999999999995,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "US HY corps"
+          },
+          {
+            "name": "International Fixed Income (H)",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "World Government Bonds hedged"
+            ],
+            "return": 0.052000000000000005,
+            "volatility": 0.068,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Global sov"
+          },
+          {
+            "name": "Cash",
+            "category": "Cash",
+            "sourceNames": [
+              "U.S. Cash"
+            ],
+            "return": 0.0339961312012,
+            "volatility": 0.006197570339358973,
+            "minWeight": 0.01,
+            "maxWeight": 0.01,
+            "sourceMapping": "Invesco 2026 was not given for this sleeve; AVERAGE assumptions are used.",
+            "_distinctSourceCount": 5
+          }
+        ],
+        "Capital Group 2026": [
+          {
+            "name": "U.S. Large Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "return": 0.061,
+            "volatility": 0.152,
+            "minWeight": 0.15,
+            "maxWeight": 0.55,
+            "sourceMapping": "U.S. equity"
+          },
+          {
+            "name": "U.S. Mid Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Mid Cap"
+            ],
+            "return": 0.064,
+            "volatility": 0.174,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "Average of U.S. equity and U.S. small-cap equity"
+          },
+          {
+            "name": "U.S. Small Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Small Cap"
+            ],
+            "return": 0.067,
+            "volatility": 0.196,
+            "minWeight": 0.0,
+            "maxWeight": 0.05,
+            "sourceMapping": "U.S. small-cap equity"
+          },
+          {
+            "name": "U.S. Value",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Equity Value Factor"
+            ],
+            "return": 0.063724164903,
+            "volatility": 0.1722706920805004,
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "sourceMapping": "Capital Group 2026 was not given for this sleeve; AVERAGE assumptions are used.",
+            "_distinctSourceCount": 3
+          },
+          {
+            "name": "U.S. Growth",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "return": 0.064,
+            "volatility": 0.174,
+            "sourceMapping": ""
+          },
+          {
+            "name": "International Developed Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "EAFE Equity"
+            ],
+            "return": 0.057,
+            "volatility": 0.168,
+            "minWeight": 0.0,
+            "maxWeight": 0.15,
+            "sourceMapping": "Non-U.S. developed markets equity"
+          },
+          {
+            "name": "Emerging Markets Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "Emerging Markets Equity"
+            ],
+            "return": 0.065,
+            "volatility": 0.204,
+            "minWeight": 0.0,
+            "maxWeight": 0.005,
+            "sourceMapping": "Emerging markets equity"
+          },
+          {
+            "name": "U.S. REITs",
+            "category": "Alternatives",
+            "sourceNames": [
+              "U.S. REITs"
+            ],
+            "return": 0.06275230887325,
+            "volatility": 0.17711721987295678,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Capital Group 2026 was not given for this sleeve; AVERAGE assumptions are used.",
+            "_distinctSourceCount": 4
+          },
+          {
+            "name": "Commodities",
+            "category": "Alternatives",
+            "sourceNames": [
+              "Commodities"
+            ],
+            "return": 0.0564192112385,
+            "volatility": 0.17097718021116862,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Capital Group 2026 was not given for this sleeve; AVERAGE assumptions are used.",
+            "_distinctSourceCount": 4
+          },
+          {
+            "name": "US Short Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Short Duration Government/Credit"
+            ],
+            "return": 0.03700000000000001,
+            "volatility": 0.022,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "U.S. Treasury short term"
+          },
+          {
+            "name": "US Intermediate Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Intermediate Treasuries"
+            ],
+            "return": 0.04,
+            "volatility": 0.05599999999999999,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "U.S. Treasury intermediate term"
+          },
+          {
+            "name": "US Long Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Long Treasuries"
+            ],
+            "return": 0.047,
+            "volatility": 0.116,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "U.S. Treasury long term"
+          },
+          {
+            "name": "Investment Grade Corporate",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Inv Grade Corporate Bonds"
+            ],
+            "return": 0.052,
+            "volatility": 0.065,
+            "minWeight": 0.0,
+            "maxWeight": 0.4,
+            "sourceMapping": "U.S. corporate"
+          },
+          {
+            "name": "High Yield",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. High Yield Bonds"
+            ],
+            "return": 0.059,
+            "volatility": 0.08,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "U.S. high yield"
+          },
+          {
+            "name": "International Fixed Income (H)",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "World Government Bonds hedged"
+            ],
+            "return": 0.034,
+            "volatility": 0.081,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Non-U.S. global aggregate"
+          },
+          {
+            "name": "Cash",
+            "category": "Cash",
+            "sourceNames": [
+              "U.S. Cash"
+            ],
+            "return": 0.032,
+            "volatility": 0.006,
+            "minWeight": 0.01,
+            "maxWeight": 0.01,
+            "sourceMapping": "Cash (USD)"
+          }
+        ],
+        "Asset Allocation Interactive 2026": [
+          {
+            "name": "U.S. Large Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "return": 0.035107031526,
+            "volatility": 0.150572757572,
+            "minWeight": 0.15,
+            "maxWeight": 0.55,
+            "sourceMapping": "US Large"
+          },
+          {
+            "name": "U.S. Mid Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Mid Cap"
+            ],
+            "return": 0.0547574632065,
+            "volatility": 0.175485375409,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "Average of US Large and US Small"
+          },
+          {
+            "name": "U.S. Small Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Small Cap"
+            ],
+            "return": 0.074407894887,
+            "volatility": 0.200397993246,
+            "minWeight": 0.0,
+            "maxWeight": 0.05,
+            "sourceMapping": "US Small"
+          },
+          {
+            "name": "U.S. Value",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Equity Value Factor"
+            ],
+            "return": 0.040172494709,
+            "volatility": 0.149807307157,
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "sourceMapping": "US Large Value"
+          },
+          {
+            "name": "U.S. Growth",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "return": 0.054757463206500004,
+            "volatility": 0.175485375409,
+            "sourceMapping": ""
+          },
+          {
+            "name": "International Developed Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "EAFE Equity"
+            ],
+            "return": 0.080973065901,
+            "volatility": 0.162140538013,
+            "minWeight": 0.0,
+            "maxWeight": 0.15,
+            "sourceMapping": "Dev ex US Large"
+          },
+          {
+            "name": "Emerging Markets Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "Emerging Markets Equity"
+            ],
+            "return": 0.065492067876,
+            "volatility": 0.197931300411,
+            "minWeight": 0.0,
+            "maxWeight": 0.005,
+            "sourceMapping": "Emerging Markets"
+          },
+          {
+            "name": "U.S. REITs",
+            "category": "Alternatives",
+            "sourceNames": [
+              "U.S. REITs"
+            ],
+            "return": 0.061128390493,
+            "volatility": 0.185655679141,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "REITs"
+          },
+          {
+            "name": "Commodities",
+            "category": "Alternatives",
+            "sourceNames": [
+              "Commodities"
+            ],
+            "return": 0.055676844954,
+            "volatility": 0.151724410021,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Commodities"
+          },
+          {
+            "name": "US Short Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Short Duration Government/Credit"
+            ],
+            "return": 0.045175049492,
+            "volatility": 0.016580074145,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "US Treasury Short"
+          },
+          {
+            "name": "US Intermediate Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Intermediate Treasuries"
+            ],
+            "return": 0.047161746228,
+            "volatility": 0.032209995457,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "US Treasury Intermediate"
+          },
+          {
+            "name": "US Long Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Long Treasuries"
+            ],
+            "return": 0.049456637258,
+            "volatility": 0.122036619283,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "US Treasury Long"
+          },
+          {
+            "name": "Investment Grade Corporate",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Inv Grade Corporate Bonds"
+            ],
+            "return": 0.052568748555,
+            "volatility": 0.045039679214,
+            "minWeight": 0.0,
+            "maxWeight": 0.4,
+            "sourceMapping": "US Corporate Intermediate"
+          },
+          {
+            "name": "High Yield",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. High Yield Bonds"
+            ],
+            "return": 0.051195696873,
+            "volatility": 0.080253154474,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "US High Yield"
+          },
+          {
+            "name": "International Fixed Income (H)",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "World Government Bonds hedged"
+            ],
+            "return": 0.053780718156,
+            "volatility": 0.033667729885,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Global ex US Aggregate (Hedged)"
+          },
+          {
+            "name": "Cash",
+            "category": "Cash",
+            "sourceNames": [
+              "U.S. Cash"
+            ],
+            "return": 0.036042336006,
+            "volatility": 0.007294861275,
+            "minWeight": 0.01,
+            "maxWeight": 0.01,
+            "sourceMapping": "United States Cash"
+          }
+        ]
+      },
+      "benchmarks": [
+        {
+          "name": "S&P 500",
+          "return": 0.060805230754333334,
+          "volatility": 0.1627911875692516,
+          "sourceMapping": "2026 Average U.S. Large Cap assumption"
+        },
+        {
+          "name": "AGG",
+          "return": 0.046,
+          "volatility": 0.047564851534030825,
+          "sourceMapping": "JPM U.S. Aggregate Bonds assumption"
+        }
+      ],
+      "correlation": [
+        [
+          1.0,
+          0.9397914371944377,
+          0.8755170852278987,
+          0.9372537993224503,
+          0.961540500202416,
+          0.8305951153097813,
+          0.7167573247270356,
+          0.7238754358744994,
+          0.3643932698559379,
+          0.028778489367674815,
+          -0.013228283034248257,
+          0.03398457009056481,
+          0.47109801164832454,
+          0.7226546148127545,
+          0.24431506677821316,
+          0.022128010755387596
+        ],
+        [
+          0.9397914371944377,
+          1.0,
+          0.9408157935114345,
+          0.9257921307477491,
+          0.9043385910404038,
+          0.8117453950963472,
+          0.7081298129212494,
+          0.7411541878466181,
+          0.371967593164783,
+          -0.00030472481839177316,
+          -0.04331588984535768,
+          0.006905629151195298,
+          0.4605692476104557,
+          0.7389880322399364,
+          0.21306253083299675,
+          -0.000974646266145943
+        ],
+        [
+          0.8755170852278987,
+          0.9408157935114345,
+          1.0,
+          0.8865964880512953,
+          0.8292599424914789,
+          0.7647347271886032,
+          0.6660024715291324,
+          0.7256823699279897,
+          0.328078685483979,
+          -0.0365977551290359,
+          -0.07050082252343648,
+          -0.028268544995597798,
+          0.41486452373618077,
+          0.7141124153233517,
+          0.17649115164650955,
+          -0.016378230101210273
+        ],
+        [
+          0.9372537993224503,
+          0.9257921307477491,
+          0.8865964880512953,
+          1.0,
+          0.8744725392253463,
+          0.824431349633596,
+          0.7026752230391766,
+          0.7542149106215732,
+          0.3887960948638276,
+          0.052469444532997754,
+          -0.02905526866128586,
+          0.006139747372493665,
+          0.44326639744898505,
+          0.7140867469776082,
+          0.12346287629389371,
+          -0.005559935120789839
+        ],
+        [
+          0.961540500202416,
+          0.9043385910404038,
+          0.8292599424914789,
+          0.8744725392253463,
+          1.0,
+          0.7792029678195196,
+          0.688752226739409,
+          0.6713155967355285,
+          0.32748703024432335,
+          0.07001567551863172,
+          0.006513937649301494,
+          0.06363816754324947,
+          0.4534319817482996,
+          0.6902320492122108,
+          0.17739368747006706,
+          0.014965480830846013
+        ],
+        [
+          0.8305951153097813,
+          0.8117453950963472,
+          0.7647347271886032,
+          0.824431349633596,
+          0.7792029678195196,
+          1.0,
+          0.8203605178259726,
+          0.6674675854884115,
+          0.4293133902755015,
+          0.10356553753913064,
+          0.03370383781316841,
+          0.03285055397615996,
+          0.5264188955240982,
+          0.7335502965277902,
+          0.27633556237383006,
+          0.054234268096369
+        ],
+        [
+          0.7167573247270356,
+          0.7081298129212494,
+          0.6660024715291324,
+          0.7026752230391766,
+          0.688752226739409,
+          0.8203605178259726,
+          1.0,
+          0.5683697356753283,
+          0.4851832911986935,
+          0.0838236256414422,
+          0.006955826637397576,
+          0.02682648256661947,
+          0.5018947424287422,
+          0.6936920503596288,
+          0.24670140717898237,
+          0.04800393759170157
+        ],
+        [
+          0.7238754358744994,
+          0.7411541878466181,
+          0.7256823699279897,
+          0.7542149106215732,
+          0.6713155967355285,
+          0.6674675854884115,
+          0.5683697356753283,
+          1.0,
+          0.2705556203124658,
+          0.15729668983932799,
+          0.16476218983700108,
+          0.2589930382841279,
+          0.5421803846602412,
+          0.6834513976776131,
+          0.3103306166726061,
+          -0.02961014480692313
+        ],
+        [
+          0.3643932698559379,
+          0.371967593164783,
+          0.328078685483979,
+          0.3887960948638276,
+          0.32748703024432335,
+          0.4293133902755015,
+          0.4851832911986935,
+          0.2705556203124658,
+          1.0,
+          -0.042755977240112285,
+          -0.1496004774968018,
+          -0.1886268241331297,
+          0.17603063784344952,
+          0.39233024932641586,
+          -0.19441887430480564,
+          -0.005980505865463857
+        ],
+        [
+          0.028778489367674815,
+          -0.00030472481839177316,
+          -0.0365977551290359,
+          0.052469444532997754,
+          0.07001567551863172,
+          0.10356553753913064,
+          0.0838236256414422,
+          0.15729668983932799,
+          -0.042755977240112285,
+          1.0,
+          0.8793943179968372,
+          0.651018564526777,
+          0.5718572850862056,
+          0.0936569796185984,
+          0.6357159902179784,
+          0.33660592705772685
+        ],
+        [
+          -0.013228283034248257,
+          -0.04331588984535768,
+          -0.07050082252343648,
+          -0.02905526866128586,
+          0.006513937649301494,
+          0.03370383781316841,
+          0.006955826637397576,
+          0.16476218983700108,
+          -0.1496004774968018,
+          0.8793943179968372,
+          1.0,
+          0.8535313257093049,
+          0.6028699401826436,
+          0.03421949315810936,
+          0.7143096706379191,
+          0.17312816763795696
+        ],
+        [
+          0.03398457009056481,
+          0.006905629151195298,
+          -0.028268544995597798,
+          0.006139747372493665,
+          0.06363816754324947,
+          0.03285055397615996,
+          0.02682648256661947,
+          0.2589930382841279,
+          -0.1886268241331297,
+          0.651018564526777,
+          0.8535313257093049,
+          1.0,
+          0.6260880984647581,
+          0.06500687207943445,
+          0.6870911615981946,
+          0.04702470408863292
+        ],
+        [
+          0.47109801164832454,
+          0.4605692476104557,
+          0.41486452373618077,
+          0.44326639744898505,
+          0.4534319817482996,
+          0.5264188955240982,
+          0.5018947424287422,
+          0.5421803846602412,
+          0.17603063784344952,
+          0.5718572850862056,
+          0.6028699401826436,
+          0.6260880984647581,
+          1.0,
+          0.6588909111403229,
+          0.6681237200495843,
+          0.06470380239528503
+        ],
+        [
+          0.7226546148127545,
+          0.7389880322399364,
+          0.7141124153233517,
+          0.7140867469776082,
+          0.6902320492122108,
+          0.7335502965277902,
+          0.6936920503596288,
+          0.6834513976776131,
+          0.39233024932641586,
+          0.0936569796185984,
+          0.03421949315810936,
+          0.06500687207943445,
+          0.6588909111403229,
+          1.0,
+          0.29263263624670477,
+          -0.001103509262044612
+        ],
+        [
+          0.24431506677821316,
+          0.21306253083299675,
+          0.17649115164650955,
+          0.12346287629389371,
+          0.17739368747006706,
+          0.27633556237383006,
+          0.24670140717898237,
+          0.3103306166726061,
+          -0.19441887430480564,
+          0.6357159902179784,
+          0.7143096706379191,
+          0.6870911615981946,
+          0.6681237200495843,
+          0.29263263624670477,
+          1.0,
+          0.14256915875120266
+        ],
+        [
+          0.022128010755387596,
+          -0.000974646266145943,
+          -0.016378230101210273,
+          -0.005559935120789839,
+          0.014965480830846013,
+          0.054234268096369,
+          0.04800393759170157,
+          -0.02961014480692313,
+          -0.005980505865463857,
+          0.33660592705772685,
+          0.17312816763795696,
+          0.04702470408863292,
+          0.06470380239528503,
+          -0.001103509262044612,
+          0.14256915875120266,
+          1.0
+        ]
+      ]
+    },
+    "2027": {
+      "generatedFrom": "C:\\Users\\hclevenger\\Desktop\\Python Files\\Investment\\Paul Asset Allocation\\inputs\\2027\\JPM matrix-usd_2027.xlsx",
+      "selectedAssumptionSet": "CORE",
+      "assets": [
+        {
+          "name": "U.S. Large Cap",
+          "category": "Equity",
+          "sourceNames": [
+            "U.S. Large Cap"
+          ],
+          "return": 0.075,
+          "volatility": 0.17960725272165273,
+          "minWeight": 0.15,
+          "maxWeight": 0.55,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "U.S. Mid Cap",
+          "category": "Equity",
+          "sourceNames": [
+            "U.S. Mid Cap"
+          ],
+          "return": 0.077,
+          "volatility": 0.19159980794322007,
+          "minWeight": 0.0,
+          "maxWeight": 0.1,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "U.S. Small Cap",
+          "category": "Equity",
+          "sourceNames": [
+            "U.S. Small Cap"
+          ],
+          "return": 0.077,
+          "volatility": 0.21025404704754577,
+          "minWeight": 0.0,
+          "maxWeight": 0.05,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "U.S. Value",
+          "category": "Equity",
+          "sourceNames": [
+            "U.S. Equity Value Factor"
+          ],
+          "return": 0.085,
+          "volatility": 0.19164892956699864,
+          "minWeight": 0.0,
+          "maxWeight": 0.075,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "U.S. Growth",
+          "category": "Equity",
+          "sourceNames": [
+            "U.S. Large Cap"
+          ],
+          "return": 0.076,
+          "volatility": 0.19493064988459924,
+          "minWeight": 0.0,
+          "maxWeight": 0.075,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "International Developed Equity",
+          "category": "Equity",
+          "sourceNames": [
+            "EAFE Equity"
+          ],
+          "return": 0.077,
+          "volatility": 0.18341476412247476,
+          "minWeight": 0.0,
+          "maxWeight": 0.15,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "Emerging Markets Equity",
+          "category": "Equity",
+          "sourceNames": [
+            "Emerging Markets Equity"
+          ],
+          "return": 0.071,
+          "volatility": 0.21362983392575338,
+          "minWeight": 0.0,
+          "maxWeight": 0.005,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "U.S. REITs",
+          "category": "Alternatives",
+          "sourceNames": [
+            "U.S. REITs"
+          ],
+          "return": 0.08200000000000002,
+          "volatility": 0.1733015149075006,
+          "minWeight": 0.0,
+          "maxWeight": 0.0,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "Commodities",
+          "category": "Alternatives",
+          "sourceNames": [
+            "Commodities"
+          ],
+          "return": 0.048,
+          "volatility": 0.17967397691767611,
+          "minWeight": 0.0,
+          "maxWeight": 0.0,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "US Short Treasuries",
+          "category": "Fixed Income",
+          "sourceNames": [
+            "U.S. Short Duration Government/Credit"
+          ],
+          "return": 0.044,
+          "volatility": 0.016004086627908188,
+          "minWeight": 0.0,
+          "maxWeight": 0.5,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "US Intermediate Treasuries",
+          "category": "Fixed Income",
+          "sourceNames": [
+            "U.S. Intermediate Treasuries"
+          ],
+          "return": 0.046,
+          "volatility": 0.03436324232215529,
+          "minWeight": 0.0,
+          "maxWeight": 0.5,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "US Long Treasuries",
+          "category": "Fixed Income",
+          "sourceNames": [
+            "U.S. Long Treasuries"
+          ],
+          "return": 0.05800000000000001,
+          "volatility": 0.12868987241958943,
+          "minWeight": 0.0,
+          "maxWeight": 0.0,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "Investment Grade Corporate",
+          "category": "Fixed Income",
+          "sourceNames": [
+            "U.S. Inv Grade Corporate Bonds"
+          ],
+          "return": 0.061,
+          "volatility": 0.07155965785809663,
+          "minWeight": 0.0,
+          "maxWeight": 0.4,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "High Yield",
+          "category": "Fixed Income",
+          "sourceNames": [
+            "U.S. High Yield Bonds"
+          ],
+          "return": 0.066,
+          "volatility": 0.08541685222439373,
+          "minWeight": 0.0,
+          "maxWeight": 0.1,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "International Fixed Income (H)",
+          "category": "Fixed Income",
+          "sourceNames": [
+            "World Government Bonds hedged"
+          ],
+          "return": 0.05,
+          "volatility": 0.039884287868730765,
+          "minWeight": 0.0,
+          "maxWeight": 0.0,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        },
+        {
+          "name": "Cash",
+          "category": "Cash",
+          "sourceNames": [
+            "U.S. Cash"
+          ],
+          "return": 0.032,
+          "volatility": 0.006762185575942052,
+          "minWeight": 0.01,
+          "maxWeight": 0.01,
+          "sourceMapping": "Average of available source assumptions",
+          "_distinctSourceCount": 1
+        }
+      ],
+      "assumptionSets": {
+        "CORE": [
+          {
+            "name": "U.S. Large Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "return": 0.075,
+            "volatility": 0.17960725272165273,
+            "minWeight": 0.15,
+            "maxWeight": 0.55,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "U.S. Mid Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Mid Cap"
+            ],
+            "return": 0.077,
+            "volatility": 0.19159980794322007,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "U.S. Small Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Small Cap"
+            ],
+            "return": 0.077,
+            "volatility": 0.21025404704754577,
+            "minWeight": 0.0,
+            "maxWeight": 0.05,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "U.S. Value",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Equity Value Factor"
+            ],
+            "return": 0.085,
+            "volatility": 0.19164892956699864,
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "U.S. Growth",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "return": 0.076,
+            "volatility": 0.19493064988459924,
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "International Developed Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "EAFE Equity"
+            ],
+            "return": 0.077,
+            "volatility": 0.18341476412247476,
+            "minWeight": 0.0,
+            "maxWeight": 0.15,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "Emerging Markets Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "Emerging Markets Equity"
+            ],
+            "return": 0.071,
+            "volatility": 0.21362983392575338,
+            "minWeight": 0.0,
+            "maxWeight": 0.005,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "U.S. REITs",
+            "category": "Alternatives",
+            "sourceNames": [
+              "U.S. REITs"
+            ],
+            "return": 0.08200000000000002,
+            "volatility": 0.1733015149075006,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "Commodities",
+            "category": "Alternatives",
+            "sourceNames": [
+              "Commodities"
+            ],
+            "return": 0.048,
+            "volatility": 0.17967397691767611,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "US Short Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Short Duration Government/Credit"
+            ],
+            "return": 0.044,
+            "volatility": 0.016004086627908188,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "US Intermediate Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Intermediate Treasuries"
+            ],
+            "return": 0.046,
+            "volatility": 0.03436324232215529,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "US Long Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Long Treasuries"
+            ],
+            "return": 0.05800000000000001,
+            "volatility": 0.12868987241958943,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "Investment Grade Corporate",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Inv Grade Corporate Bonds"
+            ],
+            "return": 0.061,
+            "volatility": 0.07155965785809663,
+            "minWeight": 0.0,
+            "maxWeight": 0.4,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "High Yield",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. High Yield Bonds"
+            ],
+            "return": 0.066,
+            "volatility": 0.08541685222439373,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "International Fixed Income (H)",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "World Government Bonds hedged"
+            ],
+            "return": 0.05,
+            "volatility": 0.039884287868730765,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          },
+          {
+            "name": "Cash",
+            "category": "Cash",
+            "sourceNames": [
+              "U.S. Cash"
+            ],
+            "return": 0.032,
+            "volatility": 0.006762185575942052,
+            "minWeight": 0.01,
+            "maxWeight": 0.01,
+            "sourceMapping": "Average of available source assumptions",
+            "_distinctSourceCount": 1
+          }
+        ],
+        "JPM 2027": [
+          {
+            "name": "U.S. Large Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "return": 0.075,
+            "volatility": 0.17960725272165273,
+            "minWeight": 0.15,
+            "maxWeight": 0.55,
+            "sourceMapping": "U.S. Large Cap"
+          },
+          {
+            "name": "U.S. Mid Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Mid Cap"
+            ],
+            "return": 0.077,
+            "volatility": 0.19159980794322007,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "U.S. Mid Cap"
+          },
+          {
+            "name": "U.S. Small Cap",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Small Cap"
+            ],
+            "return": 0.077,
+            "volatility": 0.21025404704754577,
+            "minWeight": 0.0,
+            "maxWeight": 0.05,
+            "sourceMapping": "U.S. Small Cap"
+          },
+          {
+            "name": "U.S. Value",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Equity Value Factor"
+            ],
+            "return": 0.085,
+            "volatility": 0.19164892956699864,
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "sourceMapping": "U.S. Equity Value Factor"
+          },
+          {
+            "name": "U.S. Growth",
+            "category": "Equity",
+            "sourceNames": [
+              "U.S. Large Cap"
+            ],
+            "return": 0.076,
+            "volatility": 0.19493064988459924,
+            "minWeight": 0.0,
+            "maxWeight": 0.075,
+            "sourceMapping": ""
+          },
+          {
+            "name": "International Developed Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "EAFE Equity"
+            ],
+            "return": 0.077,
+            "volatility": 0.18341476412247476,
+            "minWeight": 0.0,
+            "maxWeight": 0.15,
+            "sourceMapping": "EAFE Equity"
+          },
+          {
+            "name": "Emerging Markets Equity",
+            "category": "Equity",
+            "sourceNames": [
+              "Emerging Markets Equity"
+            ],
+            "return": 0.071,
+            "volatility": 0.21362983392575338,
+            "minWeight": 0.0,
+            "maxWeight": 0.005,
+            "sourceMapping": "Emerging Markets Equity"
+          },
+          {
+            "name": "U.S. REITs",
+            "category": "Alternatives",
+            "sourceNames": [
+              "U.S. REITs"
+            ],
+            "return": 0.08200000000000002,
+            "volatility": 0.1733015149075006,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "U.S. REITs"
+          },
+          {
+            "name": "Commodities",
+            "category": "Alternatives",
+            "sourceNames": [
+              "Commodities"
+            ],
+            "return": 0.048,
+            "volatility": 0.17967397691767611,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "Commodities"
+          },
+          {
+            "name": "US Short Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Short Duration Government/Credit"
+            ],
+            "return": 0.044,
+            "volatility": 0.016004086627908188,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "Proxy: U.S. Short Duration Government/Credit"
+          },
+          {
+            "name": "US Intermediate Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Intermediate Treasuries"
+            ],
+            "return": 0.046,
+            "volatility": 0.03436324232215529,
+            "minWeight": 0.0,
+            "maxWeight": 0.5,
+            "sourceMapping": "U.S. Intermediate Treasuries"
+          },
+          {
+            "name": "US Long Treasuries",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Long Treasuries"
+            ],
+            "return": 0.05800000000000001,
+            "volatility": 0.12868987241958943,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "U.S. Long Treasuries"
+          },
+          {
+            "name": "Investment Grade Corporate",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. Inv Grade Corporate Bonds"
+            ],
+            "return": 0.061,
+            "volatility": 0.07155965785809663,
+            "minWeight": 0.0,
+            "maxWeight": 0.4,
+            "sourceMapping": "U.S. Inv Grade Corporate Bonds"
+          },
+          {
+            "name": "High Yield",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "U.S. High Yield Bonds"
+            ],
+            "return": 0.066,
+            "volatility": 0.08541685222439373,
+            "minWeight": 0.0,
+            "maxWeight": 0.1,
+            "sourceMapping": "U.S. High Yield Bonds"
+          },
+          {
+            "name": "International Fixed Income (H)",
+            "category": "Fixed Income",
+            "sourceNames": [
+              "World Government Bonds hedged"
+            ],
+            "return": 0.05,
+            "volatility": 0.039884287868730765,
+            "minWeight": 0.0,
+            "maxWeight": 0.0,
+            "sourceMapping": "World Government Bonds hedged"
+          },
+          {
+            "name": "Cash",
+            "category": "Cash",
+            "sourceNames": [
+              "U.S. Cash"
+            ],
+            "return": 0.032,
+            "volatility": 0.006762185575942052,
+            "minWeight": 0.01,
+            "maxWeight": 0.01,
+            "sourceMapping": "U.S. Cash"
+          }
+        ]
+      },
+      "benchmarks": [
+        {
+          "name": "S&P 500",
+          "return": 0.075,
+          "volatility": 0.17960725272165273,
+          "sourceMapping": "2027 Average U.S. Large Cap assumption"
+        },
+        {
+          "name": "AGG",
+          "return": 0.05600000000000001,
+          "volatility": 0.04682526261380264,
+          "sourceMapping": "JPM U.S. Aggregate Bonds assumption"
+        }
+      ],
+      "correlation": [
+        [
+          1.0,
+          0.9525241436467646,
+          0.8960516055122882,
+          0.9610829824552682,
+          0.9999999900000002,
+          0.8710019025200604,
+          0.7360408698261296,
+          0.7630700614573344,
+          0.39947858235450906,
+          0.16884914293745704,
+          -0.0013552521824381821,
+          0.02595250725406479,
+          0.5075555160793678,
+          0.7417666927387004,
+          0.15379703462033478,
+          0.02393625546030563
+        ],
+        [
+          0.9525241436467646,
+          1.0,
+          0.949136606251476,
+          0.9620677521874319,
+          0.9525241436467659,
+          0.865532341153388,
+          0.7397856710679305,
+          0.7902578945618746,
+          0.4143357016180218,
+          0.14376263046639906,
+          -0.04074784692461185,
+          0.007572860450034084,
+          0.5185625067927401,
+          0.7823904972282378,
+          0.11760814414263043,
+          -0.013695102365408378
+        ],
+        [
+          0.8960516055122882,
+          0.949136606251476,
+          1.0,
+          0.9293045042711757,
+          0.8960516055122889,
+          0.785845593321141,
+          0.6640503442926811,
+          0.7503255469912757,
+          0.3373288662467707,
+          0.09915175248837513,
+          -0.06642373530098991,
+          -0.038828505102603966,
+          0.42571870185875793,
+          0.7036544626119515,
+          0.07475126411694252,
+          -0.00880353724101171
+        ],
+        [
+          0.9610829824552682,
+          0.9620677521874319,
+          0.9293045042711757,
+          1.0,
+          0.9610829824552689,
+          0.8635785786976312,
+          0.725270981051251,
+          0.778950742478695,
+          0.39126668506519263,
+          0.1459439178304904,
+          -0.03906062287802298,
+          -0.027508245525581843,
+          0.4684997519814647,
+          0.7391474015967143,
+          0.10144232697960909,
+          -0.006776643790558924
+        ],
+        [
+          0.9999999900000002,
+          0.9525241436467659,
+          0.8960516055122889,
+          0.9610829824552689,
+          1.0,
+          0.8710019025200613,
+          0.7360408698261303,
+          0.763070061457335,
+          0.3994785823545096,
+          0.1688491429374569,
+          -0.0013552521824385208,
+          0.02595250725406451,
+          0.5075555160793681,
+          0.741766692738701,
+          0.1537970346203347,
+          0.02393625546030532
+        ],
+        [
+          0.8710019025200604,
+          0.865532341153388,
+          0.785845593321141,
+          0.8635785786976312,
+          0.8710019025200613,
+          1.0,
+          0.8586157852351417,
+          0.7106773846413017,
+          0.4701219153298531,
+          0.268676880533123,
+          0.03937852763693548,
+          0.03111389585202244,
+          0.5669935879283857,
+          0.758460965168668,
+          0.13299945518059542,
+          0.06127559092204264
+        ],
+        [
+          0.7360408698261296,
+          0.7397856710679305,
+          0.6640503442926811,
+          0.725270981051251,
+          0.7360408698261303,
+          0.8586157852351417,
+          1.0,
+          0.5883886888716306,
+          0.509993059824289,
+          0.252366134390504,
+          0.012502251569863981,
+          0.03910601088432942,
+          0.5411573628543855,
+          0.6999932659153791,
+          0.10095360112386254,
+          0.05257237014445896
+        ],
+        [
+          0.7630700614573344,
+          0.7902578945618746,
+          0.7503255469912757,
+          0.778950742478695,
+          0.763070061457335,
+          0.7106773846413017,
+          0.5883886888716306,
+          1.0,
+          0.28523912785105626,
+          0.2200688502600743,
+          0.14561680341041439,
+          0.23868687404094258,
+          0.540588079780906,
+          0.6811715148903269,
+          0.29449648985211935,
+          -0.038145536906435844
+        ],
+        [
+          0.39947858235450906,
+          0.4143357016180218,
+          0.3373288662467707,
+          0.39126668506519263,
+          0.3994785823545096,
+          0.4701219153298531,
+          0.509993059824289,
+          0.28523912785105626,
+          1.0,
+          0.018273371879256727,
+          -0.15649017043502725,
+          -0.20136796592503614,
+          0.16971366771994856,
+          0.4133049549004327,
+          -0.20389655717153843,
+          -0.01263903077073099
+        ],
+        [
+          0.16884914293745704,
+          0.14376263046639906,
+          0.09915175248837513,
+          0.1459439178304904,
+          0.1688491429374569,
+          0.268676880533123,
+          0.252366134390504,
+          0.2200688502600743,
+          0.018273371879256727,
+          1.0,
+          0.8514580574725208,
+          0.6119311892852675,
+          0.6804972161058908,
+          0.31222573092868355,
+          0.739761637906305,
+          0.3061170473606656
+        ],
+        [
+          -0.0013552521824381821,
+          -0.04074784692461185,
+          -0.06642373530098991,
+          -0.03906062287802298,
+          -0.0013552521824385208,
+          0.03937852763693548,
+          0.012502251569863981,
+          0.14561680341041439,
+          -0.15649017043502725,
+          0.8514580574725208,
+          1.0,
+          0.8381134803561305,
+          0.5570201320546947,
+          0.030955567640300836,
+          0.868685128235049,
+          0.18584765361653544
+        ],
+        [
+          0.02595250725406479,
+          0.007572860450034084,
+          -0.038828505102603966,
+          -0.027508245525581843,
+          0.02595250725406451,
+          0.03111389585202244,
+          0.03910601088432942,
+          0.23868687404094258,
+          -0.20136796592503614,
+          0.6119311892852675,
+          0.8381134803561305,
+          1.0,
+          0.6228410207717832,
+          0.05150170248061203,
+          0.8662627217880423,
+          0.04445048907140858
+        ],
+        [
+          0.5075555160793678,
+          0.5185625067927401,
+          0.42571870185875793,
+          0.4684997519814647,
+          0.5075555160793681,
+          0.5669935879283857,
+          0.5411573628543855,
+          0.540588079780906,
+          0.16971366771994856,
+          0.6804972161058908,
+          0.5570201320546947,
+          0.6228410207717832,
+          1.0,
+          0.6659765220346012,
+          0.6845873496993475,
+          0.025068075331672726
+        ],
+        [
+          0.7417666927387004,
+          0.7823904972282378,
+          0.7036544626119515,
+          0.7391474015967143,
+          0.741766692738701,
+          0.758460965168668,
+          0.6999932659153791,
+          0.6811715148903269,
+          0.4133049549004327,
+          0.31222573092868355,
+          0.030955567640300836,
+          0.05150170248061203,
+          0.6659765220346012,
+          1.0,
+          0.17107045610839972,
+          -0.04050022048378969
+        ],
+        [
+          0.15379703462033478,
+          0.11760814414263043,
+          0.07475126411694252,
+          0.10144232697960909,
+          0.1537970346203347,
+          0.13299945518059542,
+          0.10095360112386254,
+          0.29449648985211935,
+          -0.20389655717153843,
+          0.739761637906305,
+          0.868685128235049,
+          0.8662627217880423,
+          0.6845873496993475,
+          0.17107045610839972,
+          1.0,
+          0.11561540905022703
+        ],
+        [
+          0.02393625546030563,
+          -0.013695102365408378,
+          -0.00880353724101171,
+          -0.006776643790558924,
+          0.02393625546030532,
+          0.06127559092204264,
+          0.05257237014445896,
+          -0.038145536906435844,
+          -0.01263903077073099,
+          0.3061170473606656,
+          0.18584765361653544,
+          0.04445048907140858,
+          0.025068075331672726,
+          -0.04050022048378969,
+          0.11561540905022703,
+          1.0
+        ]
+      ]
+    }
+  },
   "selectedAssumptionSet": "CORE",
   "assets": [
     {
@@ -15,12 +2846,12 @@
       "sourceNames": [
         "U.S. Large Cap"
       ],
-      "return": 0.060805230754333334,
-      "volatility": 0.1627911875692516,
+      "return": 0.075,
+      "volatility": 0.17960725272165273,
       "minWeight": 0.15,
       "maxWeight": 0.55,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 6
+      "_distinctSourceCount": 1
     },
     {
       "name": "U.S. Mid Cap",
@@ -28,12 +2859,12 @@
       "sourceNames": [
         "U.S. Mid Cap"
       ],
-      "return": 0.06385210604130001,
-      "volatility": 0.17718447441309745,
+      "return": 0.077,
+      "volatility": 0.19159980794322007,
       "minWeight": 0.0,
       "maxWeight": 0.1,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 5
+      "_distinctSourceCount": 1
     },
     {
       "name": "U.S. Small Cap",
@@ -41,12 +2872,12 @@
       "sourceNames": [
         "U.S. Small Cap"
       ],
-      "return": 0.06878161264783333,
-      "volatility": 0.20925169517654715,
+      "return": 0.077,
+      "volatility": 0.21025404704754577,
       "minWeight": 0.0,
       "maxWeight": 0.05,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 6
+      "_distinctSourceCount": 1
     },
     {
       "name": "U.S. Value",
@@ -54,12 +2885,12 @@
       "sourceNames": [
         "U.S. Equity Value Factor"
       ],
-      "return": 0.063724164903,
-      "volatility": 0.1722706920805004,
+      "return": 0.085,
+      "volatility": 0.19164892956699864,
       "minWeight": 0.0,
       "maxWeight": 0.075,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 3
+      "_distinctSourceCount": 1
     },
     {
       "name": "U.S. Growth",
@@ -67,12 +2898,12 @@
       "sourceNames": [
         "U.S. Large Cap"
       ],
-      "return": 0.06479342170108333,
-      "volatility": 0.18602144137289936,
+      "return": 0.076,
+      "volatility": 0.19493064988459924,
       "minWeight": 0.0,
       "maxWeight": 0.075,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 6
+      "_distinctSourceCount": 1
     },
     {
       "name": "International Developed Equity",
@@ -80,12 +2911,12 @@
       "sourceNames": [
         "EAFE Equity"
       ],
-      "return": 0.07339483415016666,
-      "volatility": 0.1723935390255424,
+      "return": 0.077,
+      "volatility": 0.18341476412247476,
       "minWeight": 0.0,
       "maxWeight": 0.15,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 6
+      "_distinctSourceCount": 1
     },
     {
       "name": "Emerging Markets Equity",
@@ -93,12 +2924,12 @@
       "sourceNames": [
         "Emerging Markets Equity"
       ],
-      "return": 0.06370636414599999,
-      "volatility": 0.21023543757448734,
+      "return": 0.071,
+      "volatility": 0.21362983392575338,
       "minWeight": 0.0,
       "maxWeight": 0.005,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 6
+      "_distinctSourceCount": 1
     },
     {
       "name": "U.S. REITs",
@@ -106,12 +2937,12 @@
       "sourceNames": [
         "U.S. REITs"
       ],
-      "return": 0.06275230887325,
-      "volatility": 0.17711721987295678,
+      "return": 0.08200000000000002,
+      "volatility": 0.1733015149075006,
       "minWeight": 0.0,
       "maxWeight": 0.0,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 4
+      "_distinctSourceCount": 1
     },
     {
       "name": "Commodities",
@@ -119,12 +2950,12 @@
       "sourceNames": [
         "Commodities"
       ],
-      "return": 0.0564192112385,
-      "volatility": 0.17097718021116862,
+      "return": 0.048,
+      "volatility": 0.17967397691767611,
       "minWeight": 0.0,
       "maxWeight": 0.0,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 4
+      "_distinctSourceCount": 1
     },
     {
       "name": "US Short Treasuries",
@@ -132,12 +2963,12 @@
       "sourceNames": [
         "U.S. Short Duration Government/Credit"
       ],
-      "return": 0.038635009898400005,
-      "volatility": 0.014780531045622988,
+      "return": 0.044,
+      "volatility": 0.016004086627908188,
       "minWeight": 0.0,
       "maxWeight": 0.5,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 5
+      "_distinctSourceCount": 1
     },
     {
       "name": "US Intermediate Treasuries",
@@ -145,12 +2976,12 @@
       "sourceNames": [
         "U.S. Intermediate Treasuries"
       ],
-      "return": 0.04194449137133333,
-      "volatility": 0.039317852367530874,
+      "return": 0.046,
+      "volatility": 0.03436324232215529,
       "minWeight": 0.0,
       "maxWeight": 0.5,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 6
+      "_distinctSourceCount": 1
     },
     {
       "name": "US Long Treasuries",
@@ -158,12 +2989,12 @@
       "sourceNames": [
         "U.S. Long Treasuries"
       ],
-      "return": 0.05246465970966666,
-      "volatility": 0.11858315531531803,
+      "return": 0.05800000000000001,
+      "volatility": 0.12868987241958943,
       "minWeight": 0.0,
       "maxWeight": 0.0,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 6
+      "_distinctSourceCount": 1
     },
     {
       "name": "Investment Grade Corporate",
@@ -171,12 +3002,12 @@
       "sourceNames": [
         "U.S. Inv Grade Corporate Bonds"
       ],
-      "return": 0.0516179765925,
-      "volatility": 0.060255405979988165,
+      "return": 0.061,
+      "volatility": 0.07155965785809663,
       "minWeight": 0.0,
       "maxWeight": 0.4,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 6
+      "_distinctSourceCount": 1
     },
     {
       "name": "High Yield",
@@ -184,12 +3015,12 @@
       "sourceNames": [
         "U.S. High Yield Bonds"
       ],
-      "return": 0.057138708312166664,
-      "volatility": 0.07469913969925997,
+      "return": 0.066,
+      "volatility": 0.08541685222439373,
       "minWeight": 0.0,
       "maxWeight": 0.1,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 6
+      "_distinctSourceCount": 1
     },
     {
       "name": "International Fixed Income (H)",
@@ -197,12 +3028,12 @@
       "sourceNames": [
         "World Government Bonds hedged"
       ],
-      "return": 0.04546449369266667,
-      "volatility": 0.05072974678375203,
+      "return": 0.05,
+      "volatility": 0.039884287868730765,
       "minWeight": 0.0,
       "maxWeight": 0.0,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 6
+      "_distinctSourceCount": 1
     },
     {
       "name": "Cash",
@@ -210,12 +3041,12 @@
       "sourceNames": [
         "U.S. Cash"
       ],
-      "return": 0.0339961312012,
-      "volatility": 0.006197570339358973,
+      "return": 0.032,
+      "volatility": 0.006762185575942052,
       "minWeight": 0.01,
       "maxWeight": 0.01,
       "sourceMapping": "Average of available source assumptions",
-      "_distinctSourceCount": 5
+      "_distinctSourceCount": 1
     }
   ],
   "assumptionSets": {
@@ -226,12 +3057,12 @@
         "sourceNames": [
           "U.S. Large Cap"
         ],
-        "return": 0.060805230754333334,
-        "volatility": 0.1627911875692516,
+        "return": 0.075,
+        "volatility": 0.17960725272165273,
         "minWeight": 0.15,
         "maxWeight": 0.55,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 6
+        "_distinctSourceCount": 1
       },
       {
         "name": "U.S. Mid Cap",
@@ -239,12 +3070,12 @@
         "sourceNames": [
           "U.S. Mid Cap"
         ],
-        "return": 0.06385210604130001,
-        "volatility": 0.17718447441309745,
+        "return": 0.077,
+        "volatility": 0.19159980794322007,
         "minWeight": 0.0,
         "maxWeight": 0.1,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 5
+        "_distinctSourceCount": 1
       },
       {
         "name": "U.S. Small Cap",
@@ -252,12 +3083,12 @@
         "sourceNames": [
           "U.S. Small Cap"
         ],
-        "return": 0.06878161264783333,
-        "volatility": 0.20925169517654715,
+        "return": 0.077,
+        "volatility": 0.21025404704754577,
         "minWeight": 0.0,
         "maxWeight": 0.05,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 6
+        "_distinctSourceCount": 1
       },
       {
         "name": "U.S. Value",
@@ -265,12 +3096,12 @@
         "sourceNames": [
           "U.S. Equity Value Factor"
         ],
-        "return": 0.063724164903,
-        "volatility": 0.1722706920805004,
+        "return": 0.085,
+        "volatility": 0.19164892956699864,
         "minWeight": 0.0,
         "maxWeight": 0.075,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 3
+        "_distinctSourceCount": 1
       },
       {
         "name": "U.S. Growth",
@@ -278,12 +3109,12 @@
         "sourceNames": [
           "U.S. Large Cap"
         ],
-        "return": 0.06479342170108333,
-        "volatility": 0.18602144137289936,
+        "return": 0.076,
+        "volatility": 0.19493064988459924,
         "minWeight": 0.0,
         "maxWeight": 0.075,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 6
+        "_distinctSourceCount": 1
       },
       {
         "name": "International Developed Equity",
@@ -291,12 +3122,12 @@
         "sourceNames": [
           "EAFE Equity"
         ],
-        "return": 0.07339483415016666,
-        "volatility": 0.1723935390255424,
+        "return": 0.077,
+        "volatility": 0.18341476412247476,
         "minWeight": 0.0,
         "maxWeight": 0.15,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 6
+        "_distinctSourceCount": 1
       },
       {
         "name": "Emerging Markets Equity",
@@ -304,12 +3135,12 @@
         "sourceNames": [
           "Emerging Markets Equity"
         ],
-        "return": 0.06370636414599999,
-        "volatility": 0.21023543757448734,
+        "return": 0.071,
+        "volatility": 0.21362983392575338,
         "minWeight": 0.0,
         "maxWeight": 0.005,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 6
+        "_distinctSourceCount": 1
       },
       {
         "name": "U.S. REITs",
@@ -317,12 +3148,12 @@
         "sourceNames": [
           "U.S. REITs"
         ],
-        "return": 0.06275230887325,
-        "volatility": 0.17711721987295678,
+        "return": 0.08200000000000002,
+        "volatility": 0.1733015149075006,
         "minWeight": 0.0,
         "maxWeight": 0.0,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 4
+        "_distinctSourceCount": 1
       },
       {
         "name": "Commodities",
@@ -330,12 +3161,12 @@
         "sourceNames": [
           "Commodities"
         ],
-        "return": 0.0564192112385,
-        "volatility": 0.17097718021116862,
+        "return": 0.048,
+        "volatility": 0.17967397691767611,
         "minWeight": 0.0,
         "maxWeight": 0.0,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 4
+        "_distinctSourceCount": 1
       },
       {
         "name": "US Short Treasuries",
@@ -343,12 +3174,12 @@
         "sourceNames": [
           "U.S. Short Duration Government/Credit"
         ],
-        "return": 0.038635009898400005,
-        "volatility": 0.014780531045622988,
+        "return": 0.044,
+        "volatility": 0.016004086627908188,
         "minWeight": 0.0,
         "maxWeight": 0.5,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 5
+        "_distinctSourceCount": 1
       },
       {
         "name": "US Intermediate Treasuries",
@@ -356,12 +3187,12 @@
         "sourceNames": [
           "U.S. Intermediate Treasuries"
         ],
-        "return": 0.04194449137133333,
-        "volatility": 0.039317852367530874,
+        "return": 0.046,
+        "volatility": 0.03436324232215529,
         "minWeight": 0.0,
         "maxWeight": 0.5,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 6
+        "_distinctSourceCount": 1
       },
       {
         "name": "US Long Treasuries",
@@ -369,12 +3200,12 @@
         "sourceNames": [
           "U.S. Long Treasuries"
         ],
-        "return": 0.05246465970966666,
-        "volatility": 0.11858315531531803,
+        "return": 0.05800000000000001,
+        "volatility": 0.12868987241958943,
         "minWeight": 0.0,
         "maxWeight": 0.0,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 6
+        "_distinctSourceCount": 1
       },
       {
         "name": "Investment Grade Corporate",
@@ -382,12 +3213,12 @@
         "sourceNames": [
           "U.S. Inv Grade Corporate Bonds"
         ],
-        "return": 0.0516179765925,
-        "volatility": 0.060255405979988165,
+        "return": 0.061,
+        "volatility": 0.07155965785809663,
         "minWeight": 0.0,
         "maxWeight": 0.4,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 6
+        "_distinctSourceCount": 1
       },
       {
         "name": "High Yield",
@@ -395,12 +3226,12 @@
         "sourceNames": [
           "U.S. High Yield Bonds"
         ],
-        "return": 0.057138708312166664,
-        "volatility": 0.07469913969925997,
+        "return": 0.066,
+        "volatility": 0.08541685222439373,
         "minWeight": 0.0,
         "maxWeight": 0.1,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 6
+        "_distinctSourceCount": 1
       },
       {
         "name": "International Fixed Income (H)",
@@ -408,12 +3239,12 @@
         "sourceNames": [
           "World Government Bonds hedged"
         ],
-        "return": 0.04546449369266667,
-        "volatility": 0.05072974678375203,
+        "return": 0.05,
+        "volatility": 0.039884287868730765,
         "minWeight": 0.0,
         "maxWeight": 0.0,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 6
+        "_distinctSourceCount": 1
       },
       {
         "name": "Cash",
@@ -421,23 +3252,23 @@
         "sourceNames": [
           "U.S. Cash"
         ],
-        "return": 0.0339961312012,
-        "volatility": 0.006197570339358973,
+        "return": 0.032,
+        "volatility": 0.006762185575942052,
         "minWeight": 0.01,
         "maxWeight": 0.01,
         "sourceMapping": "Average of available source assumptions",
-        "_distinctSourceCount": 5
+        "_distinctSourceCount": 1
       }
     ],
-    "JPM 2026": [
+    "JPM 2027": [
       {
         "name": "U.S. Large Cap",
         "category": "Equity",
         "sourceNames": [
           "U.S. Large Cap"
         ],
-        "return": 0.067,
-        "volatility": 0.16470142484350958,
+        "return": 0.075,
+        "volatility": 0.17960725272165273,
         "minWeight": 0.15,
         "maxWeight": 0.55,
         "sourceMapping": "U.S. Large Cap"
@@ -448,8 +3279,8 @@
         "sourceNames": [
           "U.S. Mid Cap"
         ],
-        "return": 0.07,
-        "volatility": 0.18562979265648727,
+        "return": 0.077,
+        "volatility": 0.19159980794322007,
         "minWeight": 0.0,
         "maxWeight": 0.1,
         "sourceMapping": "U.S. Mid Cap"
@@ -460,8 +3291,8 @@
         "sourceNames": [
           "U.S. Small Cap"
         ],
-        "return": 0.069,
-        "volatility": 0.2109707128132829,
+        "return": 0.077,
+        "volatility": 0.21025404704754577,
         "minWeight": 0.0,
         "maxWeight": 0.05,
         "sourceMapping": "U.S. Small Cap"
@@ -472,8 +3303,8 @@
         "sourceNames": [
           "U.S. Equity Value Factor"
         ],
-        "return": 0.077,
-        "volatility": 0.17700476908450113,
+        "return": 0.085,
+        "volatility": 0.19164892956699864,
         "minWeight": 0.0,
         "maxWeight": 0.075,
         "sourceMapping": "U.S. Equity Value Factor"
@@ -484,8 +3315,8 @@
         "sourceNames": [
           "U.S. Large Cap"
         ],
-        "return": 0.068,
-        "volatility": 0.18783606882839624,
+        "return": 0.076,
+        "volatility": 0.19493064988459924,
         "minWeight": 0.0,
         "maxWeight": 0.075,
         "sourceMapping": ""
@@ -496,8 +3327,8 @@
         "sourceNames": [
           "EAFE Equity"
         ],
-        "return": 0.081,
-        "volatility": 0.17629456614025432,
+        "return": 0.077,
+        "volatility": 0.18341476412247476,
         "minWeight": 0.0,
         "maxWeight": 0.15,
         "sourceMapping": "EAFE Equity"
@@ -508,8 +3339,8 @@
         "sourceNames": [
           "Emerging Markets Equity"
         ],
-        "return": 0.072,
-        "volatility": 0.20933182803592407,
+        "return": 0.071,
+        "volatility": 0.21362983392575338,
         "minWeight": 0.0,
         "maxWeight": 0.005,
         "sourceMapping": "Emerging Markets Equity"
@@ -520,8 +3351,8 @@
         "sourceNames": [
           "U.S. REITs"
         ],
-        "return": 0.08,
-        "volatility": 0.17396878635082713,
+        "return": 0.08200000000000002,
+        "volatility": 0.1733015149075006,
         "minWeight": 0.0,
         "maxWeight": 0.0,
         "sourceMapping": "U.S. REITs"
@@ -532,8 +3363,8 @@
         "sourceNames": [
           "Commodities"
         ],
-        "return": 0.038,
-        "volatility": 0.1831843108236745,
+        "return": 0.048,
+        "volatility": 0.17967397691767611,
         "minWeight": 0.0,
         "maxWeight": 0.0,
         "sourceMapping": "Commodities"
@@ -544,8 +3375,8 @@
         "sourceNames": [
           "U.S. Short Duration Government/Credit"
         ],
-        "return": 0.039,
-        "volatility": 0.01632258108311494,
+        "return": 0.044,
+        "volatility": 0.016004086627908188,
         "minWeight": 0.0,
         "maxWeight": 0.5,
         "sourceMapping": "Proxy: U.S. Short Duration Government/Credit"
@@ -556,8 +3387,8 @@
         "sourceNames": [
           "U.S. Intermediate Treasuries"
         ],
-        "return": 0.038,
-        "volatility": 0.03481191874818525,
+        "return": 0.046,
+        "volatility": 0.03436324232215529,
         "minWeight": 0.0,
         "maxWeight": 0.5,
         "sourceMapping": "U.S. Intermediate Treasuries"
@@ -568,8 +3399,8 @@
         "sourceNames": [
           "U.S. Long Treasuries"
         ],
-        "return": 0.043,
-        "volatility": 0.13015259460890813,
+        "return": 0.05800000000000001,
+        "volatility": 0.12868987241958943,
         "minWeight": 0.0,
         "maxWeight": 0.0,
         "sourceMapping": "U.S. Long Treasuries"
@@ -580,8 +3411,8 @@
         "sourceNames": [
           "U.S. Inv Grade Corporate Bonds"
         ],
-        "return": 0.05,
-        "volatility": 0.07388216566592899,
+        "return": 0.061,
+        "volatility": 0.07155965785809663,
         "minWeight": 0.0,
         "maxWeight": 0.4,
         "sourceMapping": "U.S. Inv Grade Corporate Bonds"
@@ -592,8 +3423,8 @@
         "sourceNames": [
           "U.S. High Yield Bonds"
         ],
-        "return": 0.061,
-        "volatility": 0.08738054572155979,
+        "return": 0.066,
+        "volatility": 0.08541685222439373,
         "minWeight": 0.0,
         "maxWeight": 0.1,
         "sourceMapping": "U.S. High Yield Bonds"
@@ -604,8 +3435,8 @@
         "sourceNames": [
           "World Government Bonds hedged"
         ],
-        "return": 0.039,
-        "volatility": 0.04015263681751216,
+        "return": 0.05,
+        "volatility": 0.039884287868730765,
         "minWeight": 0.0,
         "maxWeight": 0.0,
         "sourceMapping": "World Government Bonds hedged"
@@ -616,991 +3447,11 @@
         "sourceNames": [
           "U.S. Cash"
         ],
-        "return": 0.031,
-        "volatility": 0.006692990421794862,
+        "return": 0.032,
+        "volatility": 0.006762185575942052,
         "minWeight": 0.01,
         "maxWeight": 0.01,
         "sourceMapping": "U.S. Cash"
-      }
-    ],
-    "Vanguard 2026": [
-      {
-        "name": "U.S. Large Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Large Cap"
-        ],
-        "return": 0.051,
-        "volatility": 0.15,
-        "minWeight": 0.15,
-        "maxWeight": 0.55,
-        "sourceMapping": "Vanguard U.S. large-cap"
-      },
-      {
-        "name": "U.S. Mid Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Mid Cap"
-        ],
-        "return": 0.052000000000000005,
-        "volatility": 0.151,
-        "minWeight": 0.0,
-        "maxWeight": 0.1,
-        "sourceMapping": "Vanguard U.S. equities proxy"
-      },
-      {
-        "name": "U.S. Small Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Small Cap"
-        ],
-        "return": 0.057,
-        "volatility": 0.19699999999999998,
-        "minWeight": 0.0,
-        "maxWeight": 0.05,
-        "sourceMapping": "Vanguard U.S. small-cap"
-      },
-      {
-        "name": "U.S. Value",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Value Factor"
-        ],
-        "return": 0.07400000000000001,
-        "volatility": 0.19,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Vanguard U.S. value"
-      },
-      {
-        "name": "U.S. Growth",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Large Cap"
-        ],
-        "return": 0.054,
-        "volatility": 0.1735,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": ""
-      },
-      {
-        "name": "International Developed Equity",
-        "category": "Equity",
-        "sourceNames": [
-          "EAFE Equity"
-        ],
-        "return": 0.055,
-        "volatility": 0.18,
-        "minWeight": 0.0,
-        "maxWeight": 0.15,
-        "sourceMapping": "Vanguard developed markets ex-U.S. equities (unhedged)"
-      },
-      {
-        "name": "Emerging Markets Equity",
-        "category": "Equity",
-        "sourceNames": [
-          "Emerging Markets Equity"
-        ],
-        "return": 0.03,
-        "volatility": 0.251,
-        "minWeight": 0.0,
-        "maxWeight": 0.005,
-        "sourceMapping": "Vanguard emerging markets equities (unhedged)"
-      },
-      {
-        "name": "U.S. REITs",
-        "category": "Alternatives",
-        "sourceNames": [
-          "U.S. REITs"
-        ],
-        "return": 0.044000000000000004,
-        "volatility": 0.179,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "Vanguard U.S. REITs"
-      },
-      {
-        "name": "Commodities",
-        "category": "Alternatives",
-        "sourceNames": [
-          "Commodities"
-        ],
-        "return": 0.057,
-        "volatility": 0.16699999999999998,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "Vanguard Commodities"
-      },
-      {
-        "name": "US Short Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Short Duration Government/Credit"
-        ],
-        "return": 0.04,
-        "volatility": 0.017,
-        "minWeight": 0.0,
-        "maxWeight": 0.5,
-        "sourceMapping": "Vanguard U.S. short-term Treasury bonds"
-      },
-      {
-        "name": "US Intermediate Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Intermediate Treasuries"
-        ],
-        "return": 0.042,
-        "volatility": 0.051,
-        "minWeight": 0.0,
-        "maxWeight": 0.5,
-        "sourceMapping": "Vanguard U.S. intermediate-term Treasury bonds"
-      },
-      {
-        "name": "US Long Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Long Treasuries"
-        ],
-        "return": 0.057,
-        "volatility": 0.10400000000000001,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "Vanguard U.S. long-term Treasury bonds"
-      },
-      {
-        "name": "Investment Grade Corporate",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Inv Grade Corporate Bonds"
-        ],
-        "return": 0.048,
-        "volatility": 0.064,
-        "minWeight": 0.0,
-        "maxWeight": 0.4,
-        "sourceMapping": "Vanguard U.S. credit"
-      },
-      {
-        "name": "High Yield",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. High Yield Bonds"
-        ],
-        "return": 0.052000000000000005,
-        "volatility": 0.096,
-        "minWeight": 0.0,
-        "maxWeight": 0.1,
-        "sourceMapping": "Vanguard U.S. high-yield corporate bonds"
-      },
-      {
-        "name": "International Fixed Income (H)",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "World Government Bonds hedged"
-        ],
-        "return": 0.05,
-        "volatility": 0.05,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "Vanguard global ex-U.S. aggregate bonds hedged"
-      },
-      {
-        "name": "Cash",
-        "category": "Cash",
-        "sourceNames": [
-          "U.S. Cash"
-        ],
-        "return": 0.035,
-        "volatility": 0.011000000000000001,
-        "minWeight": 0.01,
-        "maxWeight": 0.01,
-        "sourceMapping": "Vanguard U.S. cash"
-      }
-    ],
-    "BlackRock 2026": [
-      {
-        "name": "U.S. Large Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Large Cap"
-        ],
-        "return": 0.084724353,
-        "volatility": 0.191472943,
-        "minWeight": 0.15,
-        "maxWeight": 0.55,
-        "sourceMapping": "BlackRock US large cap equities"
-      },
-      {
-        "name": "U.S. Mid Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Mid Cap"
-        ],
-        "return": 0.07850306700000001,
-        "volatility": 0.19980720400000002,
-        "minWeight": 0.0,
-        "maxWeight": 0.1,
-        "sourceMapping": "BlackRock average of US large cap equities and US small cap equities"
-      },
-      {
-        "name": "U.S. Small Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Small Cap"
-        ],
-        "return": 0.072281781,
-        "volatility": 0.208141465,
-        "minWeight": 0.0,
-        "maxWeight": 0.05,
-        "sourceMapping": "BlackRock US small cap equities"
-      },
-      {
-        "name": "U.S. Value",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Value Factor"
-        ],
-        "return": 0.063724164903,
-        "volatility": 0.1722706920805004,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "BlackRock 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 3
-      },
-      {
-        "name": "U.S. Growth",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Large Cap"
-        ],
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "return": 0.07850306700000001,
-        "volatility": 0.19980720400000002,
-        "sourceMapping": ""
-      },
-      {
-        "name": "International Developed Equity",
-        "category": "Equity",
-        "sourceNames": [
-          "EAFE Equity"
-        ],
-        "return": 0.080395939,
-        "volatility": 0.17192613,
-        "minWeight": 0.0,
-        "maxWeight": 0.15,
-        "sourceMapping": "BlackRock Global ex-US large cap equities"
-      },
-      {
-        "name": "Emerging Markets Equity",
-        "category": "Equity",
-        "sourceNames": [
-          "Emerging Markets Equity"
-        ],
-        "return": 0.072746117,
-        "volatility": 0.212149497,
-        "minWeight": 0.0,
-        "maxWeight": 0.005,
-        "sourceMapping": "BlackRock Emerging large cap equities"
-      },
-      {
-        "name": "U.S. REITs",
-        "category": "Alternatives",
-        "sourceNames": [
-          "U.S. REITs"
-        ],
-        "return": 0.065880845,
-        "volatility": 0.169844414,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "BlackRock Listed REITs"
-      },
-      {
-        "name": "Commodities",
-        "category": "Alternatives",
-        "sourceNames": [
-          "Commodities"
-        ],
-        "return": 0.0564192112385,
-        "volatility": 0.17097718021116862,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "BlackRock 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 4
-      },
-      {
-        "name": "US Short Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Short Duration Government/Credit"
-        ],
-        "return": 0.038635009898400005,
-        "volatility": 0.014780531045622988,
-        "minWeight": 0.0,
-        "maxWeight": 0.5,
-        "sourceMapping": "BlackRock 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 5
-      },
-      {
-        "name": "US Intermediate Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Intermediate Treasuries"
-        ],
-        "return": 0.044505202,
-        "volatility": 0.0318852,
-        "minWeight": 0.0,
-        "maxWeight": 0.5,
-        "sourceMapping": "BlackRock US government (10- years)"
-      },
-      {
-        "name": "US Long Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Long Treasuries"
-        ],
-        "return": 0.053331321,
-        "volatility": 0.119309718,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "BlackRock US government (10+ years)"
-      },
-      {
-        "name": "Investment Grade Corporate",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Inv Grade Corporate Bonds"
-        ],
-        "return": 0.054139111,
-        "volatility": 0.057610591,
-        "minWeight": 0.0,
-        "maxWeight": 0.4,
-        "sourceMapping": "BlackRock US credit (all maturities)"
-      },
-      {
-        "name": "High Yield",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. High Yield Bonds"
-        ],
-        "return": 0.064636553,
-        "volatility": 0.063561138,
-        "minWeight": 0.0,
-        "maxWeight": 0.1,
-        "sourceMapping": "BlackRock US high yield"
-      },
-      {
-        "name": "International Fixed Income (H)",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "World Government Bonds hedged"
-        ],
-        "return": 0.044006244,
-        "volatility": 0.031558114,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "BlackRock Global ex-US treasuries (hedged)"
-      },
-      {
-        "name": "Cash",
-        "category": "Cash",
-        "sourceNames": [
-          "U.S. Cash"
-        ],
-        "return": 0.03593832,
-        "volatility": 0.0,
-        "minWeight": 0.01,
-        "maxWeight": 0.01,
-        "sourceMapping": "BlackRock US cash"
-      }
-    ],
-    "Invesco 2026": [
-      {
-        "name": "U.S. Large Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Large Cap"
-        ],
-        "return": 0.066,
-        "volatility": 0.168,
-        "minWeight": 0.15,
-        "maxWeight": 0.55,
-        "sourceMapping": "US large cap"
-      },
-      {
-        "name": "U.S. Mid Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Mid Cap"
-        ],
-        "return": 0.06385210604130001,
-        "volatility": 0.17718447441309745,
-        "minWeight": 0.0,
-        "maxWeight": 0.1,
-        "sourceMapping": "Invesco 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 5
-      },
-      {
-        "name": "U.S. Small Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Small Cap"
-        ],
-        "return": 0.073,
-        "volatility": 0.243,
-        "minWeight": 0.0,
-        "maxWeight": 0.05,
-        "sourceMapping": "US small cap"
-      },
-      {
-        "name": "U.S. Value",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Value Factor"
-        ],
-        "return": 0.063724164903,
-        "volatility": 0.1722706920805004,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Invesco 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 3
-      },
-      {
-        "name": "U.S. Growth",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Large Cap"
-        ],
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "return": 0.0695,
-        "volatility": 0.20550000000000002,
-        "sourceMapping": ""
-      },
-      {
-        "name": "International Developed Equity",
-        "category": "Equity",
-        "sourceNames": [
-          "EAFE Equity"
-        ],
-        "return": 0.086,
-        "volatility": 0.17600000000000002,
-        "minWeight": 0.0,
-        "maxWeight": 0.15,
-        "sourceMapping": "EAFE equity"
-      },
-      {
-        "name": "Emerging Markets Equity",
-        "category": "Equity",
-        "sourceNames": [
-          "Emerging Markets Equity"
-        ],
-        "return": 0.077,
-        "volatility": 0.187,
-        "minWeight": 0.0,
-        "maxWeight": 0.005,
-        "sourceMapping": "EM equity"
-      },
-      {
-        "name": "U.S. REITs",
-        "category": "Alternatives",
-        "sourceNames": [
-          "U.S. REITs"
-        ],
-        "return": 0.06275230887325,
-        "volatility": 0.17711721987295678,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "Invesco 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 4
-      },
-      {
-        "name": "Commodities",
-        "category": "Alternatives",
-        "sourceNames": [
-          "Commodities"
-        ],
-        "return": 0.075,
-        "volatility": 0.182,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "GS commodities"
-      },
-      {
-        "name": "US Short Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Short Duration Government/Credit"
-        ],
-        "return": 0.032,
-        "volatility": 0.002,
-        "minWeight": 0.0,
-        "maxWeight": 0.5,
-        "sourceMapping": "US tsy short"
-      },
-      {
-        "name": "US Intermediate Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Intermediate Treasuries"
-        ],
-        "return": 0.04,
-        "volatility": 0.03,
-        "minWeight": 0.0,
-        "maxWeight": 0.5,
-        "sourceMapping": "US tsy IM"
-      },
-      {
-        "name": "US Long Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Long Treasuries"
-        ],
-        "return": 0.065,
-        "volatility": 0.12,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "US tsy long"
-      },
-      {
-        "name": "Investment Grade Corporate",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Inv Grade Corporate Bonds"
-        ],
-        "return": 0.053,
-        "volatility": 0.055999999999999994,
-        "minWeight": 0.0,
-        "maxWeight": 0.4,
-        "sourceMapping": "US IG corp"
-      },
-      {
-        "name": "High Yield",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. High Yield Bonds"
-        ],
-        "return": 0.055,
-        "volatility": 0.040999999999999995,
-        "minWeight": 0.0,
-        "maxWeight": 0.1,
-        "sourceMapping": "US HY corps"
-      },
-      {
-        "name": "International Fixed Income (H)",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "World Government Bonds hedged"
-        ],
-        "return": 0.052000000000000005,
-        "volatility": 0.068,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "Global sov"
-      },
-      {
-        "name": "Cash",
-        "category": "Cash",
-        "sourceNames": [
-          "U.S. Cash"
-        ],
-        "return": 0.0339961312012,
-        "volatility": 0.006197570339358973,
-        "minWeight": 0.01,
-        "maxWeight": 0.01,
-        "sourceMapping": "Invesco 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 5
-      }
-    ],
-    "Capital Group 2026": [
-      {
-        "name": "U.S. Large Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Large Cap"
-        ],
-        "return": 0.061,
-        "volatility": 0.152,
-        "minWeight": 0.15,
-        "maxWeight": 0.55,
-        "sourceMapping": "U.S. equity"
-      },
-      {
-        "name": "U.S. Mid Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Mid Cap"
-        ],
-        "return": 0.064,
-        "volatility": 0.174,
-        "minWeight": 0.0,
-        "maxWeight": 0.1,
-        "sourceMapping": "Average of U.S. equity and U.S. small-cap equity"
-      },
-      {
-        "name": "U.S. Small Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Small Cap"
-        ],
-        "return": 0.067,
-        "volatility": 0.196,
-        "minWeight": 0.0,
-        "maxWeight": 0.05,
-        "sourceMapping": "U.S. small-cap equity"
-      },
-      {
-        "name": "U.S. Value",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Value Factor"
-        ],
-        "return": 0.063724164903,
-        "volatility": 0.1722706920805004,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "Capital Group 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 3
-      },
-      {
-        "name": "U.S. Growth",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Large Cap"
-        ],
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "return": 0.064,
-        "volatility": 0.174,
-        "sourceMapping": ""
-      },
-      {
-        "name": "International Developed Equity",
-        "category": "Equity",
-        "sourceNames": [
-          "EAFE Equity"
-        ],
-        "return": 0.057,
-        "volatility": 0.168,
-        "minWeight": 0.0,
-        "maxWeight": 0.15,
-        "sourceMapping": "Non-U.S. developed markets equity"
-      },
-      {
-        "name": "Emerging Markets Equity",
-        "category": "Equity",
-        "sourceNames": [
-          "Emerging Markets Equity"
-        ],
-        "return": 0.065,
-        "volatility": 0.204,
-        "minWeight": 0.0,
-        "maxWeight": 0.005,
-        "sourceMapping": "Emerging markets equity"
-      },
-      {
-        "name": "U.S. REITs",
-        "category": "Alternatives",
-        "sourceNames": [
-          "U.S. REITs"
-        ],
-        "return": 0.06275230887325,
-        "volatility": 0.17711721987295678,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "Capital Group 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 4
-      },
-      {
-        "name": "Commodities",
-        "category": "Alternatives",
-        "sourceNames": [
-          "Commodities"
-        ],
-        "return": 0.0564192112385,
-        "volatility": 0.17097718021116862,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "Capital Group 2026 was not given for this sleeve; AVERAGE assumptions are used.",
-        "_distinctSourceCount": 4
-      },
-      {
-        "name": "US Short Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Short Duration Government/Credit"
-        ],
-        "return": 0.03700000000000001,
-        "volatility": 0.022,
-        "minWeight": 0.0,
-        "maxWeight": 0.5,
-        "sourceMapping": "U.S. Treasury short term"
-      },
-      {
-        "name": "US Intermediate Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Intermediate Treasuries"
-        ],
-        "return": 0.04,
-        "volatility": 0.05599999999999999,
-        "minWeight": 0.0,
-        "maxWeight": 0.5,
-        "sourceMapping": "U.S. Treasury intermediate term"
-      },
-      {
-        "name": "US Long Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Long Treasuries"
-        ],
-        "return": 0.047,
-        "volatility": 0.116,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "U.S. Treasury long term"
-      },
-      {
-        "name": "Investment Grade Corporate",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Inv Grade Corporate Bonds"
-        ],
-        "return": 0.052,
-        "volatility": 0.065,
-        "minWeight": 0.0,
-        "maxWeight": 0.4,
-        "sourceMapping": "U.S. corporate"
-      },
-      {
-        "name": "High Yield",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. High Yield Bonds"
-        ],
-        "return": 0.059,
-        "volatility": 0.08,
-        "minWeight": 0.0,
-        "maxWeight": 0.1,
-        "sourceMapping": "U.S. high yield"
-      },
-      {
-        "name": "International Fixed Income (H)",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "World Government Bonds hedged"
-        ],
-        "return": 0.034,
-        "volatility": 0.081,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "Non-U.S. global aggregate"
-      },
-      {
-        "name": "Cash",
-        "category": "Cash",
-        "sourceNames": [
-          "U.S. Cash"
-        ],
-        "return": 0.032,
-        "volatility": 0.006,
-        "minWeight": 0.01,
-        "maxWeight": 0.01,
-        "sourceMapping": "Cash (USD)"
-      }
-    ],
-    "Asset Allocation Interactive 2026": [
-      {
-        "name": "U.S. Large Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Large Cap"
-        ],
-        "return": 0.035107031526,
-        "volatility": 0.150572757572,
-        "minWeight": 0.15,
-        "maxWeight": 0.55,
-        "sourceMapping": "US Large"
-      },
-      {
-        "name": "U.S. Mid Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Mid Cap"
-        ],
-        "return": 0.0547574632065,
-        "volatility": 0.175485375409,
-        "minWeight": 0.0,
-        "maxWeight": 0.1,
-        "sourceMapping": "Average of US Large and US Small"
-      },
-      {
-        "name": "U.S. Small Cap",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Small Cap"
-        ],
-        "return": 0.074407894887,
-        "volatility": 0.200397993246,
-        "minWeight": 0.0,
-        "maxWeight": 0.05,
-        "sourceMapping": "US Small"
-      },
-      {
-        "name": "U.S. Value",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Equity Value Factor"
-        ],
-        "return": 0.040172494709,
-        "volatility": 0.149807307157,
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "sourceMapping": "US Large Value"
-      },
-      {
-        "name": "U.S. Growth",
-        "category": "Equity",
-        "sourceNames": [
-          "U.S. Large Cap"
-        ],
-        "minWeight": 0.0,
-        "maxWeight": 0.075,
-        "return": 0.054757463206500004,
-        "volatility": 0.175485375409,
-        "sourceMapping": ""
-      },
-      {
-        "name": "International Developed Equity",
-        "category": "Equity",
-        "sourceNames": [
-          "EAFE Equity"
-        ],
-        "return": 0.080973065901,
-        "volatility": 0.162140538013,
-        "minWeight": 0.0,
-        "maxWeight": 0.15,
-        "sourceMapping": "Dev ex US Large"
-      },
-      {
-        "name": "Emerging Markets Equity",
-        "category": "Equity",
-        "sourceNames": [
-          "Emerging Markets Equity"
-        ],
-        "return": 0.065492067876,
-        "volatility": 0.197931300411,
-        "minWeight": 0.0,
-        "maxWeight": 0.005,
-        "sourceMapping": "Emerging Markets"
-      },
-      {
-        "name": "U.S. REITs",
-        "category": "Alternatives",
-        "sourceNames": [
-          "U.S. REITs"
-        ],
-        "return": 0.061128390493,
-        "volatility": 0.185655679141,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "REITs"
-      },
-      {
-        "name": "Commodities",
-        "category": "Alternatives",
-        "sourceNames": [
-          "Commodities"
-        ],
-        "return": 0.055676844954,
-        "volatility": 0.151724410021,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "Commodities"
-      },
-      {
-        "name": "US Short Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Short Duration Government/Credit"
-        ],
-        "return": 0.045175049492,
-        "volatility": 0.016580074145,
-        "minWeight": 0.0,
-        "maxWeight": 0.5,
-        "sourceMapping": "US Treasury Short"
-      },
-      {
-        "name": "US Intermediate Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Intermediate Treasuries"
-        ],
-        "return": 0.047161746228,
-        "volatility": 0.032209995457,
-        "minWeight": 0.0,
-        "maxWeight": 0.5,
-        "sourceMapping": "US Treasury Intermediate"
-      },
-      {
-        "name": "US Long Treasuries",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Long Treasuries"
-        ],
-        "return": 0.049456637258,
-        "volatility": 0.122036619283,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "US Treasury Long"
-      },
-      {
-        "name": "Investment Grade Corporate",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. Inv Grade Corporate Bonds"
-        ],
-        "return": 0.052568748555,
-        "volatility": 0.045039679214,
-        "minWeight": 0.0,
-        "maxWeight": 0.4,
-        "sourceMapping": "US Corporate Intermediate"
-      },
-      {
-        "name": "High Yield",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "U.S. High Yield Bonds"
-        ],
-        "return": 0.051195696873,
-        "volatility": 0.080253154474,
-        "minWeight": 0.0,
-        "maxWeight": 0.1,
-        "sourceMapping": "US High Yield"
-      },
-      {
-        "name": "International Fixed Income (H)",
-        "category": "Fixed Income",
-        "sourceNames": [
-          "World Government Bonds hedged"
-        ],
-        "return": 0.053780718156,
-        "volatility": 0.033667729885,
-        "minWeight": 0.0,
-        "maxWeight": 0.0,
-        "sourceMapping": "Global ex US Aggregate (Hedged)"
-      },
-      {
-        "name": "Cash",
-        "category": "Cash",
-        "sourceNames": [
-          "U.S. Cash"
-        ],
-        "return": 0.036042336006,
-        "volatility": 0.007294861275,
-        "minWeight": 0.01,
-        "maxWeight": 0.01,
-        "sourceMapping": "United States Cash"
       }
     ]
   },
@@ -1633,14 +3484,14 @@
   "benchmarks": [
     {
       "name": "S&P 500",
-      "return": 0.060805230754333334,
-      "volatility": 0.1627911875692516,
-      "sourceMapping": "CORE U.S. Large Cap assumption"
+      "return": 0.075,
+      "volatility": 0.17960725272165273,
+      "sourceMapping": "2027 Average U.S. Large Cap assumption"
     },
     {
       "name": "AGG",
-      "return": 0.046,
-      "volatility": 0.047564851534030825,
+      "return": 0.05600000000000001,
+      "volatility": 0.04682526261380264,
       "sourceMapping": "JPM U.S. Aggregate Bonds assumption"
     }
   ],
@@ -2037,290 +3888,290 @@
   "correlation": [
     [
       1.0,
-      0.9397914371944377,
-      0.8755170852278987,
-      0.9372537993224503,
-      0.961540500202416,
-      0.8305951153097813,
-      0.7167573247270356,
-      0.7238754358744994,
-      0.3643932698559379,
-      0.028778489367674815,
-      -0.013228283034248257,
-      0.03398457009056481,
-      0.47109801164832454,
-      0.7226546148127545,
-      0.24431506677821316,
-      0.022128010755387596
+      0.9525241436467646,
+      0.8960516055122882,
+      0.9610829824552682,
+      0.9999999900000002,
+      0.8710019025200604,
+      0.7360408698261296,
+      0.7630700614573344,
+      0.39947858235450906,
+      0.16884914293745704,
+      -0.0013552521824381821,
+      0.02595250725406479,
+      0.5075555160793678,
+      0.7417666927387004,
+      0.15379703462033478,
+      0.02393625546030563
     ],
     [
-      0.9397914371944377,
+      0.9525241436467646,
       1.0,
-      0.9408157935114345,
-      0.9257921307477491,
-      0.9043385910404038,
-      0.8117453950963472,
-      0.7081298129212494,
-      0.7411541878466181,
-      0.371967593164783,
-      -0.00030472481839177316,
-      -0.04331588984535768,
-      0.006905629151195298,
-      0.4605692476104557,
-      0.7389880322399364,
-      0.21306253083299675,
-      -0.000974646266145943
+      0.949136606251476,
+      0.9620677521874319,
+      0.9525241436467659,
+      0.865532341153388,
+      0.7397856710679305,
+      0.7902578945618746,
+      0.4143357016180218,
+      0.14376263046639906,
+      -0.04074784692461185,
+      0.007572860450034084,
+      0.5185625067927401,
+      0.7823904972282378,
+      0.11760814414263043,
+      -0.013695102365408378
     ],
     [
-      0.8755170852278987,
-      0.9408157935114345,
+      0.8960516055122882,
+      0.949136606251476,
       1.0,
-      0.8865964880512953,
-      0.8292599424914789,
-      0.7647347271886032,
-      0.6660024715291324,
-      0.7256823699279897,
-      0.328078685483979,
-      -0.0365977551290359,
-      -0.07050082252343648,
-      -0.028268544995597798,
-      0.41486452373618077,
-      0.7141124153233517,
-      0.17649115164650955,
-      -0.016378230101210273
+      0.9293045042711757,
+      0.8960516055122889,
+      0.785845593321141,
+      0.6640503442926811,
+      0.7503255469912757,
+      0.3373288662467707,
+      0.09915175248837513,
+      -0.06642373530098991,
+      -0.038828505102603966,
+      0.42571870185875793,
+      0.7036544626119515,
+      0.07475126411694252,
+      -0.00880353724101171
     ],
     [
-      0.9372537993224503,
-      0.9257921307477491,
-      0.8865964880512953,
+      0.9610829824552682,
+      0.9620677521874319,
+      0.9293045042711757,
       1.0,
-      0.8744725392253463,
-      0.824431349633596,
-      0.7026752230391766,
-      0.7542149106215732,
-      0.3887960948638276,
-      0.052469444532997754,
-      -0.02905526866128586,
-      0.006139747372493665,
-      0.44326639744898505,
-      0.7140867469776082,
-      0.12346287629389371,
-      -0.005559935120789839
+      0.9610829824552689,
+      0.8635785786976312,
+      0.725270981051251,
+      0.778950742478695,
+      0.39126668506519263,
+      0.1459439178304904,
+      -0.03906062287802298,
+      -0.027508245525581843,
+      0.4684997519814647,
+      0.7391474015967143,
+      0.10144232697960909,
+      -0.006776643790558924
     ],
     [
-      0.961540500202416,
-      0.9043385910404038,
-      0.8292599424914789,
-      0.8744725392253463,
+      0.9999999900000002,
+      0.9525241436467659,
+      0.8960516055122889,
+      0.9610829824552689,
       1.0,
-      0.7792029678195196,
-      0.688752226739409,
-      0.6713155967355285,
-      0.32748703024432335,
-      0.07001567551863172,
-      0.006513937649301494,
-      0.06363816754324947,
-      0.4534319817482996,
-      0.6902320492122108,
-      0.17739368747006706,
-      0.014965480830846013
+      0.8710019025200613,
+      0.7360408698261303,
+      0.763070061457335,
+      0.3994785823545096,
+      0.1688491429374569,
+      -0.0013552521824385208,
+      0.02595250725406451,
+      0.5075555160793681,
+      0.741766692738701,
+      0.1537970346203347,
+      0.02393625546030532
     ],
     [
-      0.8305951153097813,
-      0.8117453950963472,
-      0.7647347271886032,
-      0.824431349633596,
-      0.7792029678195196,
+      0.8710019025200604,
+      0.865532341153388,
+      0.785845593321141,
+      0.8635785786976312,
+      0.8710019025200613,
       1.0,
-      0.8203605178259726,
-      0.6674675854884115,
-      0.4293133902755015,
-      0.10356553753913064,
-      0.03370383781316841,
-      0.03285055397615996,
-      0.5264188955240982,
-      0.7335502965277902,
-      0.27633556237383006,
-      0.054234268096369
+      0.8586157852351417,
+      0.7106773846413017,
+      0.4701219153298531,
+      0.268676880533123,
+      0.03937852763693548,
+      0.03111389585202244,
+      0.5669935879283857,
+      0.758460965168668,
+      0.13299945518059542,
+      0.06127559092204264
     ],
     [
-      0.7167573247270356,
-      0.7081298129212494,
-      0.6660024715291324,
-      0.7026752230391766,
-      0.688752226739409,
-      0.8203605178259726,
+      0.7360408698261296,
+      0.7397856710679305,
+      0.6640503442926811,
+      0.725270981051251,
+      0.7360408698261303,
+      0.8586157852351417,
       1.0,
-      0.5683697356753283,
-      0.4851832911986935,
-      0.0838236256414422,
-      0.006955826637397576,
-      0.02682648256661947,
-      0.5018947424287422,
-      0.6936920503596288,
-      0.24670140717898237,
-      0.04800393759170157
+      0.5883886888716306,
+      0.509993059824289,
+      0.252366134390504,
+      0.012502251569863981,
+      0.03910601088432942,
+      0.5411573628543855,
+      0.6999932659153791,
+      0.10095360112386254,
+      0.05257237014445896
     ],
     [
-      0.7238754358744994,
-      0.7411541878466181,
-      0.7256823699279897,
-      0.7542149106215732,
-      0.6713155967355285,
-      0.6674675854884115,
-      0.5683697356753283,
+      0.7630700614573344,
+      0.7902578945618746,
+      0.7503255469912757,
+      0.778950742478695,
+      0.763070061457335,
+      0.7106773846413017,
+      0.5883886888716306,
       1.0,
-      0.2705556203124658,
-      0.15729668983932799,
-      0.16476218983700108,
-      0.2589930382841279,
-      0.5421803846602412,
-      0.6834513976776131,
-      0.3103306166726061,
-      -0.02961014480692313
+      0.28523912785105626,
+      0.2200688502600743,
+      0.14561680341041439,
+      0.23868687404094258,
+      0.540588079780906,
+      0.6811715148903269,
+      0.29449648985211935,
+      -0.038145536906435844
     ],
     [
-      0.3643932698559379,
-      0.371967593164783,
-      0.328078685483979,
-      0.3887960948638276,
-      0.32748703024432335,
-      0.4293133902755015,
-      0.4851832911986935,
-      0.2705556203124658,
+      0.39947858235450906,
+      0.4143357016180218,
+      0.3373288662467707,
+      0.39126668506519263,
+      0.3994785823545096,
+      0.4701219153298531,
+      0.509993059824289,
+      0.28523912785105626,
       1.0,
-      -0.042755977240112285,
-      -0.1496004774968018,
-      -0.1886268241331297,
-      0.17603063784344952,
-      0.39233024932641586,
-      -0.19441887430480564,
-      -0.005980505865463857
+      0.018273371879256727,
+      -0.15649017043502725,
+      -0.20136796592503614,
+      0.16971366771994856,
+      0.4133049549004327,
+      -0.20389655717153843,
+      -0.01263903077073099
     ],
     [
-      0.028778489367674815,
-      -0.00030472481839177316,
-      -0.0365977551290359,
-      0.052469444532997754,
-      0.07001567551863172,
-      0.10356553753913064,
-      0.0838236256414422,
-      0.15729668983932799,
-      -0.042755977240112285,
+      0.16884914293745704,
+      0.14376263046639906,
+      0.09915175248837513,
+      0.1459439178304904,
+      0.1688491429374569,
+      0.268676880533123,
+      0.252366134390504,
+      0.2200688502600743,
+      0.018273371879256727,
       1.0,
-      0.8793943179968372,
-      0.651018564526777,
-      0.5718572850862056,
-      0.0936569796185984,
-      0.6357159902179784,
-      0.33660592705772685
+      0.8514580574725208,
+      0.6119311892852675,
+      0.6804972161058908,
+      0.31222573092868355,
+      0.739761637906305,
+      0.3061170473606656
     ],
     [
-      -0.013228283034248257,
-      -0.04331588984535768,
-      -0.07050082252343648,
-      -0.02905526866128586,
-      0.006513937649301494,
-      0.03370383781316841,
-      0.006955826637397576,
-      0.16476218983700108,
-      -0.1496004774968018,
-      0.8793943179968372,
+      -0.0013552521824381821,
+      -0.04074784692461185,
+      -0.06642373530098991,
+      -0.03906062287802298,
+      -0.0013552521824385208,
+      0.03937852763693548,
+      0.012502251569863981,
+      0.14561680341041439,
+      -0.15649017043502725,
+      0.8514580574725208,
       1.0,
-      0.8535313257093049,
-      0.6028699401826436,
-      0.03421949315810936,
-      0.7143096706379191,
-      0.17312816763795696
+      0.8381134803561305,
+      0.5570201320546947,
+      0.030955567640300836,
+      0.868685128235049,
+      0.18584765361653544
     ],
     [
-      0.03398457009056481,
-      0.006905629151195298,
-      -0.028268544995597798,
-      0.006139747372493665,
-      0.06363816754324947,
-      0.03285055397615996,
-      0.02682648256661947,
-      0.2589930382841279,
-      -0.1886268241331297,
-      0.651018564526777,
-      0.8535313257093049,
+      0.02595250725406479,
+      0.007572860450034084,
+      -0.038828505102603966,
+      -0.027508245525581843,
+      0.02595250725406451,
+      0.03111389585202244,
+      0.03910601088432942,
+      0.23868687404094258,
+      -0.20136796592503614,
+      0.6119311892852675,
+      0.8381134803561305,
       1.0,
-      0.6260880984647581,
-      0.06500687207943445,
-      0.6870911615981946,
-      0.04702470408863292
+      0.6228410207717832,
+      0.05150170248061203,
+      0.8662627217880423,
+      0.04445048907140858
     ],
     [
-      0.47109801164832454,
-      0.4605692476104557,
-      0.41486452373618077,
-      0.44326639744898505,
-      0.4534319817482996,
-      0.5264188955240982,
-      0.5018947424287422,
-      0.5421803846602412,
-      0.17603063784344952,
-      0.5718572850862056,
-      0.6028699401826436,
-      0.6260880984647581,
+      0.5075555160793678,
+      0.5185625067927401,
+      0.42571870185875793,
+      0.4684997519814647,
+      0.5075555160793681,
+      0.5669935879283857,
+      0.5411573628543855,
+      0.540588079780906,
+      0.16971366771994856,
+      0.6804972161058908,
+      0.5570201320546947,
+      0.6228410207717832,
       1.0,
-      0.6588909111403229,
-      0.6681237200495843,
-      0.06470380239528503
+      0.6659765220346012,
+      0.6845873496993475,
+      0.025068075331672726
     ],
     [
-      0.7226546148127545,
-      0.7389880322399364,
-      0.7141124153233517,
-      0.7140867469776082,
-      0.6902320492122108,
-      0.7335502965277902,
-      0.6936920503596288,
-      0.6834513976776131,
-      0.39233024932641586,
-      0.0936569796185984,
-      0.03421949315810936,
-      0.06500687207943445,
-      0.6588909111403229,
+      0.7417666927387004,
+      0.7823904972282378,
+      0.7036544626119515,
+      0.7391474015967143,
+      0.741766692738701,
+      0.758460965168668,
+      0.6999932659153791,
+      0.6811715148903269,
+      0.4133049549004327,
+      0.31222573092868355,
+      0.030955567640300836,
+      0.05150170248061203,
+      0.6659765220346012,
       1.0,
-      0.29263263624670477,
-      -0.001103509262044612
+      0.17107045610839972,
+      -0.04050022048378969
     ],
     [
-      0.24431506677821316,
-      0.21306253083299675,
-      0.17649115164650955,
-      0.12346287629389371,
-      0.17739368747006706,
-      0.27633556237383006,
-      0.24670140717898237,
-      0.3103306166726061,
-      -0.19441887430480564,
-      0.6357159902179784,
-      0.7143096706379191,
-      0.6870911615981946,
-      0.6681237200495843,
-      0.29263263624670477,
+      0.15379703462033478,
+      0.11760814414263043,
+      0.07475126411694252,
+      0.10144232697960909,
+      0.1537970346203347,
+      0.13299945518059542,
+      0.10095360112386254,
+      0.29449648985211935,
+      -0.20389655717153843,
+      0.739761637906305,
+      0.868685128235049,
+      0.8662627217880423,
+      0.6845873496993475,
+      0.17107045610839972,
       1.0,
-      0.14256915875120266
+      0.11561540905022703
     ],
     [
-      0.022128010755387596,
-      -0.000974646266145943,
-      -0.016378230101210273,
-      -0.005559935120789839,
-      0.014965480830846013,
-      0.054234268096369,
-      0.04800393759170157,
-      -0.02961014480692313,
-      -0.005980505865463857,
-      0.33660592705772685,
-      0.17312816763795696,
-      0.04702470408863292,
-      0.06470380239528503,
-      -0.001103509262044612,
-      0.14256915875120266,
+      0.02393625546030563,
+      -0.013695102365408378,
+      -0.00880353724101171,
+      -0.006776643790558924,
+      0.02393625546030532,
+      0.06127559092204264,
+      0.05257237014445896,
+      -0.038145536906435844,
+      -0.01263903077073099,
+      0.3061170473606656,
+      0.18584765361653544,
+      0.04445048907140858,
+      0.025068075331672726,
+      -0.04050022048378969,
+      0.11561540905022703,
       1.0
     ]
   ]

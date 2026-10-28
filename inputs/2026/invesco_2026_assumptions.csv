@@ -1,0 +1,19 @@
+Model Asset,Provider Asset,Arithmetic Return,Expected Risk,Mapping Status,Source Note
+U.S. Large Cap,US large cap,6.60%,16.80%,Proposed direct,Invesco 10-year USD assumptions; arithmetic return and expected risk
+U.S. Mid Cap,,,,Fallback to CORE average,Invesco did not give a distinct U.S. mid cap assumption; CORE average assumptions are used
+U.S. Small Cap,US small cap,7.30%,24.30%,Proposed direct,Invesco 10-year USD assumptions; arithmetic return and expected risk
+U.S. Value,,,,Fallback to CORE average,No distinct Invesco U.S. value row shown; CORE average assumptions are used
+U.S. Growth,,,,Fallback to CORE average,No distinct Invesco U.S. growth row shown; CORE average assumptions are used
+U.S. Income,,,,Fallback to CORE average,No distinct Invesco U.S. equity income/dividend row shown; CORE average assumptions are used
+U.S. Quality,,,,Fallback to CORE average,No distinct Invesco U.S. quality row shown; CORE average assumptions are used
+International Developed Equity,EAFE equity,8.60%,17.60%,Proposed direct,Invesco 10-year USD assumptions; arithmetic return and expected risk
+Emerging Markets Equity,EM equity,7.70%,18.70%,Proposed direct,Invesco 10-year USD assumptions; arithmetic return and expected risk
+U.S. REITs,,,,Fallback to CORE average,Invesco shows Global REITs rather than U.S. REITs; CORE average assumptions are used
+Commodities,GS commodities,7.50%,18.20%,Proposed direct,Invesco 10-year USD assumptions; arithmetic return and expected risk
+US Short Treasuries,US tsy short,3.20%,0.20%,Proposed direct,Invesco 10-year USD assumptions; arithmetic return and expected risk
+US Intermediate Treasuries,US tsy IM,4.00%,3.00%,Proposed direct,Invesco 10-year USD assumptions; arithmetic return and expected risk
+US Long Treasuries,US tsy long,6.50%,12.00%,Proposed direct,Invesco 10-year USD assumptions; arithmetic return and expected risk
+Investment Grade Corporate,US IG corp,5.30%,5.60%,Proposed direct,Invesco 10-year USD assumptions; arithmetic return and expected risk
+High Yield,US HY corps,5.50%,4.10%,Proposed direct,Invesco 10-year USD assumptions; arithmetic return and expected risk
+International Fixed Income (H),Global sov,5.20%,6.80%,Confirmed proxy,Invesco 10-year USD assumptions; arithmetic return and expected risk
+Cash,,,,Fallback to CORE average,No Invesco cash row shown; CORE average assumptions are used

@@ -12,12 +12,34 @@ import portfolio_optimizer as optimizer
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB_DATA = ROOT / "web" / "data" / "model-data.json"
-BLACKROCK_ASSUMPTIONS_FILE = ROOT / "inputs" / "blackrock-capital-market-assumptions.xlsx"
-VANGUARD_ASSUMPTIONS_FILE = ROOT / "inputs" / "vanguard_2026_assumptions.csv"
-INVESCO_ASSUMPTIONS_FILE = ROOT / "inputs" / "invesco_2026_assumptions.csv"
-CAPITAL_GROUP_FILE = ROOT / "inputs" / "capital_group_2026.xlsx"
-ASSET_ALLOCATION_INTERACTIVE_FILE = ROOT / "inputs" / "Asset-Allocation-Interactive-Data.xlsx"
-FUND_MAPPING_FILE = ROOT / "inputs" / "Fund Mapping.xlsx"
+INPUTS_DIR = ROOT / "inputs"
+DEFAULT_ASSUMPTION_YEAR = "2027"
+FUND_MAPPING_FILE = INPUTS_DIR / "2026" / "Fund Mapping.xlsx"
+
+
+def find_year_file(year: str, name_parts: tuple[str, ...], suffixes: tuple[str, ...]) -> Path | None:
+    year_dir = INPUTS_DIR / str(year)
+    if not year_dir.exists():
+        return None
+    candidates = []
+    for path in year_dir.iterdir():
+        normalized_name = path.name.lower().replace("_", " ").replace("-", " ")
+        if path.suffix.lower() not in suffixes or path.name.startswith("~$"):
+            continue
+        if all(part.lower() in normalized_name for part in name_parts):
+            candidates.append(path)
+    return sorted(candidates)[0] if candidates else None
+
+
+def year_source_files(year: str) -> dict[str, Path | None]:
+    return {
+        "jpm": optimizer.jpm_matrix_path(year),
+        "vanguard": find_year_file(year, ("vanguard",), (".csv",)),
+        "blackrock": find_year_file(year, ("blackrock",), (".xlsx",)),
+        "invesco": find_year_file(year, ("invesco",), (".csv",)),
+        "capital_group": find_year_file(year, ("capital", "group"), (".xlsx",)),
+        "asset_allocation_interactive": find_year_file(year, ("asset", "allocation", "interactive"), (".xlsx",)),
+    }
 
 FUND_MAPPING_HEADERS = {
     "large cap": "U.S. Large Cap",
@@ -121,11 +143,11 @@ def load_fund_models() -> dict[str, object]:
     return {"providers": providers, "warnings": warnings}
 
 
-def load_vanguard_assumptions() -> dict[str, dict[str, float | str]]:
-    if not VANGUARD_ASSUMPTIONS_FILE.exists():
+def load_vanguard_assumptions(source_file: Path | None) -> dict[str, dict[str, float | str]]:
+    if source_file is None or not source_file.exists():
         return {}
     out: dict[str, dict[str, float | str]] = {}
-    with VANGUARD_ASSUMPTIONS_FILE.open(newline="", encoding="utf-8-sig") as handle:
+    with source_file.open(newline="", encoding="utf-8-sig") as handle:
         reader = csv.DictReader(handle)
         for row in reader:
             model_asset = optimizer.normalize_name(row.get("Model Asset", ""))
@@ -156,11 +178,11 @@ INVESCO_FALLBACK_TO_AVERAGE = {
 FALLBACK_RETURN_OVERRIDES = {}
 
 
-def load_capital_group_assumptions() -> dict[str, dict[str, float | str]]:
-    if not CAPITAL_GROUP_FILE.exists():
+def load_capital_group_assumptions(source_file: Path | None) -> dict[str, dict[str, float | str]]:
+    if source_file is None or not source_file.exists():
         return {}
     out: dict[str, dict[str, float | str]] = {}
-    wb = load_workbook(CAPITAL_GROUP_FILE, data_only=True, read_only=True)
+    wb = load_workbook(source_file, data_only=True, read_only=True)
     ws = wb["Assumptions"]
     headers = [str(cell.value).strip() if cell.value is not None else "" for cell in ws[1]]
     index = {header: position for position, header in enumerate(headers)}
@@ -179,10 +201,10 @@ def load_capital_group_assumptions() -> dict[str, dict[str, float | str]]:
     return out
 
 
-def load_capital_group_correlation() -> dict[str, dict[str, float]]:
-    if not CAPITAL_GROUP_FILE.exists():
+def load_capital_group_correlation(source_file: Path | None) -> dict[str, dict[str, float]]:
+    if source_file is None or not source_file.exists():
         return {}
-    wb = load_workbook(CAPITAL_GROUP_FILE, data_only=True, read_only=True)
+    wb = load_workbook(source_file, data_only=True, read_only=True)
     ws = wb["Correlations"]
     headers = [optimizer.normalize_name(cell.value) for cell in ws[1][1:]]
     out: dict[str, dict[str, float]] = {}
@@ -198,10 +220,10 @@ def load_capital_group_correlation() -> dict[str, dict[str, float]]:
     return out
 
 
-def load_asset_allocation_interactive_assumptions() -> dict[str, dict[str, float | str]]:
-    if not ASSET_ALLOCATION_INTERACTIVE_FILE.exists():
+def load_asset_allocation_interactive_assumptions(source_file: Path | None) -> dict[str, dict[str, float | str]]:
+    if source_file is None or not source_file.exists():
         return {}
-    wb = load_workbook(ASSET_ALLOCATION_INTERACTIVE_FILE, data_only=True, read_only=True)
+    wb = load_workbook(source_file, data_only=True, read_only=True)
     ws = wb["Model Mapping"]
     headers = [str(cell.value).strip() if cell.value is not None else "" for cell in ws[1]]
     index = {header: position for position, header in enumerate(headers)}
@@ -221,10 +243,10 @@ def load_asset_allocation_interactive_assumptions() -> dict[str, dict[str, float
     return out
 
 
-def load_asset_allocation_interactive_correlation() -> dict[str, dict[str, float]]:
-    if not ASSET_ALLOCATION_INTERACTIVE_FILE.exists():
+def load_asset_allocation_interactive_correlation(source_file: Path | None) -> dict[str, dict[str, float]]:
+    if source_file is None or not source_file.exists():
         return {}
-    wb = load_workbook(ASSET_ALLOCATION_INTERACTIVE_FILE, data_only=True, read_only=True)
+    wb = load_workbook(source_file, data_only=True, read_only=True)
     ws = wb["Expected Correlations"]
     headers = [optimizer.normalize_name(cell.value) for cell in ws[4][2:] if cell.value not in (None, "")]
     out: dict[str, dict[str, float]] = {}
@@ -284,11 +306,11 @@ ASSET_ALLOCATION_INTERACTIVE_CORRELATION_MAP = {
 }
 
 
-def load_invesco_assumptions() -> dict[str, dict[str, float | str]]:
-    if not INVESCO_ASSUMPTIONS_FILE.exists():
+def load_invesco_assumptions(source_file: Path | None) -> dict[str, dict[str, float | str]]:
+    if source_file is None or not source_file.exists():
         return {}
     out: dict[str, dict[str, float | str]] = {}
-    with INVESCO_ASSUMPTIONS_FILE.open(newline="", encoding="utf-8-sig") as handle:
+    with source_file.open(newline="", encoding="utf-8-sig") as handle:
         reader = csv.DictReader(handle)
         for row in reader:
             model_asset = optimizer.normalize_name(row.get("Model Asset", ""))
@@ -305,10 +327,10 @@ def load_invesco_assumptions() -> dict[str, dict[str, float | str]]:
     return out
 
 
-def load_blackrock_source_data() -> dict[str, dict[str, float]]:
-    if not BLACKROCK_ASSUMPTIONS_FILE.exists():
+def load_blackrock_source_data(source_file: Path | None) -> dict[str, dict[str, float]]:
+    if source_file is None or not source_file.exists():
         return {}
-    wb = load_workbook(BLACKROCK_ASSUMPTIONS_FILE, data_only=True, read_only=True)
+    wb = load_workbook(source_file, data_only=True, read_only=True)
     ws = wb["Starting point "] if "Starting point " in wb.sheetnames else wb.active
     out: dict[str, dict[str, float]] = {}
     for asset_class, asset_name, expected_return, volatility in ws.iter_rows(min_row=4, max_col=4, values_only=True):
@@ -346,8 +368,8 @@ def blackrock_average_assumption(source: dict[str, dict[str, float]], names: lis
     }
 
 
-def build_blackrock_assumptions(jpm_assets: list[dict]) -> list[dict | None]:
-    source = load_blackrock_source_data()
+def build_blackrock_assumptions(jpm_assets: list[dict], source_file: Path | None) -> list[dict | None]:
+    source = load_blackrock_source_data(source_file)
     mappings = {
         "U.S. Large Cap": lambda: blackrock_assumption(source, "US large cap equities", "BlackRock US large cap equities"),
         "U.S. Mid Cap": lambda: blackrock_average_assumption(
@@ -499,10 +521,15 @@ def source_correlation(source_corr: dict[str, dict[str, float]], left_names: lis
     return sum(values) / len(values)
 
 
-def blend_available_correlations(jpm_corr: np.ndarray, assets: list[dict]) -> np.ndarray:
+def blend_available_correlations(
+    jpm_corr: np.ndarray,
+    assets: list[dict],
+    capital_group_file: Path | None,
+    asset_allocation_interactive_file: Path | None,
+) -> np.ndarray:
     providers = [
-        (load_capital_group_correlation(), CAPITAL_GROUP_CORRELATION_MAP),
-        (load_asset_allocation_interactive_correlation(), ASSET_ALLOCATION_INTERACTIVE_CORRELATION_MAP),
+        (load_capital_group_correlation(capital_group_file), CAPITAL_GROUP_CORRELATION_MAP),
+        (load_asset_allocation_interactive_correlation(asset_allocation_interactive_file), ASSET_ALLOCATION_INTERACTIVE_CORRELATION_MAP),
     ]
     blended = np.array(jpm_corr, copy=True)
     for i, left_asset in enumerate(assets):
@@ -523,8 +550,8 @@ def blend_available_correlations(jpm_corr: np.ndarray, assets: list[dict]) -> np
     return (blended + blended.T) / 2.0
 
 
-def blend_capital_group_correlation(jpm_corr: np.ndarray, assets: list[dict]) -> np.ndarray:
-    capital_corr = load_capital_group_correlation()
+def blend_capital_group_correlation(jpm_corr: np.ndarray, assets: list[dict], capital_group_file: Path | None = None) -> np.ndarray:
+    capital_corr = load_capital_group_correlation(capital_group_file)
     if not capital_corr:
         return jpm_corr
     def mapped_names(asset_name: str) -> list[str]:
@@ -579,23 +606,33 @@ def nearest_valid_correlation(corr: np.ndarray) -> np.ndarray:
     return cleaned
 
 
-def main() -> None:
-    jpm_data = optimizer.load_jpm_source_data()
+def map_provider_assumptions(jpm_assets: list[dict], assumptions: dict[str, dict[str, float | str]]) -> list[dict | None]:
+    mapped = []
+    for asset in jpm_assets:
+        assumption = assumptions.get(optimizer.normalize_name(asset["name"]))
+        if assumption is None:
+            mapped.append(None)
+            continue
+        mapped.append({
+            **asset,
+            "return": assumption["return"],
+            "volatility": assumption["volatility"],
+            "sourceMapping": assumption["sourceMapping"],
+        })
+    return apply_derived_proxies(mapped)
+
+
+def build_year_data(year: str) -> dict[str, object]:
+    source_files = year_source_files(year)
+    jpm_path = source_files["jpm"]
+    if jpm_path is None:
+        raise FileNotFoundError(f"No JPM workbook is available for {year}.")
+    jpm_data = optimizer.load_jpm_source_data(jpm_path, year)
     returns = np.array([optimizer.asset_return(asset, jpm_data) for asset in optimizer.ASSETS])
     cov = optimizer.covariance_matrix(optimizer.ASSETS, jpm_data)
     vols = np.sqrt(np.diag(cov))
     corr = cov / np.outer(vols, vols)
     corr = np.nan_to_num(corr, nan=0.0)
-    volatility_model = {
-        "mode": "feasiblePercentile",
-        "halfWidth": max(half_width for _offset, half_width in optimizer.TARGET_VOLATILITY_RULES.values()),
-        "profiles": {},
-    }
-    for profile, (offset, half_width) in optimizer.TARGET_VOLATILITY_RULES.items():
-        volatility_model["profiles"][profile] = {
-            "percentile": optimizer.VOLATILITY_PERCENTILES[profile],
-            "halfWidth": volatility_model["halfWidth"],
-        }
 
     jpm_assets = [
         {
@@ -611,79 +648,57 @@ def main() -> None:
         for i, asset in enumerate(optimizer.ASSETS)
     ]
     jpm_assets = apply_derived_proxies(jpm_assets)
-    vanguard_assumptions = load_vanguard_assumptions()
-    raw_vanguard_assets = []
-    for asset in jpm_assets:
-        normalized_asset_name = optimizer.normalize_name(asset["name"])
-        if normalized_asset_name in vanguard_assumptions:
-            assumption = vanguard_assumptions[normalized_asset_name]
-            raw_vanguard_assets.append({
-                **asset,
-                "return": assumption["return"],
-                "volatility": assumption["volatility"],
-                "sourceMapping": assumption["sourceMapping"],
-            })
-        else:
-            raw_vanguard_assets.append(None)
-    raw_vanguard_assets = apply_derived_proxies(raw_vanguard_assets)
-    raw_blackrock_assets = build_blackrock_assumptions(jpm_assets)
-    raw_blackrock_assets = apply_derived_proxies(raw_blackrock_assets)
-    capital_group_assumptions = load_capital_group_assumptions()
-    raw_capital_group_assets = []
-    for asset in jpm_assets:
-        normalized_asset_name = optimizer.normalize_name(asset["name"])
-        if normalized_asset_name in capital_group_assumptions:
-            assumption = capital_group_assumptions[normalized_asset_name]
-            raw_capital_group_assets.append({
-                **asset,
-                "return": assumption["return"],
-                "volatility": assumption["volatility"],
-                "sourceMapping": assumption["sourceMapping"],
-            })
-        else:
-            raw_capital_group_assets.append(None)
-    raw_capital_group_assets = apply_derived_proxies(raw_capital_group_assets)
-    invesco_assumptions = load_invesco_assumptions()
-    raw_invesco_assets = []
-    for asset in jpm_assets:
-        normalized_asset_name = optimizer.normalize_name(asset["name"])
-        if normalized_asset_name in invesco_assumptions:
-            assumption = invesco_assumptions[normalized_asset_name]
-            raw_invesco_assets.append({
-                **asset,
-                "return": assumption["return"],
-                "volatility": assumption["volatility"],
-                "sourceMapping": assumption["sourceMapping"],
-            })
-        else:
-            raw_invesco_assets.append(None)
-    raw_invesco_assets = apply_derived_proxies(raw_invesco_assets)
-    asset_allocation_interactive_assumptions = load_asset_allocation_interactive_assumptions()
-    raw_asset_allocation_interactive_assets = []
-    for asset in jpm_assets:
-        normalized_asset_name = optimizer.normalize_name(asset["name"])
-        if normalized_asset_name in asset_allocation_interactive_assumptions:
-            assumption = asset_allocation_interactive_assumptions[normalized_asset_name]
-            raw_asset_allocation_interactive_assets.append({
-                **asset,
-                "return": assumption["return"],
-                "volatility": assumption["volatility"],
-                "sourceMapping": assumption["sourceMapping"],
-            })
-        else:
-            raw_asset_allocation_interactive_assets.append(None)
-    raw_asset_allocation_interactive_assets = apply_derived_proxies(raw_asset_allocation_interactive_assets)
+
+    source_sets: list[tuple[str, list[dict | None], set[str]]] = [
+        ("JPM", jpm_assets, JPM_FALLBACK_TO_AVERAGE),
+    ]
+
+    if source_files["vanguard"] is not None:
+        source_sets.append((
+            "Vanguard",
+            map_provider_assumptions(jpm_assets, load_vanguard_assumptions(source_files["vanguard"])),
+            set(),
+        ))
+    if source_files["blackrock"] is not None:
+        source_sets.append((
+            "BlackRock",
+            apply_derived_proxies(build_blackrock_assumptions(jpm_assets, source_files["blackrock"])),
+            BLACKROCK_FALLBACK_TO_AVERAGE,
+        ))
+    if source_files["invesco"] is not None:
+        source_sets.append((
+            "Invesco",
+            map_provider_assumptions(jpm_assets, load_invesco_assumptions(source_files["invesco"])),
+            INVESCO_FALLBACK_TO_AVERAGE,
+        ))
+    if source_files["capital_group"] is not None:
+        source_sets.append((
+            "Capital Group",
+            map_provider_assumptions(jpm_assets, load_capital_group_assumptions(source_files["capital_group"])),
+            CAPITAL_GROUP_FALLBACK_TO_AVERAGE,
+        ))
+    if source_files["asset_allocation_interactive"] is not None:
+        source_sets.append((
+            "Asset Allocation Interactive",
+            map_provider_assumptions(jpm_assets, load_asset_allocation_interactive_assumptions(source_files["asset_allocation_interactive"])),
+            ASSET_ALLOCATION_INTERACTIVE_FALLBACK_TO_AVERAGE,
+        ))
+
     average_assets = average_assumption_sets(
-        [jpm_assets, raw_vanguard_assets, raw_blackrock_assets, raw_invesco_assets, raw_capital_group_assets, raw_asset_allocation_interactive_assets],
-        [JPM_FALLBACK_TO_AVERAGE, set(), BLACKROCK_FALLBACK_TO_AVERAGE, INVESCO_FALLBACK_TO_AVERAGE, CAPITAL_GROUP_FALLBACK_TO_AVERAGE, ASSET_ALLOCATION_INTERACTIVE_FALLBACK_TO_AVERAGE],
+        [source_assets for _name, source_assets, _fallbacks in source_sets],
+        [fallbacks for _name, _source_assets, fallbacks in source_sets],
     )
-    jpm_assets = apply_average_fallback(jpm_assets, average_assets, "JPM 2026", JPM_FALLBACK_TO_AVERAGE)
-    vanguard_assets = apply_average_fallback(raw_vanguard_assets, average_assets, "Vanguard 2026")
-    blackrock_assets = apply_average_fallback(raw_blackrock_assets, average_assets, "BlackRock 2026", BLACKROCK_FALLBACK_TO_AVERAGE)
-    invesco_assets = apply_average_fallback(raw_invesco_assets, average_assets, "Invesco 2026", INVESCO_FALLBACK_TO_AVERAGE)
-    capital_group_assets = apply_average_fallback(raw_capital_group_assets, average_assets, "Capital Group 2026", CAPITAL_GROUP_FALLBACK_TO_AVERAGE)
-    asset_allocation_interactive_assets = apply_average_fallback(raw_asset_allocation_interactive_assets, average_assets, "Asset Allocation Interactive 2026", ASSET_ALLOCATION_INTERACTIVE_FALLBACK_TO_AVERAGE)
-    corr = blend_available_correlations(corr, average_assets)
+    assumption_sets = {"CORE": average_assets}
+    for provider_name, source_assets, fallback_names in source_sets:
+        label = f"{provider_name} {year}"
+        assumption_sets[label] = apply_average_fallback(source_assets, average_assets, label, fallback_names)
+
+    corr = blend_available_correlations(
+        corr,
+        average_assets,
+        source_files["capital_group"],
+        source_files["asset_allocation_interactive"],
+    )
     corr = nearest_valid_correlation(corr)
     large_cap = next(asset for asset in average_assets if asset["name"] == "U.S. Large Cap")
     jpm_returns: dict[str, float] = jpm_data["returns"]  # type: ignore[assignment]
@@ -693,7 +708,7 @@ def main() -> None:
             "name": "S&P 500",
             "return": large_cap["return"],
             "volatility": large_cap["volatility"],
-            "sourceMapping": "CORE U.S. Large Cap assumption",
+            "sourceMapping": f"{year} Average U.S. Large Cap assumption",
         },
         {
             "name": "AGG",
@@ -702,25 +717,59 @@ def main() -> None:
             "sourceMapping": "JPM U.S. Aggregate Bonds assumption",
         },
     ]
+
+    return {
+        "generatedFrom": str(jpm_path),
+        "selectedAssumptionSet": "CORE",
+        "assets": average_assets,
+        "assumptionSets": assumption_sets,
+        "benchmarks": benchmarks,
+        "correlation": corr.tolist(),
+    }
+
+
+def available_assumption_years() -> list[str]:
+    years = []
+    for path in INPUTS_DIR.iterdir():
+        if not path.is_dir() or not path.name.isdigit():
+            continue
+        try:
+            optimizer.jpm_matrix_path(path.name)
+        except FileNotFoundError:
+            continue
+        years.append(path.name)
+    return sorted(years)
+
+
+def main() -> None:
+    years = available_assumption_years()
+    if DEFAULT_ASSUMPTION_YEAR not in years:
+        raise FileNotFoundError(f"The default assumption year {DEFAULT_ASSUMPTION_YEAR} has no JPM source workbook.")
+    assumption_years = {year: build_year_data(year) for year in years}
+    active_year = assumption_years[DEFAULT_ASSUMPTION_YEAR]
+    volatility_model = {
+        "mode": "feasiblePercentile",
+        "halfWidth": max(half_width for _offset, half_width in optimizer.TARGET_VOLATILITY_RULES.values()),
+        "profiles": {},
+    }
+    for profile, (_offset, _half_width) in optimizer.TARGET_VOLATILITY_RULES.items():
+        volatility_model["profiles"][profile] = {
+            "percentile": optimizer.VOLATILITY_PERCENTILES[profile],
+            "halfWidth": volatility_model["halfWidth"],
+        }
     fund_models = load_fund_models()
 
     payload = {
-        "generatedFrom": str(optimizer.jpm_matrix_path()),
+        "generatedFrom": active_year["generatedFrom"],
         "cashTarget": optimizer.CASH_TARGET,
         "categories": optimizer.CATEGORIES,
+        "defaultAssumptionYear": DEFAULT_ASSUMPTION_YEAR,
+        "assumptionYears": assumption_years,
         "selectedAssumptionSet": "CORE",
-        "assets": average_assets,
-        "assumptionSets": {
-            "CORE": average_assets,
-            "JPM 2026": jpm_assets,
-            "Vanguard 2026": vanguard_assets,
-            "BlackRock 2026": blackrock_assets,
-            "Invesco 2026": invesco_assets,
-            "Capital Group 2026": capital_group_assets,
-            "Asset Allocation Interactive 2026": asset_allocation_interactive_assets,
-        },
+        "assets": active_year["assets"],
+        "assumptionSets": active_year["assumptionSets"],
         "volatilityModel": volatility_model,
-        "benchmarks": benchmarks,
+        "benchmarks": active_year["benchmarks"],
         "fundModels": fund_models,
         "profiles": {
             profile: {
@@ -733,7 +782,7 @@ def main() -> None:
             }
             for profile, config in optimizer.PROFILES.items()
         },
-        "correlation": corr.tolist(),
+        "correlation": active_year["correlation"],
     }
 
     WEB_DATA.parent.mkdir(parents=True, exist_ok=True)

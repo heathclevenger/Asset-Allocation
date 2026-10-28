@@ -996,6 +996,32 @@ p {
   line-height: 1;
 }
 
+.advisor-percentiles .percentile-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 78px;
+}
+
+.percentile-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+}
+
+.percentile-input input {
+  min-width: 0;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.percentile-input span {
+  color: var(--core-blue-dark);
+  font-size: 16px;
+  font-weight: 800;
+}
+
 .percentile-shift-field {
   width: min(260px, 100%);
   background: var(--surface);
@@ -1012,6 +1038,17 @@ p {
 .percentile-shift-buttons button {
   min-height: 34px;
   padding: 8px 10px;
+}
+
+.percentile-shift-buttons .percentile-shift-add {
+  border-color: var(--core-blue-dark);
+  background: var(--core-blue-dark);
+  color: #fff;
+}
+
+.percentile-shift-buttons .percentile-shift-add:hover {
+  background: var(--slate);
+  color: #fff;
 }
 
 .unit-input {
