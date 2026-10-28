@@ -43,10 +43,10 @@ const escapeHtml = (value) => String(value)
   .replace(/>/g, "&gt;")
   .replace(/"/g, "&quot;");
 const defaultVolatilityPercentiles = {
-  "Conservative": 25,
-  "Balanced": 40,
-  "Moderate": 55,
-  "Growth": 75,
+  "Conservative": 50,
+  "Balanced": 60,
+  "Moderate": 70,
+  "Growth": 80,
   "Aggressive Growth": 90,
 };
 let advisorVolatilityPercentiles = { ...defaultVolatilityPercentiles };

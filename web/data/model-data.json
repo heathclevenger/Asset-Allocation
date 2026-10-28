@@ -3460,19 +3460,19 @@
     "halfWidth": 0.005,
     "profiles": {
       "Conservative": {
-        "percentile": 20.0,
+        "percentile": 50.0,
         "halfWidth": 0.005
       },
       "Balanced": {
-        "percentile": 35.0,
+        "percentile": 60.0,
         "halfWidth": 0.005
       },
       "Moderate": {
-        "percentile": 55.0,
+        "percentile": 70.0,
         "halfWidth": 0.005
       },
       "Growth": {
-        "percentile": 75.0,
+        "percentile": 80.0,
         "halfWidth": 0.005
       },
       "Aggressive Growth": {

@@ -21,10 +21,10 @@ CASH_TARGET = 0.01
 CATEGORIES = ["Equity", "Fixed Income", "Alternatives", "Cash"]
 MODERATE_VOL_TARGET = 0.130
 VOLATILITY_PERCENTILES: Dict[str, float] = {
-    "Conservative": 20.0,
-    "Balanced": 35.0,
-    "Moderate": 55.0,
-    "Growth": 75.0,
+    "Conservative": 50.0,
+    "Balanced": 60.0,
+    "Moderate": 70.0,
+    "Growth": 80.0,
     "Aggressive Growth": 90.0,
 }
 TARGET_VOLATILITY_RULES: Dict[str, Tuple[float, float]] = {
